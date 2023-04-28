@@ -76,6 +76,7 @@ kana_table! {
     "ro" "ろ"
     "sa" "さ"
     "za" "ざ"
+    "sshi" "っし"
     "shi" "し"
     "sha" "しゃ"
     "sho" "しょ"
@@ -165,6 +166,7 @@ kana_table! {
     "sa" "サ"
     "za" "ザ"
     "shi" "シ"
+    "sshi" "ッシ"
     "sha" "シャ"
     "sho" "ショ"
     "shu" "シュ"
@@ -313,6 +315,10 @@ pub struct DictEntry {
     pub desc: String,
 }
 
+/// Max possible length of a romaji kana "atom".
+/// "sshi" is an example of a romaji kana atom, with length of 4.
+const MAX_ROMAJI_ATOM_LEN: usize = 4;
+
 pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResult<'a> {
     let mut elems = Vec::new();
     let mut skip = 0;
@@ -322,7 +328,7 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
             continue;
         }
         let mut found_kana = false;
-        for (j, end) in (i..=(i + 3).min(romaji.len())).enumerate() {
+        for (j, end) in (i..=(i + MAX_ROMAJI_ATOM_LEN).min(romaji.len())).enumerate() {
             let src_atom = &romaji[i..end];
             if let Some(kana) = table.lookup(src_atom) {
                 elems.push(Element { atom: kana });
