@@ -1,5 +1,3 @@
-#![feature(iterator_try_collect)]
-
 mod appstate;
 mod conv;
 mod ui;
