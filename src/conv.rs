@@ -269,39 +269,123 @@ enum SegStatus {
     InBracketed,
 }
 
-pub fn segment(romaji: &str) -> Vec<&str> {
+pub enum Segment<'s> {
+    Simple(&'s str),
+    /// A dictionary form text and extra (conjugation) text.
+    ///
+    /// ```plaintext
+    /// [deau:tte]
+    ///   ^    ^
+    ///  dict  extra
+    /// ```
+    ///
+    /// Used for conjugated words like adjectives/verbs.
+    DictAndExtra {
+        dict: &'s str,
+        extra: &'s str,
+        /// How many characters to cut off from dict lookup result (usually 1).
+        ///
+        /// Determined by number of `:` separators.
+        cutoff: usize,
+    },
+}
+impl<'a> Segment<'a> {
+    pub(crate) fn label_string(&self) -> String {
+        match self {
+            Segment::Simple(s) => s.to_string(),
+            Segment::DictAndExtra { dict, extra, .. } => {
+                format!("{dict}[{extra}]")
+            }
+        }
+    }
+    /// Used for dictionary lookups
+    pub(crate) fn dict_root(&self) -> &str {
+        match self {
+            Segment::Simple(s) => s,
+            Segment::DictAndExtra { dict, .. } => dict,
+        }
+    }
+}
+
+pub fn segment(romaji: &str) -> Vec<Segment> {
     let mut begin = 0;
     let mut cursor = 0;
     let bytes = romaji.as_bytes();
-    let mut state = SegStatus::Init;
+    let mut status = SegStatus::Init;
     let mut segs = Vec::new();
+    let mut colons = 0;
+    let mut extra_begin = 0;
     while cursor < bytes.len() {
-        match state {
+        match status {
             SegStatus::Init => match bytes[cursor] {
                 b'[' => {
                     let s = &romaji[begin..cursor];
                     if !s.is_empty() {
-                        segs.push(s);
+                        if colons == 0 {
+                            segs.push(Segment::Simple(s));
+                        } else {
+                            segs.push(Segment::DictAndExtra {
+                                dict: &romaji[begin..extra_begin],
+                                extra: &romaji[extra_begin + colons..cursor],
+                                cutoff: colons,
+                            })
+                        }
+                        colons = 0;
                     }
-                    state = SegStatus::InBracketed;
+                    status = SegStatus::InBracketed;
                     begin = cursor + 1;
                 }
                 b' ' | b'\n' => {
-                    segs.push(&romaji[begin..cursor]);
+                    if colons == 0 {
+                        segs.push(Segment::Simple(&romaji[begin..cursor]));
+                    } else {
+                        segs.push(Segment::DictAndExtra {
+                            dict: &romaji[begin..extra_begin],
+                            extra: &romaji[extra_begin + colons..cursor],
+                            cutoff: colons,
+                        })
+                    }
                     begin = cursor;
+                    colons = 0;
+                }
+                b':' => {
+                    extra_begin = cursor - colons;
+                    colons += 1;
                 }
                 _ if cursor == bytes.len() - 1 => {
-                    segs.push(&romaji[begin..cursor + 1]);
+                    if colons == 0 {
+                        segs.push(Segment::Simple(&romaji[begin..cursor + 1]));
+                    } else {
+                        segs.push(Segment::DictAndExtra {
+                            dict: &romaji[begin..extra_begin],
+                            extra: &romaji[extra_begin + colons..cursor + 1],
+                            cutoff: colons,
+                        })
+                    }
+                    colons = 0;
                 }
                 _ => {}
             },
-            SegStatus::InBracketed => {
-                if let b']' = bytes[cursor] {
-                    segs.push(&romaji[begin..cursor]);
+            SegStatus::InBracketed => match bytes[cursor] {
+                b']' => {
+                    if colons == 0 {
+                        segs.push(Segment::Simple(&romaji[begin..cursor]));
+                    } else {
+                        segs.push(Segment::DictAndExtra {
+                            dict: &romaji[begin..extra_begin],
+                            extra: &romaji[extra_begin + colons..cursor],
+                            cutoff: colons,
+                        })
+                    }
                     begin = cursor + 1;
-                    state = SegStatus::Init;
+                    status = SegStatus::Init;
                 }
-            }
+                b':' => {
+                    extra_begin = cursor - colons;
+                    colons += 1;
+                }
+                _ => {}
+            },
         }
         cursor += 1;
     }
@@ -350,26 +434,27 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
     }
     DecomposeResult { elems }
 }
-pub fn to_japanese<'a>(segments: &'a [&'a str], intp: &IntpMap) -> String {
+pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap) -> String {
     let mut s = String::new();
-    for (i, &seg) in segments.iter().enumerate() {
-        let mut table = &HIRAGANA;
-        if let Some(intp) = intp.get(&i) {
-            match intp {
-                Intp::AsIs => {
-                    s.push_str(seg);
-                    continue;
-                }
-                Intp::Hiragana => table = &HIRAGANA,
-                Intp::Katakana => table = &KATAKANA,
-                Intp::String(str) => {
-                    s.push_str(str);
-                    continue;
-                }
+    for (i, seg) in segments.iter().enumerate() {
+        let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
+        match intp {
+            Intp::AsIs => match seg {
+                Segment::Simple(text) => s.push_str(text),
+                Segment::DictAndExtra { .. } => s.push_str("<non-applicable, sorry>"),
+            },
+            Intp::Hiragana => {
+                let dec = decompose(seg.dict_root(), &HIRAGANA);
+                s.push_str(&dec.to_kana_string());
+            }
+            Intp::Katakana => {
+                let dec = decompose(seg.dict_root(), &KATAKANA);
+                s.push_str(&dec.to_kana_string());
+            }
+            Intp::String(str) => {
+                s.push_str(str);
             }
         }
-        let dec = decompose(seg, table);
-        s.push_str(&dec.to_kana_string());
     }
     s
 }

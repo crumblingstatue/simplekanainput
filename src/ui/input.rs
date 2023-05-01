@@ -40,8 +40,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .show(ui, |ui| {
             let segs = conv::segment(&app.romaji_buf);
             ui.horizontal_wrapped(|ui| {
-                for (i, &seg) in segs.iter().enumerate() {
-                    ui.add(egui::Label::new(seg.trim()).sense(egui::Sense::click()))
+                for (i, seg) in segs.iter().enumerate() {
+                    ui.add(egui::Label::new(seg.label_string()).sense(egui::Sense::click()))
                         .context_menu(|ui| {
                             egui::ScrollArea::vertical().show(ui, |ui| {
                                 if ui.button("Hiragana").clicked() {
@@ -52,7 +52,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                     app.intp.insert(i, Intp::Katakana);
                                     ui.close_menu();
                                 }
-                                let kana = decompose(seg, &HIRAGANA).to_kana_string();
+                                let kana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
                                 let kana = kana.trim();
                                 if ui.button("as-is (romaji)").clicked() {
                                     app.intp.insert(i, Intp::AsIs);
@@ -67,8 +67,27 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                                 .on_hover_text(hover_string(e))
                                                 .clicked()
                                             {
-                                                app.intp
-                                                    .insert(i, Intp::String(kanji_str.to_owned()));
+                                                match seg {
+                                                    conv::Segment::Simple(_) => {
+                                                        let root = kanji_str.to_owned();
+                                                        app.intp.insert(i, Intp::String(root));
+                                                    }
+                                                    conv::Segment::DictAndExtra {
+                                                        dict: _,
+                                                        extra,
+                                                        cutoff,
+                                                    } => {
+                                                        let mut s = kanji_str.to_owned();
+                                                        for _ in 0..*cutoff {
+                                                            s.pop();
+                                                        }
+                                                        s.push_str(
+                                                            &decompose(extra, &HIRAGANA)
+                                                                .to_kana_string(),
+                                                        );
+                                                        app.intp.insert(i, Intp::String(s));
+                                                    }
+                                                }
                                                 ui.close_menu();
                                             }
                                         }
