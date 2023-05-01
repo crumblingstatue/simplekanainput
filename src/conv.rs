@@ -273,6 +273,7 @@ enum SegStatus {
     InBracketed,
 }
 
+#[derive(PartialEq, Debug)]
 pub enum Segment<'s> {
     Simple(&'s str),
     /// A dictionary form text and extra (conjugation) text.
@@ -381,6 +382,7 @@ pub fn segment(romaji: &str) -> Vec<Segment> {
                             cutoff: colons,
                         })
                     }
+                    colons = 0;
                     begin = cursor + 1;
                     status = SegStatus::Init;
                 }
@@ -394,6 +396,21 @@ pub fn segment(romaji: &str) -> Vec<Segment> {
         cursor += 1;
     }
     segs
+}
+
+#[test]
+fn test_segment() {
+    assert_eq!(
+        segment("[chiisai:nakute]a"),
+        vec![
+            Segment::DictAndExtra {
+                dict: "chiisai",
+                extra: "nakute",
+                cutoff: 1
+            },
+            Segment::Simple("a")
+        ]
+    );
 }
 
 #[derive(Deserialize, Debug)]
