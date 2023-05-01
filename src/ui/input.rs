@@ -45,21 +45,25 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     ui.add(egui::Label::new(seg.label_string()).sense(egui::Sense::click()))
                         .context_menu(|ui| {
                             egui::ScrollArea::vertical().show(ui, |ui| {
-                                if ui.button("Hiragana").clicked() {
-                                    app.intp.insert(i, Intp::Hiragana);
-                                    ui.close_menu();
-                                }
-                                if ui.button("Katakana").clicked() {
-                                    app.intp.insert(i, Intp::Katakana);
-                                    ui.close_menu();
-                                }
+                                ui.horizontal(|ui| {
+                                    if ui.button("は").clicked() {
+                                        app.intp.insert(i, Intp::Hiragana);
+                                        ui.close_menu();
+                                    }
+                                    ui.separator();
+                                    if ui.button("ハ").clicked() {
+                                        app.intp.insert(i, Intp::Katakana);
+                                        ui.close_menu();
+                                    }
+                                    ui.separator();
+                                    if ui.button("ha").clicked() {
+                                        app.intp.insert(i, Intp::AsIs);
+                                        ui.close_menu();
+                                    }
+                                });
+                                ui.separator();
                                 let kana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
                                 let kana = kana.trim();
-                                if ui.button("as-is (romaji)").clicked() {
-                                    app.intp.insert(i, Intp::AsIs);
-                                    ui.close_menu();
-                                }
-                                ui.separator();
                                 for e in jmdict::entries() {
                                     if e.reading_elements().any(|e| e.text == kana) {
                                         for kanji_str in e.kanji_elements().map(|e| e.text) {
