@@ -9,6 +9,5 @@ edition = "2021"
 arboard = "3.2.0"
 egui-sfml = "0.4.0"
 jmdict = "2.0.0"
-open = "4.1.0"
 rfd = "0.11.3"
 serde = { version = "1.0.160", features = ["derive"] }
