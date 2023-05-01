@@ -1,3 +1,5 @@
+use egui_sfml::sfml::graphics::{Rect, RenderTarget, View};
+
 mod appstate;
 mod conv;
 mod ui;
@@ -88,8 +90,15 @@ fn main() {
         while let Some(ev) = rw.poll_event() {
             sf_egui.add_event(&ev);
 
-            if let Event::Closed = ev {
-                rw.close();
+            match ev {
+                Event::Closed => rw.close(),
+                Event::Resized { width, height } => rw.set_view(&View::from_rect(Rect::new(
+                    0.,
+                    0.,
+                    width as f32,
+                    height as f32,
+                ))),
+                _ => {}
             }
         }
         sf_egui
