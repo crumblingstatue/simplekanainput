@@ -2,7 +2,6 @@ use {
     crate::{
         appstate::AppState,
         conv::{self, decompose, Intp, HIRAGANA},
-        hover_string,
     },
     egui_sfml::egui::{self, Modifiers},
 };
@@ -84,4 +83,22 @@ pub fn central_panel_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 app.quit_requested = true;
             }
         });
+}
+
+fn hover_string(e: jmdict::Entry) -> String {
+    let mut out = String::new();
+    for (tr_i, sense) in e.senses().enumerate() {
+        out.push_str(&format!("{tr_i}: "));
+        for gloss in sense.glosses() {
+            out.push_str(gloss.text);
+            out.push_str(", ");
+        }
+        out.push('\n');
+    }
+    out.push_str("\n---\n");
+    for pronounciation in e.reading_elements() {
+        out.push_str(pronounciation.text);
+        out.push_str(", ");
+    }
+    out
 }

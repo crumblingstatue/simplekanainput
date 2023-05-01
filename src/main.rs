@@ -98,21 +98,3 @@ fn main() {
     // Wait for clipboard to synchronize with manager
     std::thread::sleep(Duration::from_secs(1));
 }
-
-fn hover_string(e: jmdict::Entry) -> String {
-    let mut out = String::new();
-    for (tr_i, sense) in e.senses().enumerate() {
-        out.push_str(&format!("{tr_i}: "));
-        for gloss in sense.glosses() {
-            out.push_str(gloss.text);
-            out.push_str(", ");
-        }
-        out.push('\n');
-    }
-    out.push_str("\n---\n");
-    for pronounciation in e.reading_elements() {
-        out.push_str(pronounciation.text);
-        out.push_str(", ");
-    }
-    out
-}
