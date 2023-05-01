@@ -7,9 +7,30 @@ use {
 };
 
 pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
-    if ui.link("Back (Esc)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
-        app.ui_state = UiState::Input;
-    }
+    ui.horizontal(|ui| {
+        if ui.link("Back (Esc)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
+            app.ui_state = UiState::Input;
+        }
+        ui.separator();
+        if ui
+            .selectable_label(
+                matches!(app.dict_ui_state.lookup_method, LookupMethod::ByKana),
+                "By kana",
+            )
+            .clicked()
+        {
+            app.dict_ui_state.lookup_method = LookupMethod::ByKana;
+        }
+        if ui
+            .selectable_label(
+                matches!(app.dict_ui_state.lookup_method, LookupMethod::ByEnglish),
+                "By english",
+            )
+            .clicked()
+        {
+            app.dict_ui_state.lookup_method = LookupMethod::ByEnglish;
+        }
+    });
     ui.columns(2, |cols| {
         dict_list_ui(&mut cols[0], app);
         dict_en_ui(&mut cols[1], app);
@@ -22,10 +43,25 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
         ui.add(egui::TextEdit::singleline(&mut app.dict_ui_state.search_buf).hint_text("Filter"));
     if re.changed() {
         app.dict_ui_state.selected = 0;
-        let kana = decompose(&app.dict_ui_state.search_buf, &HIRAGANA).to_kana_string();
-        app.dict_ui_state.entry_buf = jmdict::entries()
-            .filter(|en| en.reading_elements().any(|elem| elem.text.contains(&kana)))
-            .collect();
+        match app.dict_ui_state.lookup_method {
+            LookupMethod::ByKana => {
+                let kana = decompose(&app.dict_ui_state.search_buf, &HIRAGANA).to_kana_string();
+                app.dict_ui_state.entry_buf = jmdict::entries()
+                    .filter(|en| en.reading_elements().any(|elem| elem.text.contains(&kana)))
+                    .collect()
+            }
+            LookupMethod::ByEnglish => {
+                app.dict_ui_state.entry_buf = jmdict::entries()
+                    .filter(|en| {
+                        en.senses().any(|sense| {
+                            sense
+                                .glosses()
+                                .any(|gloss| gloss.text.contains(&app.dict_ui_state.search_buf))
+                        })
+                    })
+                    .collect()
+            }
+        }
     }
     if app.dict_ui_state.just_opened {
         re.request_focus();
@@ -42,7 +78,12 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 if ui
                     .selectable_label(
                         app.dict_ui_state.selected == idx,
-                        en.reading_elements().next().unwrap().text,
+                        match app.dict_ui_state.lookup_method {
+                            LookupMethod::ByKana => en.reading_elements().next().unwrap().text,
+                            LookupMethod::ByEnglish => {
+                                en.senses().next().unwrap().glosses().next().unwrap().text
+                            }
+                        },
                     )
                     .clicked()
                 {
@@ -90,6 +131,12 @@ pub struct DictUiState {
     entry_buf: Vec<jmdict::Entry>,
     selected: usize,
     pub just_opened: bool,
+    lookup_method: LookupMethod,
+}
+
+enum LookupMethod {
+    ByKana,
+    ByEnglish,
 }
 
 impl Default for DictUiState {
@@ -99,6 +146,7 @@ impl Default for DictUiState {
             entry_buf: jmdict::entries().collect(),
             selected: 0,
             just_opened: false,
+            lookup_method: LookupMethod::ByKana,
         }
     }
 }
