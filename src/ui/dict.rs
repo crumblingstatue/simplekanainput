@@ -61,10 +61,12 @@ fn dict_en_ui(ui: &mut egui::Ui, app: &mut AppState) {
             for elem in en.kanji_elements() {
                 ui.label(elem.text);
             }
+            ui.separator();
             ui.heading("Reading elements");
             for elem in en.reading_elements() {
                 ui.label(elem.text);
             }
+            ui.separator();
             ui.heading("Senses");
             for sense in en.senses() {
                 for gloss in sense.glosses() {
