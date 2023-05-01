@@ -76,6 +76,10 @@ fn dict_en_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 for gloss in sense.glosses() {
                     ui.label(gloss.text);
                 }
+                ui.label("-- parts of speech --");
+                for part in sense.parts_of_speech() {
+                    ui.label(part.to_string());
+                }
                 ui.separator();
             }
         });
