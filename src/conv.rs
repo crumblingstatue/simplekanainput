@@ -400,15 +400,39 @@ pub fn segment(romaji: &str) -> Vec<Segment> {
 
 #[test]
 fn test_segment() {
+    use Segment::*;
     assert_eq!(
         segment("[chiisai:nakute]a"),
         vec![
-            Segment::DictAndExtra {
+            DictAndExtra {
                 dict: "chiisai",
                 extra: "nakute",
                 cutoff: 1
             },
-            Segment::Simple("a")
+            Simple("a")
+        ]
+    );
+    assert_eq!(
+        segment("watashi[ha]chiisai:kute[shizuka]janaide[omoshiroi]machi[ni]sumu:ndeimasu[.]"),
+        vec![
+            Simple("watashi"),
+            Simple("ha"),
+            DictAndExtra {
+                dict: "chiisai",
+                extra: "kute",
+                cutoff: 1
+            },
+            Simple("shizuka"),
+            Simple("janaide"),
+            Simple("omoshiroi"),
+            Simple("machi"),
+            Simple("ni"),
+            DictAndExtra {
+                dict: "sumu",
+                extra: "ndeimasu",
+                cutoff: 1
+            },
+            Simple(".")
         ]
     );
 }
