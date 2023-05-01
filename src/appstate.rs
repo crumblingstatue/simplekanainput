@@ -9,6 +9,12 @@ pub struct AppState {
     pub romaji_buf: String,
     pub clipboard: Clipboard,
     pub quit_requested: bool,
+    pub ui_state: UiState,
+}
+
+pub enum UiState {
+    Input,
+    Dict,
 }
 
 impl AppState {
@@ -19,6 +25,7 @@ impl AppState {
             romaji_buf: String::new(),
             clipboard: Clipboard::new()?,
             quit_requested: false,
+            ui_state: UiState::Input,
         })
     }
 }

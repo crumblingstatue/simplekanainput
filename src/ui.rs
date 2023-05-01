@@ -1,12 +1,12 @@
 use {
     crate::{
-        appstate::AppState,
+        appstate::{AppState, UiState},
         conv::{self, decompose, Intp, HIRAGANA},
     },
     egui_sfml::egui::{self, Modifiers},
 };
 
-pub fn central_panel_ui(ui: &mut egui::Ui, app: &mut AppState) {
+pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut copy_jap_clicked = false;
     let ctrl_enter = ui.input_mut(|inp| inp.consume_key(Modifiers::CTRL, egui::Key::Enter));
     ui.horizontal(|ui| {
@@ -15,6 +15,9 @@ pub fn central_panel_ui(ui: &mut egui::Ui, app: &mut AppState) {
         }
         if ui.button("Clear attribs (debug)").clicked() {
             app.intp.clear();
+        }
+        if ui.button("Dictionary").clicked() {
+            app.ui_state = UiState::Dict;
         }
     });
     ui.separator();
@@ -83,6 +86,12 @@ pub fn central_panel_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 app.quit_requested = true;
             }
         });
+}
+
+pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
+    if ui.link("Back").clicked() {
+        app.ui_state = UiState::Input;
+    }
 }
 
 fn hover_string(e: jmdict::Entry) -> String {
