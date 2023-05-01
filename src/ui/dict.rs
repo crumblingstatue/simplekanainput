@@ -114,14 +114,29 @@ fn dict_en_ui(ui: &mut egui::Ui, app: &mut AppState) {
             ui.separator();
             ui.heading("Senses");
             for sense in en.senses() {
-                for gloss in sense.glosses() {
-                    ui.label(gloss.text);
-                }
-                ui.label("-- parts of speech --");
-                for part in sense.parts_of_speech() {
-                    ui.label(part.to_string());
-                }
-                ui.separator();
+                ui.horizontal_wrapped(|ui| {
+                    let mut begin = true;
+                    for gloss in sense.glosses() {
+                        if !begin {
+                            ui.separator();
+                        }
+                        begin = false;
+                        ui.label(gloss.text);
+                    }
+                    ui.end_row();
+                    begin = true;
+                    for part in sense.parts_of_speech() {
+                        if !begin {
+                            ui.separator();
+                        }
+                        begin = false;
+                        ui.label(
+                            egui::RichText::new(part.to_string())
+                                .size(14.0)
+                                .color(egui::Color32::DARK_GRAY),
+                        );
+                    }
+                });
             }
         });
 }
