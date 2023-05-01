@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 arboard = "3.2.0"
-directories = "5.0.1"
 egui-sfml = "0.4.0"
 jmdict = "2.0.0"
 open = "4.1.0"
