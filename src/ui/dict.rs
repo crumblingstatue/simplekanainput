@@ -1,4 +1,5 @@
 use {
+    super::dict_en_ui,
     crate::{
         appstate::{AppState, UiState},
         conv::{decompose, HIRAGANA},
@@ -33,7 +34,11 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
     });
     ui.columns(2, |cols| {
         dict_list_ui(&mut cols[0], app);
-        dict_en_ui(&mut cols[1], app);
+        let Some(en) = app.dict_ui_state.entry_buf.get(app.dict_ui_state.selected) else {
+            cols[1].label("<Couldn't get entry>");
+            return;
+        };
+        dict_en_ui(&mut cols[1], en);
     });
     app.dict_ui_state.just_opened = false;
 }
@@ -92,53 +97,6 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
         },
     );
-}
-
-fn dict_en_ui(ui: &mut egui::Ui, app: &mut AppState) {
-    let Some(en) = app.dict_ui_state.entry_buf.get(app.dict_ui_state.selected) else {
-        ui.label("<Couldn't get entry>");
-        return;
-    };
-    egui::ScrollArea::vertical()
-        .id_source("en_scroll_vert")
-        .show(ui, |ui| {
-            ui.heading("Kanji elements");
-            for elem in en.kanji_elements() {
-                ui.label(elem.text);
-            }
-            ui.separator();
-            ui.heading("Reading elements");
-            for elem in en.reading_elements() {
-                ui.label(elem.text);
-            }
-            ui.separator();
-            ui.heading("Senses");
-            for sense in en.senses() {
-                ui.horizontal_wrapped(|ui| {
-                    let mut begin = true;
-                    for gloss in sense.glosses() {
-                        if !begin {
-                            ui.separator();
-                        }
-                        begin = false;
-                        ui.label(gloss.text);
-                    }
-                    ui.end_row();
-                    begin = true;
-                    for part in sense.parts_of_speech() {
-                        if !begin {
-                            ui.separator();
-                        }
-                        begin = false;
-                        ui.label(
-                            egui::RichText::new(part.to_string())
-                                .size(14.0)
-                                .color(egui::Color32::DARK_GRAY),
-                        );
-                    }
-                });
-            }
-        });
 }
 
 pub struct DictUiState {

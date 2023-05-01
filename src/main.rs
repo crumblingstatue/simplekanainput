@@ -37,7 +37,7 @@ impl WinDims {
     }
 }
 
-const WIN_DIMS: WinDims = WinDims { w: 640, h: 360 };
+const WIN_DIMS: WinDims = WinDims { w: 640, h: 512 };
 
 fn main() {
     std::panic::set_hook(Box::new(|info| {
