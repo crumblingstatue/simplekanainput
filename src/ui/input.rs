@@ -16,8 +16,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.button("Clear attribs (debug)").clicked() {
             app.intp.clear();
         }
-        if ui.button("Dictionary").clicked() {
+        if ui.button("Dictionary (F1)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::F1))
+        {
             app.ui_state = UiState::Dict;
+            app.dict_ui_state.just_opened = true;
         }
     });
     ui.separator();

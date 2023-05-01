@@ -7,13 +7,14 @@ use {
 };
 
 pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
-    if ui.link("Back").clicked() {
+    if ui.link("Back (Esc)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
         app.ui_state = UiState::Input;
     }
     ui.columns(2, |cols| {
         dict_list_ui(&mut cols[0], app);
         dict_en_ui(&mut cols[1], app);
     });
+    app.dict_ui_state.just_opened = false;
 }
 
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
@@ -25,6 +26,9 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.dict_ui_state.entry_buf = jmdict::entries()
             .filter(|en| en.reading_elements().any(|elem| elem.text.contains(&kana)))
             .collect();
+    }
+    if app.dict_ui_state.just_opened {
+        re.request_focus();
     }
     egui::ScrollArea::vertical().show_rows(
         ui,
@@ -81,6 +85,7 @@ pub struct DictUiState {
     search_buf: String,
     entry_buf: Vec<jmdict::Entry>,
     selected: usize,
+    pub just_opened: bool,
 }
 
 impl Default for DictUiState {
@@ -89,6 +94,7 @@ impl Default for DictUiState {
             search_buf: Default::default(),
             entry_buf: jmdict::entries().collect(),
             selected: 0,
+            just_opened: false,
         }
     }
 }
