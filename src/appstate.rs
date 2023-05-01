@@ -1,5 +1,5 @@
 use {
-    crate::{conv::IntpMap, WinDims, WIN_DIMS},
+    crate::{conv::IntpMap, ui::DictUiState, WinDims, WIN_DIMS},
     arboard::Clipboard,
 };
 
@@ -10,6 +10,7 @@ pub struct AppState {
     pub clipboard: Clipboard,
     pub quit_requested: bool,
     pub ui_state: UiState,
+    pub dict_ui_state: DictUiState,
 }
 
 pub enum UiState {
@@ -26,6 +27,7 @@ impl AppState {
             clipboard: Clipboard::new()?,
             quit_requested: false,
             ui_state: UiState::Input,
+            dict_ui_state: DictUiState::default(),
         })
     }
 }

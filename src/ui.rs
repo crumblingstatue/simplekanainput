@@ -1,4 +1,7 @@
 mod dict;
 mod input;
 
-pub use self::{dict::dict_ui, input::input_ui};
+pub use self::{
+    dict::{dict_ui, DictUiState},
+    input::input_ui,
+};
