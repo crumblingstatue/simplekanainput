@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use serde::Deserialize;
+use {serde::Deserialize, std::collections::HashMap};
 
 pub enum Intp {
     AsIs,
