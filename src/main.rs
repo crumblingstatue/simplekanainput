@@ -71,8 +71,16 @@ fn main() {
         .insert(0, "ipag".to_owned());
     sf_egui.context().set_fonts(font_defs);
     let mut style = egui::Style::default();
-    for (_text_style, font_id) in style.text_styles.iter_mut() {
-        font_id.size = 20.0; // whatever size you want here
+    for (text_style, font_id) in style.text_styles.iter_mut() {
+        let size = match *text_style {
+            egui::TextStyle::Small => 16.0,
+            egui::TextStyle::Body => 18.0,
+            egui::TextStyle::Monospace => 16.0,
+            egui::TextStyle::Button => 16.0,
+            egui::TextStyle::Heading => 21.0,
+            egui::TextStyle::Name(_) => todo!(),
+        };
+        font_id.size = size;
     }
     sf_egui.context().set_style(style);
 
