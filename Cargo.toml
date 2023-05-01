@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 arboard = "3.2.0"
-directories = "4.0.1"
+directories = "5.0.1"
 egui-sfml = "0.4.0"
 jmdict = "2.0.0"
-open = "3.2.0"
-rfd = "0.11.1"
-serde = { version = "1.0.152", features = ["derive"] }
+open = "4.1.0"
+rfd = "0.11.3"
+serde = { version = "1.0.160", features = ["derive"] }
