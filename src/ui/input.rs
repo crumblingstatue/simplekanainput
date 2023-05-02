@@ -9,9 +9,14 @@ use {
 
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut copy_jap_clicked = false;
-    let ctrl_enter = ui.input_mut(|inp| inp.consume_key(Modifiers::CTRL, egui::Key::Enter));
+    let (ctrl_enter, f2) = ui.input_mut(|inp| {
+        (
+            inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
+            inp.key_pressed(egui::Key::F2),
+        )
+    });
     ui.horizontal(|ui| {
-        if ui.button("Copy japanese").clicked() {
+        if ui.button("Copy japanese (F2)").clicked() || f2 {
             copy_jap_clicked = true;
         }
         if ui.button("Clear attribs (debug)").clicked() {
