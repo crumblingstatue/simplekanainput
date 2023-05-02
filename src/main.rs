@@ -1,15 +1,9 @@
-use egui_sfml::sfml::graphics::{Rect, RenderTarget, View};
-
-mod appstate;
-mod conv;
-mod ui;
-
 use {
     appstate::AppState,
     egui_sfml::{
         egui::{self, FontData, FontFamily},
         sfml::{
-            graphics::RenderWindow,
+            graphics::{Rect, RenderTarget, RenderWindow, View},
             system::Vector2,
             window::{ContextSettings, Event, Style, VideoMode},
         },
@@ -17,6 +11,10 @@ use {
     },
     std::time::Duration,
 };
+
+mod appstate;
+mod conv;
+mod ui;
 
 pub struct WinDims {
     w: u16,
