@@ -344,15 +344,19 @@ pub fn segment(romaji: &str) -> Vec<Segment> {
                 }
                 b' ' | b'\n' => {
                     if colons == 0 {
-                        segs.push(Segment::Simple(&romaji[begin..cursor]));
+                        let txt = &romaji[begin..cursor];
+                        if !txt.is_empty() {
+                            segs.push(Segment::Simple(txt));
+                            begin = cursor + 1;
+                        }
                     } else {
                         segs.push(Segment::DictAndExtra {
                             dict: &romaji[begin..extra_begin],
                             extra: &romaji[extra_begin + colons..cursor],
                             cutoff: colons,
-                        })
+                        });
+                        begin = cursor + 1;
                     }
-                    begin = cursor;
                     colons = 0;
                 }
                 b':' => {
@@ -436,6 +440,11 @@ fn test_segment() {
             },
             Simple(".")
         ]
+    );
+    assert_eq!(segment("watashi ha"), vec![Simple("watashi"), Simple("ha")]);
+    assert_eq!(
+        segment("watashi  ha"),
+        vec![Simple("watashi"), Simple(" ha")]
     );
 }
 
