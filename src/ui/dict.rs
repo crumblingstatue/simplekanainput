@@ -8,11 +8,14 @@ use {
 };
 
 pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
-    let (esc, up_arrow, down_arrow) = ui.input(|inp| {
+    let (esc, up_arrow, down_arrow, f2, f3, f4) = ui.input(|inp| {
         (
             inp.key_pressed(egui::Key::Escape),
             inp.key_pressed(egui::Key::ArrowUp),
             inp.key_pressed(egui::Key::ArrowDown),
+            inp.key_pressed(egui::Key::F2),
+            inp.key_pressed(egui::Key::F3),
+            inp.key_pressed(egui::Key::F4),
         )
     });
     if up_arrow {
@@ -29,27 +32,30 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui
             .selectable_label(
                 matches!(app.dict_ui_state.lookup_method, LookupMethod::Kana),
-                "By kana",
+                "[F2] By kana",
             )
             .clicked()
+            || f2
         {
             app.dict_ui_state.lookup_method = LookupMethod::Kana;
         }
         if ui
             .selectable_label(
                 matches!(app.dict_ui_state.lookup_method, LookupMethod::Kanji),
-                "By kanji",
+                "[F3] By kanji",
             )
             .clicked()
+            || f3
         {
             app.dict_ui_state.lookup_method = LookupMethod::Kanji;
         }
         if ui
             .selectable_label(
                 matches!(app.dict_ui_state.lookup_method, LookupMethod::English),
-                "By english",
+                "[F4] By english",
             )
             .clicked()
+            || f4
         {
             app.dict_ui_state.lookup_method = LookupMethod::English;
         }
