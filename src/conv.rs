@@ -460,7 +460,9 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
         }
         let mut found_kana = false;
         for (j, end) in (i..=(i + MAX_ROMAJI_ATOM_LEN).min(romaji.len())).enumerate() {
-            let src_atom = &romaji[i..end];
+            let Some(src_atom) = romaji.get(i..end) else {
+                continue
+            };
             if let Some(kana) = table.lookup(src_atom) {
                 elems.push(Element { atom: kana });
                 skip = j - 1;
@@ -469,7 +471,9 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
             }
         }
         if !found_kana {
-            let atom = &romaji[i..i + 1];
+            let &Some(atom) = &romaji.get(i..i + 1) else {
+                continue
+            };
             elems.push(Element {
                 atom: if atom == "n" {
                     table.lookup("nn").unwrap()
