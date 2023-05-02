@@ -14,6 +14,7 @@ use {
 
 mod appstate;
 mod conv;
+mod kana;
 mod ui;
 
 pub struct WinDims {

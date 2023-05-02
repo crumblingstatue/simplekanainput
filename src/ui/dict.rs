@@ -2,7 +2,8 @@ use {
     super::dict_en_ui,
     crate::{
         appstate::{AppState, UiState},
-        conv::{decompose, HIRAGANA},
+        conv::decompose,
+        kana::HIRAGANA,
     },
     egui_sfml::egui,
 };
