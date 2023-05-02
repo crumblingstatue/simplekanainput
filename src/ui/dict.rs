@@ -8,8 +8,21 @@ use {
 };
 
 pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
+    let (esc, up_arrow, down_arrow) = ui.input(|inp| {
+        (
+            inp.key_pressed(egui::Key::Escape),
+            inp.key_pressed(egui::Key::ArrowUp),
+            inp.key_pressed(egui::Key::ArrowDown),
+        )
+    });
+    if up_arrow {
+        app.dict_ui_state.selected = app.dict_ui_state.selected.saturating_sub(1);
+    }
+    if down_arrow {
+        app.dict_ui_state.selected += 1;
+    }
     ui.horizontal(|ui| {
-        if ui.link("Back (Esc)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
+        if ui.link("Back (Esc)").clicked() || esc {
             app.ui_state = UiState::Input;
         }
         ui.separator();
