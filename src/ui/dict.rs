@@ -28,21 +28,30 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
         ui.separator();
         if ui
             .selectable_label(
-                matches!(app.dict_ui_state.lookup_method, LookupMethod::ByKana),
+                matches!(app.dict_ui_state.lookup_method, LookupMethod::Kana),
                 "By kana",
             )
             .clicked()
         {
-            app.dict_ui_state.lookup_method = LookupMethod::ByKana;
+            app.dict_ui_state.lookup_method = LookupMethod::Kana;
         }
         if ui
             .selectable_label(
-                matches!(app.dict_ui_state.lookup_method, LookupMethod::ByEnglish),
+                matches!(app.dict_ui_state.lookup_method, LookupMethod::Kanji),
+                "By kanji",
+            )
+            .clicked()
+        {
+            app.dict_ui_state.lookup_method = LookupMethod::Kanji;
+        }
+        if ui
+            .selectable_label(
+                matches!(app.dict_ui_state.lookup_method, LookupMethod::English),
                 "By english",
             )
             .clicked()
         {
-            app.dict_ui_state.lookup_method = LookupMethod::ByEnglish;
+            app.dict_ui_state.lookup_method = LookupMethod::English;
         }
     });
     ui.columns(2, |cols| {
@@ -62,13 +71,13 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
     if re.changed() {
         app.dict_ui_state.selected = 0;
         match app.dict_ui_state.lookup_method {
-            LookupMethod::ByKana => {
+            LookupMethod::Kana => {
                 let kana = decompose(&app.dict_ui_state.search_buf, &HIRAGANA).to_kana_string();
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| en.reading_elements().any(|elem| elem.text.contains(&kana)))
                     .collect()
             }
-            LookupMethod::ByEnglish => {
+            LookupMethod::English => {
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| {
                         en.senses().any(|sense| {
@@ -76,6 +85,14 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                 .glosses()
                                 .any(|gloss| gloss.text.contains(&app.dict_ui_state.search_buf))
                         })
+                    })
+                    .collect()
+            }
+            LookupMethod::Kanji => {
+                app.dict_ui_state.entry_buf = jmdict::entries()
+                    .filter(|en| {
+                        en.kanji_elements()
+                            .any(|elem| elem.text.contains(&app.dict_ui_state.search_buf))
                     })
                     .collect()
             }
@@ -97,10 +114,14 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     .selectable_label(
                         app.dict_ui_state.selected == idx,
                         match app.dict_ui_state.lookup_method {
-                            LookupMethod::ByKana => en.reading_elements().next().unwrap().text,
-                            LookupMethod::ByEnglish => {
+                            LookupMethod::Kana => en.reading_elements().next().unwrap().text,
+                            LookupMethod::English => {
                                 en.senses().next().unwrap().glosses().next().unwrap().text
                             }
+                            LookupMethod::Kanji => match en.kanji_elements().next() {
+                                Some(elem) => elem.text,
+                                None => en.reading_elements().next().unwrap().text,
+                            },
                         },
                     )
                     .clicked()
@@ -121,8 +142,9 @@ pub struct DictUiState {
 }
 
 enum LookupMethod {
-    ByKana,
-    ByEnglish,
+    Kana,
+    English,
+    Kanji,
 }
 
 impl Default for DictUiState {
@@ -132,7 +154,7 @@ impl Default for DictUiState {
             entry_buf: jmdict::entries().collect(),
             selected: 0,
             just_opened: false,
-            lookup_method: LookupMethod::ByKana,
+            lookup_method: LookupMethod::Kana,
         }
     }
 }
