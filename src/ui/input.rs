@@ -4,6 +4,7 @@ use {
         appstate::{AppState, UiState},
         conv::{self, decompose, Intp},
         kana::HIRAGANA,
+        segment::{segment, Segment},
     },
     egui_sfml::egui::{self, Modifiers},
 };
@@ -56,7 +57,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     egui::ScrollArea::vertical()
         .id_source("kana_scroll")
         .show(ui, |ui| {
-            let segs = conv::segment(&app.romaji_buf);
+            let segs = segment(&app.romaji_buf);
             let len = segs.len();
             if len != 0 {
                 if f5 {
@@ -103,11 +104,11 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                             if ui.button(kanji_str).on_hover_ui(hover_ui).clicked()
                                             {
                                                 match seg {
-                                                    conv::Segment::Simple(_) => {
+                                                    Segment::Simple(_) => {
                                                         let root = kanji_str.to_owned();
                                                         app.intp.insert(i, Intp::String(root));
                                                     }
-                                                    conv::Segment::DictAndExtra {
+                                                    Segment::DictAndExtra {
                                                         dict: _,
                                                         extra,
                                                         cutoff,
