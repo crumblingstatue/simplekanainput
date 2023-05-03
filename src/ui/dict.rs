@@ -39,6 +39,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             || f2
         {
             app.dict_ui_state.lookup_method = LookupMethod::Kana;
+            app.dict_ui_state.focus_textinput = true;
         }
         if ui
             .selectable_label(
@@ -49,6 +50,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             || f3
         {
             app.dict_ui_state.lookup_method = LookupMethod::Kanji;
+            app.dict_ui_state.focus_textinput = true;
         }
         if ui
             .selectable_label(
@@ -59,6 +61,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             || f4
         {
             app.dict_ui_state.lookup_method = LookupMethod::English;
+            app.dict_ui_state.focus_textinput = true;
         }
     });
     ui.columns(2, |cols| {
@@ -69,7 +72,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
         };
         dict_en_ui(&mut cols[1], en);
     });
-    app.dict_ui_state.just_opened = false;
+    app.dict_ui_state.focus_textinput = false;
 }
 
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
@@ -105,7 +108,7 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
         }
     }
-    if app.dict_ui_state.just_opened {
+    if app.dict_ui_state.focus_textinput {
         re.request_focus();
     }
     egui::ScrollArea::vertical().show_rows(
@@ -144,7 +147,7 @@ pub struct DictUiState {
     search_buf: String,
     entry_buf: Vec<jmdict::Entry>,
     selected: usize,
-    pub just_opened: bool,
+    pub focus_textinput: bool,
     lookup_method: LookupMethod,
 }
 
@@ -160,7 +163,7 @@ impl Default for DictUiState {
             search_buf: Default::default(),
             entry_buf: jmdict::entries().collect(),
             selected: 0,
-            just_opened: false,
+            focus_textinput: false,
             lookup_method: LookupMethod::Kana,
         }
     }

@@ -26,7 +26,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.button("Dictionary (F1)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::F1))
         {
             app.ui_state = UiState::Dict;
-            app.dict_ui_state.just_opened = true;
+            app.dict_ui_state.focus_textinput = true;
         }
     });
     ui.separator();
