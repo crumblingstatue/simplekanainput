@@ -21,8 +21,16 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
             for elem in en.kanji_elements() {
                 ui.horizontal(|ui| {
                     for char in elem.text.chars() {
+                        let kanji_str = char.to_string();
                         if ui
-                            .add(egui::Label::new(char.to_string()).sense(egui::Sense::click()))
+                            .add(egui::Label::new(&kanji_str).sense(egui::Sense::click()))
+                            .on_hover_ui(|ui| {
+                                if let Some(en) = jmdict::entries()
+                                    .find(|en| en.kanji_elements().any(|k| k.text == kanji_str))
+                                {
+                                    dict_en_ui(ui, &en);
+                                }
+                            })
                             .clicked()
                         {
                             msg = DictUiMsg::KanjiClicked(char);
