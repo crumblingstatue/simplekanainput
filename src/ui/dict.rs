@@ -1,5 +1,5 @@
 use {
-    super::dict_en_ui,
+    super::{dict_en_ui, DictUiMsg},
     crate::{
         appstate::{AppState, UiState},
         conv::decompose,
@@ -25,6 +25,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
     if down_arrow {
         app.dict_ui_state.selected += 1;
     }
+    let mut want_focus = false;
     ui.horizontal(|ui| {
         if ui.link("Back (Esc)").clicked() || esc {
             app.ui_state = UiState::Input;
@@ -39,7 +40,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             || f2
         {
             app.dict_ui_state.lookup_method = LookupMethod::Kana;
-            app.dict_ui_state.focus_textinput = true;
+            want_focus = true;
         }
         if ui
             .selectable_label(
@@ -50,7 +51,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             || f3
         {
             app.dict_ui_state.lookup_method = LookupMethod::Kanji;
-            app.dict_ui_state.focus_textinput = true;
+            want_focus = true;
         }
         if ui
             .selectable_label(
@@ -61,7 +62,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             || f4
         {
             app.dict_ui_state.lookup_method = LookupMethod::English;
-            app.dict_ui_state.focus_textinput = true;
+            want_focus = true;
         }
     });
     ui.columns(2, |cols| {
@@ -70,15 +71,26 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             cols[1].label("<Couldn't get entry>");
             return;
         };
-        dict_en_ui(&mut cols[1], en);
+        match dict_en_ui(&mut cols[1], en) {
+            DictUiMsg::None => {}
+            DictUiMsg::KanjiClicked(ch) => {
+                app.dict_ui_state.lookup_method = LookupMethod::Kanji;
+                app.dict_ui_state.search_buf = ch.to_string();
+                want_focus = true;
+            }
+        }
     });
-    app.dict_ui_state.focus_textinput = false;
+    if want_focus {
+        app.dict_ui_state.focus_textinput = true;
+    } else {
+        app.dict_ui_state.focus_textinput = false;
+    }
 }
 
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let re =
         ui.add(egui::TextEdit::singleline(&mut app.dict_ui_state.search_buf).hint_text("Filter"));
-    if re.changed() {
+    if re.changed() || app.dict_ui_state.focus_textinput {
         app.dict_ui_state.selected = 0;
         match app.dict_ui_state.lookup_method {
             LookupMethod::Kana => {

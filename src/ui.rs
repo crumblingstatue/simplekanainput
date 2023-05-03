@@ -7,13 +7,28 @@ pub use self::{
 };
 use egui_sfml::egui;
 
-fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) {
+enum DictUiMsg {
+    None,
+    KanjiClicked(char),
+}
+
+fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
+    let mut msg = DictUiMsg::None;
     egui::ScrollArea::vertical()
         .id_source("en_scroll_vert")
         .show(ui, |ui| {
             ui.label(egui::RichText::new("Kanji").size(12.0));
             for elem in en.kanji_elements() {
-                ui.label(elem.text);
+                ui.horizontal(|ui| {
+                    for char in elem.text.chars() {
+                        if ui
+                            .add(egui::Label::new(char.to_string()).sense(egui::Sense::click()))
+                            .clicked()
+                        {
+                            msg = DictUiMsg::KanjiClicked(char);
+                        }
+                    }
+                });
             }
             ui.separator();
             ui.label(egui::RichText::new("Reading").size(12.0));
@@ -48,4 +63,5 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) {
                 });
             }
         });
+    msg
 }
