@@ -69,7 +69,7 @@ fn main() {
         .families
         .get_mut(&FontFamily::Proportional)
         .unwrap()
-        .insert(0, "ipag".to_owned());
+        .push("ipag".to_owned());
     sf_egui.context().set_fonts(font_defs);
     let mut style = egui::Style::default();
     for (text_style, font_id) in style.text_styles.iter_mut() {
