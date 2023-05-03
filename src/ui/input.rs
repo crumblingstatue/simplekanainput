@@ -10,23 +10,36 @@ use {
 
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut copy_jap_clicked = false;
-    let (ctrl_enter, f2) = ui.input_mut(|inp| {
+    let (ctrl_enter, f1, f2, f3) = ui.input_mut(|inp| {
         (
             inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
+            inp.key_pressed(egui::Key::F1),
             inp.key_pressed(egui::Key::F2),
+            inp.key_pressed(egui::Key::F3),
         )
     });
     ui.horizontal(|ui| {
-        if ui.button("Copy japanese (F2)").clicked() || f2 {
-            copy_jap_clicked = true;
-        }
-        if ui.button("Clear attribs (debug)").clicked() {
-            app.intp.clear();
-        }
-        if ui.button("Dictionary (F1)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::F1))
+        if ui
+            .add(egui::Button::new("📖 Dict").shortcut_text("F1"))
+            .clicked()
+            || f1
         {
             app.ui_state = UiState::Dict;
             app.dict_ui_state.focus_textinput = true;
+        }
+        if ui
+            .add(egui::Button::new("📋 Copy").shortcut_text("F2"))
+            .clicked()
+            || f2
+        {
+            copy_jap_clicked = true;
+        }
+        if ui
+            .add(egui::Button::new("🗑 Clear attr").shortcut_text("F3"))
+            .clicked()
+            || f3
+        {
+            app.intp.clear();
         }
     });
     ui.separator();
