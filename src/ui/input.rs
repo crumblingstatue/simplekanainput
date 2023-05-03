@@ -19,26 +19,14 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         )
     });
     ui.horizontal(|ui| {
-        if ui
-            .add(egui::Button::new("📖 Dict").shortcut_text("F1"))
-            .clicked()
-            || f1
-        {
+        if ui.button("[F1] 📖 Dict").clicked() || f1 {
             app.ui_state = UiState::Dict;
             app.dict_ui_state.focus_textinput = true;
         }
-        if ui
-            .add(egui::Button::new("📋 Copy").shortcut_text("F2"))
-            .clicked()
-            || f2
-        {
+        if ui.button("[F2] 📋 Copy").clicked() || f2 {
             copy_jap_clicked = true;
         }
-        if ui
-            .add(egui::Button::new("🗑 Clear attr").shortcut_text("F3"))
-            .clicked()
-            || f3
-        {
+        if ui.button("[F3] 🗑 Clear attr").clicked() || f3 {
             app.intp.clear();
         }
     });
