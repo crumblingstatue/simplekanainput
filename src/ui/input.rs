@@ -4,7 +4,7 @@ use {
         appstate::{AppState, UiState},
         conv::{self, decompose, Intp},
         kana::HIRAGANA,
-        segment::{segment, Segment},
+        segment::segment,
     },
     egui_sfml::egui::{self, Modifiers},
 };
@@ -96,34 +96,22 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                 let kana = kana.trim();
                                 for e in jmdict::entries() {
                                     if e.reading_elements().any(|e| e.text == kana) {
-                                        for kanji_str in e.kanji_elements().map(|e| e.text) {
+                                        for (ki, kanji_str) in
+                                            e.kanji_elements().map(|e| e.text).enumerate()
+                                        {
                                             let hover_ui = |ui: &mut egui::Ui| {
                                                 ui.set_max_width(400.0);
                                                 dict_en_ui(ui, &e);
                                             };
                                             if ui.button(kanji_str).on_hover_ui(hover_ui).clicked()
                                             {
-                                                match seg {
-                                                    Segment::Simple(_) => {
-                                                        let root = kanji_str.to_owned();
-                                                        app.intp.insert(i, Intp::String(root));
-                                                    }
-                                                    Segment::DictAndExtra {
-                                                        dict: _,
-                                                        extra,
-                                                        cutoff,
-                                                    } => {
-                                                        let mut s = kanji_str.to_owned();
-                                                        for _ in 0..*cutoff {
-                                                            s.pop();
-                                                        }
-                                                        s.push_str(
-                                                            &decompose(extra, &HIRAGANA)
-                                                                .to_kana_string(),
-                                                        );
-                                                        app.intp.insert(i, Intp::String(s));
-                                                    }
-                                                }
+                                                app.intp.insert(
+                                                    i,
+                                                    Intp::Dictionary {
+                                                        en: e,
+                                                        kanji_idx: ki,
+                                                    },
+                                                );
                                                 ui.close_menu();
                                             }
                                         }

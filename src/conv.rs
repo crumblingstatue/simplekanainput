@@ -11,7 +11,7 @@ pub enum Intp {
     AsIs,
     Hiragana,
     Katakana,
-    String(String),
+    Dictionary { en: jmdict::Entry, kanji_idx: usize },
 }
 
 pub type IntpMap = HashMap<usize, Intp>;
@@ -106,8 +106,25 @@ pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap) -> String {
                 let dec = decompose(seg.dict_root(), &KATAKANA);
                 s.push_str(&dec.to_kana_string());
             }
-            Intp::String(str) => {
-                s.push_str(str);
+            Intp::Dictionary { en, kanji_idx } => {
+                let kanji_str = en.kanji_elements().nth(*kanji_idx).unwrap().text;
+                match seg {
+                    Segment::Simple(_) => {
+                        s.push_str(kanji_str);
+                    }
+                    Segment::DictAndExtra {
+                        dict: _,
+                        extra,
+                        cutoff,
+                    } => {
+                        let mut kan_owned = kanji_str.to_owned();
+                        for _ in 0..*cutoff {
+                            kan_owned.pop();
+                        }
+                        s.push_str(&kan_owned);
+                        s.push_str(&decompose(extra, &HIRAGANA).to_kana_string());
+                    }
+                }
             }
         }
     }
