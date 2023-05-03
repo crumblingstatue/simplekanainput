@@ -8,14 +8,23 @@ use {
     egui_sfml::egui::{self, Modifiers},
 };
 
+const HELP_TEXT: &str = "\
+F5: Hiragana
+F6: Katakana
+F7: As-is\
+";
+
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut copy_jap_clicked = false;
-    let (ctrl_enter, f1, f2, f3) = ui.input_mut(|inp| {
+    let (ctrl_enter, f1, f2, f3, f5, f6, f7) = ui.input_mut(|inp| {
         (
             inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
             inp.key_pressed(egui::Key::F1),
             inp.key_pressed(egui::Key::F2),
             inp.key_pressed(egui::Key::F3),
+            inp.key_pressed(egui::Key::F5),
+            inp.key_pressed(egui::Key::F6),
+            inp.key_pressed(egui::Key::F7),
         )
     });
     ui.horizontal(|ui| {
@@ -29,6 +38,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.button("[F3] 🗑 Clear attr").clicked() || f3 {
             app.intp.clear();
         }
+        ui.link("？").on_hover_text(HELP_TEXT);
     });
     ui.separator();
     egui::ScrollArea::vertical()
@@ -47,6 +57,18 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .id_source("kana_scroll")
         .show(ui, |ui| {
             let segs = conv::segment(&app.romaji_buf);
+            let len = segs.len();
+            if len != 0 {
+                if f5 {
+                    app.intp.insert(len - 1, Intp::Hiragana);
+                }
+                if f6 {
+                    app.intp.insert(len - 1, Intp::Katakana);
+                }
+                if f7 {
+                    app.intp.insert(len - 1, Intp::AsIs);
+                }
+            }
             ui.horizontal_wrapped(|ui| {
                 for (i, seg) in segs.iter().enumerate() {
                     ui.add(egui::Label::new(seg.label_string()).sense(egui::Sense::click()))
