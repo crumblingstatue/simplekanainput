@@ -80,11 +80,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
         }
     });
-    if want_focus {
-        app.dict_ui_state.focus_textinput = true;
-    } else {
-        app.dict_ui_state.focus_textinput = false;
-    }
+    app.dict_ui_state.focus_textinput = want_focus;
 }
 
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
