@@ -41,19 +41,34 @@ impl WinDims {
 
 const WIN_DIMS: WinDims = WinDims { w: 640, h: 512 };
 
+const IPC_PATH: &str = "/dev/shm/simplekanainput.ipc.dat";
+
 fn main() {
+    match std::fs::read_to_string(IPC_PATH) {
+        Ok(msg) => match msg.as_str() {
+            "state_hidden" => {
+                std::fs::write(IPC_PATH, "cmd_show").unwrap();
+                return;
+            }
+            "state_visible" => {
+                panic!("Window (should be) already visible");
+            }
+            "cmd_show" => {
+                panic!("Show already in progress");
+            }
+            _ => {}
+        },
+        Err(e) => {
+            eprintln!("IPC read error: {e}.\nStarting normally.")
+        }
+    }
     std::panic::set_hook(Box::new(|info| {
         rfd::MessageDialog::new()
             .set_title("Panic")
             .set_description(&info.to_string())
             .show();
     }));
-    let mut rw = RenderWindow::new(
-        WIN_DIMS.to_sf_video_mode(),
-        "Simple Kana Input",
-        Style::DEFAULT,
-        &ContextSettings::default(),
-    );
+    let mut rw = rw_create();
     let mut app = AppState::new().unwrap();
     rw.set_framerate_limit(60);
     rw.set_position(Vector2::new(
@@ -86,12 +101,30 @@ fn main() {
     }
     sf_egui.context().set_style(style);
 
-    while rw.is_open() {
+    loop {
+        if !rw.is_open() {
+            match std::fs::read_to_string(IPC_PATH) {
+                Ok(msg) => match msg.as_str() {
+                    "cmd_show" => {
+                        std::fs::write(IPC_PATH, "state_visible").unwrap();
+                        rw = rw_create();
+                        continue;
+                    }
+                    "state_hidden" => {}
+                    etc => eprintln!("IPC value read: {etc}"),
+                },
+                Err(e) => {
+                    panic!("IPC read error: {e}.");
+                }
+            }
+            std::thread::sleep(Duration::from_millis(500));
+            continue;
+        }
         while let Some(ev) = rw.poll_event() {
             sf_egui.add_event(&ev);
 
             match ev {
-                Event::Closed => rw.close(),
+                Event::Closed => app.hide_requested = true,
                 Event::Resized { width, height } => rw.set_view(&View::from_rect(Rect::new(
                     0.,
                     0.,
@@ -109,12 +142,25 @@ fn main() {
                 });
             })
             .unwrap();
-        if app.quit_requested {
+        if app.hide_requested {
+            std::fs::write(IPC_PATH, "state_hidden").unwrap();
             rw.close();
+            app.hide_requested = false;
+        }
+        if app.quit_requested {
+            break;
         }
         sf_egui.draw(&mut rw, None);
         rw.display();
     }
-    // Wait for clipboard to synchronize with manager
-    std::thread::sleep(Duration::from_secs(1));
+    eprintln!("{:?}", std::fs::remove_file(IPC_PATH));
+}
+
+fn rw_create() -> RenderWindow {
+    RenderWindow::new(
+        WIN_DIMS.to_sf_video_mode(),
+        "Simple Kana Input",
+        Style::DEFAULT,
+        &ContextSettings::default(),
+    )
 }

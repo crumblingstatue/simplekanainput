@@ -39,6 +39,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.button("[F3] 🗑 Clear attr").clicked() || f3 {
             app.intp.clear();
         }
+        if ui.button("Quit").clicked() {
+            app.quit_requested = true;
+        }
         ui.link("？").on_hover_text(HELP_TEXT);
     });
     ui.separator();
@@ -128,7 +131,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             if ctrl_enter {
                 app.clipboard.set_text(&japanese).unwrap();
-                app.quit_requested = true;
+                app.hide_requested = true;
             }
         });
 }
