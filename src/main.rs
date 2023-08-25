@@ -1,4 +1,5 @@
 use {
+    crate::ipc::IpcState,
     appstate::AppState,
     egui_sfml::{
         egui::{self, FontData, FontFamily},
@@ -14,6 +15,7 @@ use {
 
 mod appstate;
 mod conv;
+mod ipc;
 mod kana;
 mod segment;
 mod ui;
@@ -41,27 +43,29 @@ impl WinDims {
 
 const WIN_DIMS: WinDims = WinDims { w: 640, h: 512 };
 
-const IPC_PATH: &str = "/dev/shm/simplekanainput.ipc.dat";
-
 fn main() {
-    match std::fs::read_to_string(IPC_PATH) {
-        Ok(msg) => match msg.as_str() {
-            "state_hidden" => {
-                std::fs::write(IPC_PATH, "cmd_show").unwrap();
+    match IpcState::read() {
+        Ok(state) => match state {
+            IpcState::Visible => {
+                eprintln!("Visible client already running. Exiting.");
                 return;
             }
-            "state_visible" => {
-                panic!("Window (should be) already visible");
+            IpcState::Hidden => {
+                eprintln!("Hidden client, setting show request state.");
+                eprintln!("{:?}", IpcState::ShowRequested.write());
+                return;
             }
-            "cmd_show" => {
-                panic!("Show already in progress");
+            IpcState::ShowRequested => {
+                eprintln!("Show requested already in progress. Exiting.");
+                return;
             }
-            _ => {}
         },
         Err(e) => {
-            eprintln!("IPC read error: {e}.\nStarting normally.")
+            eprintln!("Error reading IPC state: {e}\nStarting normally.");
         }
     }
+    // We start out visible
+    IpcState::Visible.write().unwrap();
     std::panic::set_hook(Box::new(|info| {
         rfd::MessageDialog::new()
             .set_title("Panic")
@@ -103,18 +107,13 @@ fn main() {
 
     loop {
         if !rw.is_open() {
-            match std::fs::read_to_string(IPC_PATH) {
-                Ok(msg) => match msg.as_str() {
-                    "cmd_show" => {
-                        std::fs::write(IPC_PATH, "state_visible").unwrap();
-                        rw = rw_create();
-                        continue;
-                    }
-                    "state_hidden" => {}
-                    etc => eprintln!("IPC value read: {etc}"),
-                },
-                Err(e) => {
-                    panic!("IPC read error: {e}.");
+            match IpcState::read().unwrap() {
+                IpcState::Visible => panic!("Visible state set, even though window is not visible"),
+                IpcState::Hidden => {}
+                IpcState::ShowRequested => {
+                    rw = rw_create();
+                    IpcState::Visible.write().unwrap();
+                    continue;
                 }
             }
             std::thread::sleep(Duration::from_millis(500));
@@ -143,7 +142,7 @@ fn main() {
             })
             .unwrap();
         if app.hide_requested {
-            std::fs::write(IPC_PATH, "state_hidden").unwrap();
+            IpcState::Hidden.write().unwrap();
             rw.close();
             app.hide_requested = false;
         }
@@ -153,7 +152,7 @@ fn main() {
         sf_egui.draw(&mut rw, None);
         rw.display();
     }
-    eprintln!("{:?}", std::fs::remove_file(IPC_PATH));
+    eprintln!("{:?}", IpcState::remove());
 }
 
 fn rw_create() -> RenderWindow {
