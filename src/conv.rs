@@ -1,6 +1,7 @@
 use {
     crate::{
         kana::{RomajiKanaTable, HIRAGANA, KATAKANA},
+        radicals::RadicalPair,
         segment::Segment,
     },
     serde::Deserialize,
@@ -12,6 +13,7 @@ pub enum Intp {
     Hiragana,
     Katakana,
     Dictionary { en: jmdict::Entry, kanji_idx: usize },
+    Radical(RadicalPair),
 }
 
 pub type IntpMap = HashMap<usize, Intp>;
@@ -125,6 +127,9 @@ pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap) -> String {
                         s.push_str(&decompose(extra, &HIRAGANA).to_kana_string());
                     }
                 }
+            }
+            Intp::Radical(pair) => {
+                s.push(pair.ch);
             }
         }
     }

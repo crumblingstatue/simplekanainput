@@ -120,6 +120,15 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                         }
                                     }
                                 }
+                                for pair in crate::radicals::by_name(kana) {
+                                    if ui
+                                        .button(format!("{} ({} radical)", pair.ch, pair.name))
+                                        .clicked()
+                                    {
+                                        app.intp.insert(i, Intp::Radical(pair));
+                                        ui.close_menu();
+                                    }
+                                }
                             });
                         });
                 }

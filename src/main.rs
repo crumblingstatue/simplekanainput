@@ -17,6 +17,7 @@ mod appstate;
 mod conv;
 mod ipc;
 mod kana;
+mod radicals;
 mod segment;
 mod ui;
 
@@ -83,7 +84,7 @@ fn main() {
     let mut font_defs = egui::FontDefinitions::default();
     font_defs.font_data.insert(
         "ipag".to_owned(),
-        FontData::from_static(include_bytes!("../ipag.ttf")),
+        FontData::from_static(include_bytes!("../NotoSansJP-VariableFont_wght.ttf")),
     );
     font_defs
         .families
