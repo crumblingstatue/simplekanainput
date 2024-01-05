@@ -4,10 +4,24 @@ pub struct RadicalPair {
     pub ch: char,
 }
 
-const PAIRS: &[RadicalPair] = &[RadicalPair {
-    name: "にんべん",
-    ch: '⺅',
-}];
+macro_rules! radicals {
+    ($($ch:literal $name:literal)*) => {
+        const PAIRS: &[RadicalPair] = &[$(RadicalPair {
+            name: $name,
+            ch: $ch,
+        }),*];
+    };
+}
+
+radicals! {
+    '⺅' "にんべん"
+    '𠆢' "ひとやね"
+    '⼉' "ひとあし"
+    '⺡' "さんずい"
+    '⺨' "けものへん"
+    '⼻' "ぎょうにんべん"
+    '⺾' "くさかんむり"
+}
 
 pub fn by_name(name_frag: &str) -> impl Iterator<Item = RadicalPair> + '_ {
     PAIRS
