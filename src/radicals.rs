@@ -21,6 +21,7 @@ radicals! {
     '⺨' "けものへん"
     '⼻' "ぎょうにんべん"
     '⺾' "くさかんむり"
+    '隹' "ふるとり"
 }
 
 pub fn by_name(name_frag: &str) -> impl Iterator<Item = RadicalPair> + '_ {
