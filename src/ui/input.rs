@@ -140,6 +140,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             if ctrl_enter {
                 app.clipboard.set_text(&japanese).unwrap();
+                app.romaji_buf.clear();
+                app.intp.clear();
                 app.hide_requested = true;
             }
         });
