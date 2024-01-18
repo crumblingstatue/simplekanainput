@@ -57,10 +57,69 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             .request_focus();
         });
     ui.separator();
+    let segs = segment(&app.romaji_buf);
+    let japanese = conv::to_japanese(&segs, &app.intp);
+    'intp_select_ui: {
+        let Some(i) = app.selected_segment else {
+            break 'intp_select_ui;
+        };
+        let Some(seg) = segs.get(i) else {
+            break 'intp_select_ui;
+        };
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("は").clicked() {
+                    app.intp.insert(i, Intp::Hiragana);
+                    ui.close_menu();
+                }
+                ui.separator();
+                if ui.button("ハ").clicked() {
+                    app.intp.insert(i, Intp::Katakana);
+                    ui.close_menu();
+                }
+                ui.separator();
+                if ui.button("ha").clicked() {
+                    app.intp.insert(i, Intp::AsIs);
+                    ui.close_menu();
+                }
+            });
+            ui.separator();
+            let kana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
+            let kana = kana.trim();
+            for e in jmdict::entries() {
+                if e.reading_elements().any(|e| e.text == kana) {
+                    for (ki, kanji_str) in e.kanji_elements().map(|e| e.text).enumerate() {
+                        let hover_ui = |ui: &mut egui::Ui| {
+                            ui.set_max_width(400.0);
+                            dict_en_ui(ui, &e);
+                        };
+                        if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
+                            app.intp.insert(
+                                i,
+                                Intp::Dictionary {
+                                    en: e,
+                                    kanji_idx: ki,
+                                },
+                            );
+                            ui.close_menu();
+                        }
+                    }
+                }
+            }
+            for pair in crate::radicals::by_name(kana) {
+                if ui
+                    .button(format!("{} ({} radical)", pair.ch, pair.name))
+                    .clicked()
+                {
+                    app.intp.insert(i, Intp::Radical(pair));
+                    ui.close_menu();
+                }
+            }
+        });
+    }
     egui::ScrollArea::vertical()
         .id_source("kana_scroll")
         .show(ui, |ui| {
-            let segs = segment(&app.romaji_buf);
             let len = segs.len();
             if len != 0 {
                 if f5 {
@@ -75,74 +134,23 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             ui.horizontal_wrapped(|ui| {
                 for (i, seg) in segs.iter().enumerate() {
-                    ui.add(egui::Label::new(seg.label_string()).sense(egui::Sense::click()))
-                        .context_menu(|ui| {
-                            egui::ScrollArea::vertical().show(ui, |ui| {
-                                ui.horizontal(|ui| {
-                                    if ui.button("は").clicked() {
-                                        app.intp.insert(i, Intp::Hiragana);
-                                        ui.close_menu();
-                                    }
-                                    ui.separator();
-                                    if ui.button("ハ").clicked() {
-                                        app.intp.insert(i, Intp::Katakana);
-                                        ui.close_menu();
-                                    }
-                                    ui.separator();
-                                    if ui.button("ha").clicked() {
-                                        app.intp.insert(i, Intp::AsIs);
-                                        ui.close_menu();
-                                    }
-                                });
-                                ui.separator();
-                                let kana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
-                                let kana = kana.trim();
-                                for e in jmdict::entries() {
-                                    if e.reading_elements().any(|e| e.text == kana) {
-                                        for (ki, kanji_str) in
-                                            e.kanji_elements().map(|e| e.text).enumerate()
-                                        {
-                                            let hover_ui = |ui: &mut egui::Ui| {
-                                                ui.set_max_width(400.0);
-                                                dict_en_ui(ui, &e);
-                                            };
-                                            if ui.button(kanji_str).on_hover_ui(hover_ui).clicked()
-                                            {
-                                                app.intp.insert(
-                                                    i,
-                                                    Intp::Dictionary {
-                                                        en: e,
-                                                        kanji_idx: ki,
-                                                    },
-                                                );
-                                                ui.close_menu();
-                                            }
-                                        }
-                                    }
-                                }
-                                for pair in crate::radicals::by_name(kana) {
-                                    if ui
-                                        .button(format!("{} ({} radical)", pair.ch, pair.name))
-                                        .clicked()
-                                    {
-                                        app.intp.insert(i, Intp::Radical(pair));
-                                        ui.close_menu();
-                                    }
-                                }
-                            });
-                        });
+                    if ui
+                        .add(egui::Label::new(seg.label_string()).sense(egui::Sense::click()))
+                        .clicked()
+                    {
+                        app.selected_segment = Some(i);
+                    }
                 }
             });
-            let japanese = conv::to_japanese(&segs, &app.intp);
             ui.label(&japanese);
             if copy_jap_clicked {
                 app.clipboard.set_text(&japanese).unwrap()
             }
-            if ctrl_enter {
-                app.clipboard.set_text(&japanese).unwrap();
-                app.romaji_buf.clear();
-                app.intp.clear();
-                app.hide_requested = true;
-            }
         });
+    if ctrl_enter {
+        app.clipboard.set_text(&japanese).unwrap();
+        app.romaji_buf.clear();
+        app.intp.clear();
+        app.hide_requested = true;
+    }
 }

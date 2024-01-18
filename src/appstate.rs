@@ -12,6 +12,7 @@ pub struct AppState {
     pub quit_requested: bool,
     pub ui_state: UiState,
     pub dict_ui_state: DictUiState,
+    pub selected_segment: Option<usize>,
 }
 
 pub enum UiState {
@@ -30,6 +31,7 @@ impl AppState {
             quit_requested: false,
             ui_state: UiState::Input,
             dict_ui_state: DictUiState::default(),
+            selected_segment: None,
         })
     }
 }
