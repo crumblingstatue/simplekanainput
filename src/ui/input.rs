@@ -69,69 +69,70 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         let Some(seg) = segs.get(i) else {
             break 'intp_select_ui;
         };
-        egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.horizontal(|ui| {
-                if ui.button("は").clicked() {
-                    app.intp.insert(i, Intp::Hiragana);
-                    ui.close_menu();
-                }
-                ui.separator();
-                if ui.button("ハ").clicked() {
-                    app.intp.insert(i, Intp::Katakana);
-                    ui.close_menu();
-                }
-                ui.separator();
-                if ui.button("ha").clicked() {
-                    app.intp.insert(i, Intp::AsIs);
-                    ui.close_menu();
-                }
-            });
+        ui.horizontal(|ui| {
+            if ui.button("は").clicked() {
+                app.intp.insert(i, Intp::Hiragana);
+                ui.close_menu();
+            }
             ui.separator();
-            let hiragana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
-            let hiragana = hiragana.trim();
-            let katakana = decompose(seg.dict_root(), &KATAKANA).to_kana_string();
-            let katakana = katakana.trim();
-            for e in jmdict::entries() {
-                if e.reading_elements().any(|e| e.text == hiragana) {
-                    for (ki, kanji_str) in e.kanji_elements().map(|e| e.text).enumerate() {
-                        let hover_ui = |ui: &mut egui::Ui| {
-                            ui.set_max_width(400.0);
-                            dict_en_ui(ui, &e);
-                        };
-                        if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
-                            app.intp.insert(
-                                i,
-                                Intp::Dictionary {
-                                    en: e,
-                                    kanji_idx: ki,
-                                },
-                            );
-                            ui.close_menu();
+            if ui.button("ハ").clicked() {
+                app.intp.insert(i, Intp::Katakana);
+                ui.close_menu();
+            }
+            ui.separator();
+            if ui.button("ha").clicked() {
+                app.intp.insert(i, Intp::AsIs);
+                ui.close_menu();
+            }
+        });
+        ui.separator();
+        egui::ScrollArea::vertical()
+            .max_height(100.0)
+            .show(ui, |ui| {
+                let hiragana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
+                let hiragana = hiragana.trim();
+                let katakana = decompose(seg.dict_root(), &KATAKANA).to_kana_string();
+                let katakana = katakana.trim();
+                for e in jmdict::entries() {
+                    if e.reading_elements().any(|e| e.text == hiragana) {
+                        for (ki, kanji_str) in e.kanji_elements().map(|e| e.text).enumerate() {
+                            let hover_ui = |ui: &mut egui::Ui| {
+                                ui.set_max_width(400.0);
+                                dict_en_ui(ui, &e);
+                            };
+                            if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
+                                app.intp.insert(
+                                    i,
+                                    Intp::Dictionary {
+                                        en: e,
+                                        kanji_idx: ki,
+                                    },
+                                );
+                                ui.close_menu();
+                            }
                         }
                     }
                 }
-            }
-            for pair in crate::radicals::by_name(hiragana) {
-                if ui
-                    .button(format!("{} ({} radical)", pair.ch, pair.name))
-                    .clicked()
-                {
-                    app.intp.insert(i, Intp::Radical(pair));
-                    ui.close_menu();
+                for pair in crate::radicals::by_name(hiragana) {
+                    if ui
+                        .button(format!("{} ({} radical)", pair.ch, pair.name))
+                        .clicked()
+                    {
+                        app.intp.insert(i, Intp::Radical(pair));
+                        ui.close_menu();
+                    }
                 }
-            }
-            ui.separator();
-            for (db_idx, kanji) in app.kanji_db.kanji.iter().enumerate() {
-                if kanji.readings.contains(&hiragana)
-                    || kanji.readings.contains(&katakana)
+                ui.separator();
+                for (db_idx, kanji) in app.kanji_db.kanji.iter().enumerate() {
+                    if (kanji.readings.contains(&hiragana) || kanji.readings.contains(&katakana))
                         && ui
                             .button(format!("{} - {}", kanji.chars[0], kanji.meaning))
                             .clicked()
-                {
-                    app.intp.insert(i, Intp::Kanji { db_idx });
+                    {
+                        app.intp.insert(i, Intp::Kanji { db_idx });
+                    }
                 }
-            }
-        });
+            });
     }
     egui::ScrollArea::vertical()
         .id_source("kana_scroll")
