@@ -1,5 +1,5 @@
 use {
-    crate::{conv::IntpMap, ui::DictUiState, WinDims, WIN_DIMS},
+    crate::{conv::IntpMap, kanji::KanjiDb, ui::DictUiState, WinDims, WIN_DIMS},
     arboard::Clipboard,
 };
 
@@ -13,6 +13,7 @@ pub struct AppState {
     pub ui_state: UiState,
     pub dict_ui_state: DictUiState,
     pub selected_segment: Option<usize>,
+    pub kanji_db: KanjiDb,
 }
 
 pub enum UiState {
@@ -32,6 +33,7 @@ impl AppState {
             ui_state: UiState::Input,
             dict_ui_state: DictUiState::default(),
             selected_segment: None,
+            kanji_db: KanjiDb::load(),
         })
     }
 }

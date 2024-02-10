@@ -1,3 +1,5 @@
+#![feature(array_try_from_fn)]
+
 use {
     crate::ipc::IpcState,
     appstate::AppState,
@@ -17,6 +19,7 @@ mod appstate;
 mod conv;
 mod ipc;
 mod kana;
+mod kanji;
 mod radicals;
 mod segment;
 mod ui;

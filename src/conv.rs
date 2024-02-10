@@ -1,6 +1,7 @@
 use {
     crate::{
         kana::{RomajiKanaTable, HIRAGANA, KATAKANA},
+        kanji::KanjiDb,
         radicals::RadicalPair,
         segment::Segment,
     },
@@ -13,6 +14,7 @@ pub enum Intp {
     Hiragana,
     Katakana,
     Dictionary { en: jmdict::Entry, kanji_idx: usize },
+    Kanji { db_idx: usize },
     Radical(RadicalPair),
 }
 
@@ -84,7 +86,7 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
     }
     DecomposeResult { elems }
 }
-pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap) -> String {
+pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
     let mut s = String::new();
     for (i, seg) in segments.iter().enumerate() {
         let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
@@ -124,6 +126,7 @@ pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap) -> String {
             Intp::Radical(pair) => {
                 s.push(pair.ch);
             }
+            Intp::Kanji { db_idx } => s.push_str(kanji_db.kanji[*db_idx].chars[0]),
         }
     }
     s

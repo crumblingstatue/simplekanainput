@@ -58,7 +58,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         });
     ui.separator();
     let segs = segment(&app.romaji_buf);
-    let japanese = conv::to_japanese(&segs, &app.intp);
+    let japanese = conv::to_japanese(&segs, &app.intp, &app.kanji_db);
     'intp_select_ui: {
         let Some(i) = app.selected_segment else {
             break 'intp_select_ui;
@@ -113,6 +113,16 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 {
                     app.intp.insert(i, Intp::Radical(pair));
                     ui.close_menu();
+                }
+            }
+            ui.separator();
+            for (db_idx, kanji) in app.kanji_db.kanji.iter().enumerate() {
+                if kanji.readings.contains(&kana)
+                    && ui
+                        .button(format!("{} - {}", kanji.chars[0], kanji.meaning))
+                        .clicked()
+                {
+                    app.intp.insert(i, Intp::Kanji { db_idx });
                 }
             }
         });
