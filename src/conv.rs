@@ -23,13 +23,6 @@ pub struct Element<'a> {
     pub atom: &'a str,
 }
 
-// Based on character count, not byte count (same as egui selection)
-#[derive(Debug)]
-pub struct CharSpan {
-    pub begin: usize,
-    pub end: usize,
-}
-
 #[derive(Debug)]
 pub struct DecomposeResult<'a> {
     pub elems: Vec<Element<'a>>,
