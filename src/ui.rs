@@ -1,9 +1,11 @@
 mod dict;
 mod input;
+mod kanji_ui;
 
 pub use self::{
     dict::{dict_ui, DictUiState},
     input::input_ui,
+    kanji_ui::kanji_ui,
 };
 use egui_sfml::egui;
 

@@ -39,6 +39,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.button("[F3] 🗑 Clear attr").clicked() || f3 {
             app.intp.clear();
         }
+        if ui.button("Kanji dict").clicked() {
+            app.ui_state = UiState::Kanji;
+        }
         if ui.button("Quit").clicked() {
             app.quit_requested = true;
         }

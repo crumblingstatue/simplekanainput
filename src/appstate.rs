@@ -19,6 +19,7 @@ pub struct AppState {
 pub enum UiState {
     Input,
     Dict,
+    Kanji,
 }
 
 impl AppState {

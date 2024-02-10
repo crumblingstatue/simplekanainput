@@ -142,6 +142,7 @@ fn main() {
                 egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
                     appstate::UiState::Input => ui::input_ui(ui, &mut app),
                     appstate::UiState::Dict => ui::dict_ui(ui, &mut app),
+                    appstate::UiState::Kanji => ui::kanji_ui(ui, &mut app),
                 });
             })
             .unwrap();
