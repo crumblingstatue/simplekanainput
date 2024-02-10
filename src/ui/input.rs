@@ -3,7 +3,7 @@ use {
     crate::{
         appstate::{AppState, UiState},
         conv::{self, decompose, Intp},
-        kana::HIRAGANA,
+        kana::{HIRAGANA, KATAKANA},
         segment::segment,
     },
     egui_sfml::egui::{self, Modifiers},
@@ -87,10 +87,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 }
             });
             ui.separator();
-            let kana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
-            let kana = kana.trim();
+            let hiragana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
+            let hiragana = hiragana.trim();
+            let katakana = decompose(seg.dict_root(), &KATAKANA).to_kana_string();
+            let katakana = katakana.trim();
             for e in jmdict::entries() {
-                if e.reading_elements().any(|e| e.text == kana) {
+                if e.reading_elements().any(|e| e.text == hiragana) {
                     for (ki, kanji_str) in e.kanji_elements().map(|e| e.text).enumerate() {
                         let hover_ui = |ui: &mut egui::Ui| {
                             ui.set_max_width(400.0);
@@ -109,7 +111,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     }
                 }
             }
-            for pair in crate::radicals::by_name(kana) {
+            for pair in crate::radicals::by_name(hiragana) {
                 if ui
                     .button(format!("{} ({} radical)", pair.ch, pair.name))
                     .clicked()
@@ -120,10 +122,11 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             ui.separator();
             for (db_idx, kanji) in app.kanji_db.kanji.iter().enumerate() {
-                if kanji.readings.contains(&kana)
-                    && ui
-                        .button(format!("{} - {}", kanji.chars[0], kanji.meaning))
-                        .clicked()
+                if kanji.readings.contains(&hiragana)
+                    || kanji.readings.contains(&katakana)
+                        && ui
+                            .button(format!("{} - {}", kanji.chars[0], kanji.meaning))
+                            .clicked()
                 {
                     app.intp.insert(i, Intp::Kanji { db_idx });
                 }
