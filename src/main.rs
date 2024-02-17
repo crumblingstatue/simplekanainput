@@ -51,7 +51,8 @@ fn main() {
     match IpcState::read() {
         Ok(state) => match state {
             IpcState::Visible => {
-                eprintln!("Visible client already running. Exiting.");
+                eprintln!("{:?}", IpcState::ShowRequested.write());
+                eprintln!("Visible client already running. (Sent show request for focus)");
                 return;
             }
             IpcState::Hidden => {
@@ -122,6 +123,16 @@ fn main() {
             }
             std::thread::sleep(Duration::from_millis(500));
             continue;
+        } else {
+            match IpcState::read().unwrap() {
+                IpcState::Visible => {}
+                IpcState::Hidden => {}
+                IpcState::ShowRequested => {
+                    eprintln!("Focusing...");
+                    rw.request_focus();
+                    IpcState::Visible.write().unwrap();
+                }
+            }
         }
         while let Some(ev) = rw.poll_event() {
             sf_egui.add_event(&ev);
