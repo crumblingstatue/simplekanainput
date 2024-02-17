@@ -12,6 +12,7 @@ use {
         },
         SfEgui,
     },
+    sfml_xt::graphics::RenderWindowExt,
     std::time::Duration,
 };
 
@@ -128,8 +129,11 @@ fn main() {
                 IpcState::Visible => {}
                 IpcState::Hidden => {}
                 IpcState::ShowRequested => {
-                    eprintln!("Focusing...");
-                    rw.request_focus();
+                    if !rw.has_focus() {
+                        eprintln!("Recreating window...");
+                        rw.close();
+                        rw = rw_create();
+                    }
                     IpcState::Visible.write().unwrap();
                 }
             }
@@ -172,10 +176,12 @@ fn main() {
 }
 
 fn rw_create() -> RenderWindow {
-    RenderWindow::new(
+    let mut rw = RenderWindow::new(
         WIN_DIMS.to_sf_video_mode(),
         "Simple Kana Input",
         Style::DEFAULT,
         &ContextSettings::default(),
-    )
+    );
+    rw.center();
+    rw
 }

@@ -1145,6 +1145,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "sfml-xt"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/sfml-xt.git#082e02d193dc1e290babeeff9547945e42d3ab8c"
+dependencies = [
+ "sfml",
+]
+
+[[package]]
 name = "sha2"
 version = "0.9.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1173,6 +1181,7 @@ dependencies = [
  "jmdict",
  "rfd",
  "serde",
+ "sfml-xt",
 ]
 
 [[package]]
