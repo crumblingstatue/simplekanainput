@@ -5,7 +5,7 @@ mod kanji_ui;
 pub use self::{
     dict::{dict_ui, DictUiState},
     input::input_ui,
-    kanji_ui::kanji_ui,
+    kanji_ui::{kanji_ui, KanjiUiState},
 };
 use egui_sfml::egui;
 

@@ -1,5 +1,10 @@
 use {
-    crate::{conv::IntpMap, kanji::KanjiDb, ui::DictUiState, WinDims, WIN_DIMS},
+    crate::{
+        conv::IntpMap,
+        kanji::KanjiDb,
+        ui::{DictUiState, KanjiUiState},
+        WinDims, WIN_DIMS,
+    },
     arboard::Clipboard,
 };
 
@@ -12,6 +17,7 @@ pub struct AppState {
     pub quit_requested: bool,
     pub ui_state: UiState,
     pub dict_ui_state: DictUiState,
+    pub kanji_ui_state: KanjiUiState,
     pub selected_segment: Option<usize>,
     pub kanji_db: KanjiDb,
 }
@@ -33,6 +39,7 @@ impl AppState {
             quit_requested: false,
             ui_state: UiState::Input,
             dict_ui_state: DictUiState::default(),
+            kanji_ui_state: KanjiUiState::default(),
             selected_segment: None,
             kanji_db: KanjiDb::load(),
         })

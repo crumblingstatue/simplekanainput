@@ -1,7 +1,7 @@
 /// Sourced from `joyo_data.txt` from https://github.com/wareya/ids_rust
 const JOYO_DATA: &str = include_str!("../joyokanji.bin");
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Kanji {
     pub chars: [&'static str; 3],
     pub meaning: &'static str,
