@@ -13,7 +13,7 @@ use {
         SfEgui,
     },
     sfml_xt::graphics::RenderWindowExt,
-    std::time::Duration,
+    std::time::{Duration, Instant},
 };
 
 mod appstate;
@@ -49,6 +49,25 @@ impl WinDims {
 const WIN_DIMS: WinDims = WinDims { w: 640, h: 512 };
 
 fn main() {
+    let ipc_replace = matches!(std::env::args().nth(1).as_deref(), Some("--replace"));
+    if ipc_replace {
+        eprintln!("Replacing running instance...");
+        eprintln!("{:?}", IpcState::QuitRequested.write());
+        // Wait for quit of original
+        let wait_start = Instant::now();
+        loop {
+            std::thread::sleep(Duration::from_millis(100));
+            if dbg!(IpcState::read()).is_err() {
+                break;
+            }
+            // Time out
+            if wait_start.elapsed().as_millis() > 800 {
+                eprintln!("Timed out, starting normally...");
+                IpcState::remove().unwrap();
+                break;
+            }
+        }
+    }
     match IpcState::read() {
         Ok(state) => match state {
             IpcState::Visible => {
@@ -63,6 +82,10 @@ fn main() {
             }
             IpcState::ShowRequested => {
                 eprintln!("Show requested already in progress. Exiting.");
+                return;
+            }
+            IpcState::QuitRequested => {
+                eprintln!("お前はもう死んでいる。何?");
                 return;
             }
         },
@@ -121,6 +144,7 @@ fn main() {
                     IpcState::Visible.write().unwrap();
                     continue;
                 }
+                IpcState::QuitRequested => break,
             }
             std::thread::sleep(Duration::from_millis(500));
             continue;
@@ -136,6 +160,7 @@ fn main() {
                     }
                     IpcState::Visible.write().unwrap();
                 }
+                IpcState::QuitRequested => break,
             }
         }
         while let Some(ev) = rw.poll_event() {

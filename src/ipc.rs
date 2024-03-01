@@ -8,6 +8,7 @@ pub enum IpcState {
     Visible,
     Hidden,
     ShowRequested,
+    QuitRequested,
 }
 
 impl IpcState {
@@ -23,6 +24,7 @@ impl IpcState {
             0 => Self::Visible,
             1 => Self::Hidden,
             2 => Self::ShowRequested,
+            3 => Self::QuitRequested,
             _ => return None,
         })
     }
