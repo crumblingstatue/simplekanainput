@@ -158,7 +158,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 let katakana = katakana.trim();
                 gen_dict_ui_for_hiragana(Root::Bare(hiragana), ui, &mut app.intp, i);
                 for root in mugo::deconjugate(hiragana) {
-                    gen_dict_ui_for_hiragana(Root::Conj(dbg!(root)), ui, &mut app.intp, i);
+                    gen_dict_ui_for_hiragana(Root::Conj(root), ui, &mut app.intp, i);
                 }
                 for pair in crate::radicals::by_name(hiragana) {
                     if ui
