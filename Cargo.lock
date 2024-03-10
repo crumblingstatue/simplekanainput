@@ -804,9 +804,14 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.20"
+version = "0.4.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
+checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
+
+[[package]]
+name = "log-dbg"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/rust-log-dbg.git#467047b84b1fadb4fd586c042bbb1a01e9a5d0c4"
 
 [[package]]
 name = "malloc_buf"
@@ -840,6 +845,15 @@ checksum = "9d811f3e15f28568be3407c8e7fdb6514c1cda3cb30683f15b6a1a1dc4ea14a7"
 dependencies = [
  "adler",
  "simd-adler32",
+]
+
+[[package]]
+name = "mugo"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/mugo.git#307c58208ef99d7f9aab40f1472f07d50865f7ca"
+dependencies = [
+ "log",
+ "log-dbg",
 ]
 
 [[package]]
@@ -1179,6 +1193,7 @@ dependencies = [
  "arboard",
  "egui-sfml",
  "jmdict",
+ "mugo",
  "rfd",
  "serde",
  "sfml-xt",

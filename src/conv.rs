@@ -5,6 +5,7 @@ use {
         radicals::RadicalPair,
         segment::Segment,
     },
+    mugo::RootKind,
     serde::Deserialize,
     std::collections::HashMap,
 };
@@ -13,8 +14,14 @@ pub enum Intp {
     AsIs,
     Hiragana,
     Katakana,
-    Dictionary { en: jmdict::Entry, kanji_idx: usize },
-    Kanji { db_idx: usize },
+    Dictionary {
+        en: jmdict::Entry,
+        kanji_idx: usize,
+        root: Option<mugo::Root>,
+    },
+    Kanji {
+        db_idx: usize,
+    },
     Radical(RadicalPair),
 }
 
@@ -103,11 +110,23 @@ pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap, kanji_db: &K
                 let dec = decompose(seg.dict_root(), &KATAKANA);
                 s.push_str(&dec.to_kana_string());
             }
-            Intp::Dictionary { en, kanji_idx } => {
+            Intp::Dictionary {
+                en,
+                kanji_idx,
+                root,
+            } => {
                 let kanji_str = en.kanji_elements().nth(*kanji_idx).unwrap().text;
                 match seg {
                     Segment::Simple(_) => {
                         s.push_str(kanji_str);
+                        if let Some(root) = root {
+                            // We want to pop the dictionary root for verbs/i adjectives
+                            // but not for na adjectives (and maybe more?)
+                            if !matches!(root.kind, RootKind::NaAdjective) {
+                                s.pop();
+                            }
+                            s.push_str(&root.conjugation_suffix());
+                        }
                     }
                     Segment::DictAndExtra {
                         dict: _,

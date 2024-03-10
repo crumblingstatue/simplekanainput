@@ -2,11 +2,13 @@ use {
     super::dict_en_ui,
     crate::{
         appstate::{AppState, UiState},
-        conv::{self, decompose, Intp},
+        conv::{self, decompose, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
         segment::segment,
     },
     egui_sfml::egui::{self, Modifiers},
+    mugo::RootKind,
+    std::borrow::Cow,
 };
 
 const HELP_TEXT: &str = "\
@@ -14,6 +16,67 @@ F5: Hiragana
 F6: Katakana
 F7: As-is\
 ";
+
+enum Root<'a> {
+    Bare(&'a str),
+    Conj(mugo::Root),
+}
+
+impl<'a> Root<'a> {
+    fn dict_text(&self) -> Cow<str> {
+        match self {
+            Root::Bare(s) => Cow::Borrowed(s),
+            Root::Conj(root) => Cow::Owned(root.dict()),
+        }
+    }
+
+    fn matches(&self, e: jmdict::Entry) -> bool {
+        match self {
+            Root::Bare(_) => self.reading_matches(e),
+            Root::Conj(root) => {
+                root_kind_matches(&root.kind, e.senses()) && self.reading_matches(e)
+            }
+        }
+    }
+
+    fn reading_matches(&self, e: jmdict::Entry) -> bool {
+        e.reading_elements().any(|e| e.text == self.dict_text())
+    }
+}
+
+fn root_kind_matches(kind: &mugo::RootKind, mut senses: jmdict::Senses) -> bool {
+    senses.any(|sense| {
+        sense
+            .parts_of_speech()
+            .any(|part| part == kind.to_jmdict_part_of_speech())
+    })
+}
+
+trait RootKindExt {
+    fn to_jmdict_part_of_speech(&self) -> jmdict::PartOfSpeech;
+}
+
+impl RootKindExt for RootKind {
+    fn to_jmdict_part_of_speech(&self) -> jmdict::PartOfSpeech {
+        use jmdict::PartOfSpeech as Part;
+        match self {
+            RootKind::Ichidan => Part::IchidanVerb,
+            RootKind::GodanBu => Part::GodanBuVerb,
+            RootKind::GodanMu => Part::GodanMuVerb,
+            RootKind::GodanNu => Part::GodanNuVerb,
+            RootKind::GodanRu => Part::GodanRuVerb,
+            RootKind::GodanSu => Part::GodanSuVerb,
+            RootKind::GodanTsu => Part::GodanTsuVerb,
+            RootKind::GodanU => Part::GodanUVerb,
+            RootKind::GodanGu => Part::GodanGuVerb,
+            RootKind::GodanKu => Part::GodanKuVerb,
+            RootKind::IAdjective => Part::Adjective,
+            RootKind::Iku => Part::GodanIkuVerb,
+            RootKind::Kuru => Part::KuruVerb,
+            RootKind::NaAdjective => Part::AdjectivalNoun,
+        }
+    }
+}
 
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut copy_jap_clicked = false;
@@ -93,25 +156,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 let hiragana = hiragana.trim();
                 let katakana = decompose(seg.dict_root(), &KATAKANA).to_kana_string();
                 let katakana = katakana.trim();
-                for e in jmdict::entries() {
-                    if e.reading_elements().any(|e| e.text == hiragana) {
-                        for (ki, kanji_str) in e.kanji_elements().map(|e| e.text).enumerate() {
-                            let hover_ui = |ui: &mut egui::Ui| {
-                                ui.set_max_width(400.0);
-                                dict_en_ui(ui, &e);
-                            };
-                            if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
-                                app.intp.insert(
-                                    i,
-                                    Intp::Dictionary {
-                                        en: e,
-                                        kanji_idx: ki,
-                                    },
-                                );
-                                ui.close_menu();
-                            }
-                        }
-                    }
+                gen_dict_ui_for_hiragana(Root::Bare(hiragana), ui, &mut app.intp, i);
+                for root in mugo::deconjugate(hiragana) {
+                    gen_dict_ui_for_hiragana(Root::Conj(dbg!(root)), ui, &mut app.intp, i);
                 }
                 for pair in crate::radicals::by_name(hiragana) {
                     if ui
@@ -169,5 +216,33 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.romaji_buf.clear();
         app.intp.clear();
         app.hide_requested = true;
+    }
+}
+
+fn gen_dict_ui_for_hiragana(root: Root, ui: &mut egui::Ui, intp: &mut IntpMap, i: usize) {
+    for e in jmdict::entries() {
+        if root.matches(e) {
+            for (ki, kanji_str) in e.kanji_elements().map(|e| e.text).enumerate() {
+                let hover_ui = |ui: &mut egui::Ui| {
+                    ui.set_max_width(400.0);
+                    dict_en_ui(ui, &e);
+                };
+                if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
+                    intp.insert(
+                        i,
+                        Intp::Dictionary {
+                            en: e,
+                            kanji_idx: ki,
+                            root: match root {
+                                Root::Bare(_) => None,
+                                Root::Conj(root) => Some(root),
+                            },
+                        },
+                    );
+                    ui.close_menu();
+                    return;
+                }
+            }
+        }
     }
 }
