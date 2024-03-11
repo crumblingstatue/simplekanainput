@@ -6,7 +6,7 @@ use {
         kana::{HIRAGANA, KATAKANA},
         segment::segment,
     },
-    egui_sfml::egui::{self, Modifiers},
+    egui_sfml::egui::{self, Color32, Modifiers},
     mugo::RootKind,
     std::borrow::Cow,
 };
@@ -204,8 +204,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             ui.horizontal_wrapped(|ui| {
                 for (i, seg) in segs.iter().enumerate() {
+                    let mut text = egui::RichText::new(seg.label_string());
+                    if app.selected_segment == Some(i) {
+                        text = text.color(Color32::WHITE);
+                    }
                     if ui
-                        .add(egui::Label::new(seg.label_string()).sense(egui::Sense::click()))
+                        .add(egui::Label::new(text).sense(egui::Sense::click()))
                         .clicked()
                     {
                         app.selected_segment = Some(i);
