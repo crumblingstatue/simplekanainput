@@ -13,7 +13,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
     let mut segmentation_count_changed = false;
-    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc) = ui.input_mut(|inp| {
+    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab) = ui.input_mut(|inp| {
         (
             inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
             inp.key_pressed(egui::Key::F1),
@@ -23,10 +23,24 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             inp.key_pressed(egui::Key::F6),
             inp.key_pressed(egui::Key::F7),
             inp.key_pressed(egui::Key::Escape),
+            inp.consume_key(Modifiers::NONE, egui::Key::Tab),
         )
     });
     if esc {
         app.hide_requested = true;
+    }
+    if tab {
+        // Accept first suggestion if tab is pressed
+        if let Some(sug) = app.cached_suggestions.jmdict.first() {
+            app.intp.insert(
+                app.selected_segment,
+                Intp::Dictionary {
+                    en: sug.entry,
+                    kanji_idx: 0,
+                    root: sug.mugo_root.clone(),
+                },
+            );
+        }
     }
     ui.horizontal(|ui| {
         if ui.button("[F1] 📖 Dict").clicked() || f1 {
@@ -158,7 +172,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.hide_requested = true;
     }
     if segmentation_count_changed {
-        eprintln!("Segmentation count changed");
         repopulate_suggestion_cache = true;
         // Set selected segment to newly inserted one
         app.selected_segment = new_len - 1;
@@ -168,7 +181,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         }
     }
     if repopulate_suggestion_cache {
-        eprintln!("Suggestion cache repopulate requested");
         app.repopulate_suggestion_cache();
     }
 }

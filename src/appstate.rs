@@ -74,7 +74,6 @@ impl AppState {
     }
     /// Populate the suggestion cache with entries for the selected segment
     pub(crate) fn repopulate_suggestion_cache(&mut self) {
-        eprintln!("repopulate suggestion cache");
         self.cached_suggestions.clear();
         let i = self.selected_segment;
         let segs = segment(&self.romaji_buf);
@@ -83,7 +82,6 @@ impl AppState {
         };
         let hiragana = decompose(seg, &HIRAGANA).to_kana_string();
         let hiragana = hiragana.trim();
-        eprintln!("Segment: {hiragana:?}");
         let root = Root::Bare(hiragana);
         let mugo_roots: Vec<mugo::Root> = mugo::deconjugate(hiragana).into_iter().collect();
         self.cached_suggestions.jmdict = jmdict::entries()
