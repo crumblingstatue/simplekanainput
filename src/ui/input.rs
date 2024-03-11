@@ -15,22 +15,35 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
     let mut segmentation_count_changed = None;
-    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift) = ui.input_mut(|inp| {
-        (
-            inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
-            inp.key_pressed(egui::Key::F1),
-            inp.key_pressed(egui::Key::F2),
-            inp.key_pressed(egui::Key::F3),
-            inp.key_pressed(egui::Key::F5),
-            inp.key_pressed(egui::Key::F6),
-            inp.key_pressed(egui::Key::F7),
-            inp.key_pressed(egui::Key::Escape),
-            inp.consume_key(Modifiers::NONE, egui::Key::Tab),
-            inp.modifiers.shift,
-        )
-    });
+    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift, alt, left, right) =
+        ui.input_mut(|inp| {
+            (
+                inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
+                inp.key_pressed(egui::Key::F1),
+                inp.key_pressed(egui::Key::F2),
+                inp.key_pressed(egui::Key::F3),
+                inp.key_pressed(egui::Key::F5),
+                inp.key_pressed(egui::Key::F6),
+                inp.key_pressed(egui::Key::F7),
+                inp.key_pressed(egui::Key::Escape),
+                inp.consume_key(Modifiers::NONE, egui::Key::Tab),
+                inp.modifiers.shift,
+                inp.modifiers.alt,
+                inp.key_pressed(egui::Key::ArrowLeft),
+                inp.key_pressed(egui::Key::ArrowRight),
+            )
+        });
     if esc {
         app.hide_requested = true;
+    }
+    if alt && left {
+        app.selected_segment = app.selected_segment.saturating_sub(1);
+    }
+    if alt && right {
+        // Technically we're one frame behind, but should be fine
+        if app.selected_segment + 1 < app.last_segs_len {
+            app.selected_segment += 1;
+        }
     }
     if tab {
         'tabhandler: {
