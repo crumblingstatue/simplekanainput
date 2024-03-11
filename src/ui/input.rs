@@ -226,6 +226,10 @@ fn intp_button(
     {
         text = text.color(egui::Color32::YELLOW);
     }
+    // Hiragana interpretation is kinda the default, indicate this for the hiragana button
+    if matches!(intp, Intp::Hiragana) && !intp_map.contains_key(&i) {
+        text = text.color(egui::Color32::from_rgb(26, 226, 171));
+    }
     if ui
         .add(egui::Button::new(text).shortcut_text(shortcut_text))
         .clicked()
