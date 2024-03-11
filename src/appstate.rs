@@ -29,6 +29,8 @@ pub struct AppState {
     /// Keeps track whether selected segment changed
     pub last_selected_segment: usize,
     pub cached_suggestions: CachedSuggestions,
+    /// Selected dictionary suggestion (index into cache)
+    pub selected_suggestion: Option<usize>,
 }
 
 #[derive(Default)]
@@ -70,6 +72,7 @@ impl AppState {
             last_segs_len: 0,
             last_selected_segment: 0,
             cached_suggestions: CachedSuggestions::default(),
+            selected_suggestion: None,
         })
     }
     /// Populate the suggestion cache with entries for the selected segment
@@ -86,6 +89,10 @@ impl AppState {
         let mugo_roots: Vec<mugo::Root> = mugo::deconjugate(hiragana).into_iter().collect();
         self.cached_suggestions.jmdict = jmdict::entries()
             .filter_map(|en| {
+                // Filter out entries with no kanji elements
+                if en.kanji_elements().len() == 0 {
+                    return None;
+                }
                 if root.matches(&en) {
                     return Some(CachedJmdictSuggestion {
                         entry: en,

@@ -13,7 +13,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
     let mut segmentation_count_changed = None;
-    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab) = ui.input_mut(|inp| {
+    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift) = ui.input_mut(|inp| {
         (
             inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
             inp.key_pressed(egui::Key::F1),
@@ -24,14 +24,29 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             inp.key_pressed(egui::Key::F7),
             inp.key_pressed(egui::Key::Escape),
             inp.consume_key(Modifiers::NONE, egui::Key::Tab),
+            inp.modifiers.shift,
         )
     });
     if esc {
         app.hide_requested = true;
     }
     if tab {
+        let selected_sug = match &mut app.selected_suggestion {
+            Some(sug) => {
+                if shift {
+                    *sug = sug.saturating_sub(1);
+                } else if (*sug + 1) < app.cached_suggestions.jmdict.len() {
+                    *sug += 1;
+                }
+                *sug
+            }
+            None => {
+                app.selected_suggestion = Some(0);
+                0
+            }
+        };
         // Accept first suggestion if tab is pressed
-        if let Some(sug) = app.cached_suggestions.jmdict.first() {
+        if let Some(sug) = app.cached_suggestions.jmdict.get(selected_sug) {
             app.intp.insert(
                 app.selected_segment,
                 Intp::Dictionary {
@@ -109,7 +124,13 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 let hiragana = hiragana.trim();
                 let katakana = decompose(seg, &KATAKANA).to_kana_string();
                 let katakana = katakana.trim();
-                gen_dict_ui_for_hiragana(ui, &mut app.intp, i, &app.cached_suggestions);
+                gen_dict_ui_for_hiragana(
+                    ui,
+                    &mut app.intp,
+                    i,
+                    &app.cached_suggestions,
+                    &app.selected_suggestion,
+                );
                 for pair in crate::radicals::by_name(hiragana) {
                     if ui
                         .button(format!("{} ({} radical)", pair.ch, pair.name))
@@ -181,6 +202,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         }
     }
     if repopulate_suggestion_cache {
+        // Also clear the selected suggestion
+        app.selected_suggestion = None;
         app.repopulate_suggestion_cache();
     }
 }
@@ -225,30 +248,38 @@ fn gen_dict_ui_for_hiragana(
     intp: &mut IntpMap,
     i: usize,
     suggestions: &CachedSuggestions,
+    selected_suggestion: &Option<usize>,
 ) {
-    for suggestion in suggestions.jmdict.iter() {
-        for (ki, kanji_str) in suggestion
-            .entry
-            .kanji_elements()
-            .map(|e| e.text)
-            .enumerate()
-        {
-            let hover_ui = |ui: &mut egui::Ui| {
-                ui.set_max_width(400.0);
-                dict_en_ui(ui, &suggestion.entry);
-            };
-            if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
-                intp.insert(
-                    i,
-                    Intp::Dictionary {
-                        en: suggestion.entry,
-                        kanji_idx: ki,
-                        root: suggestion.mugo_root.clone(),
-                    },
-                );
-                ui.close_menu();
-                return;
+    for (si, suggestion) in suggestions.jmdict.iter().enumerate() {
+        // Same entry, different kanji goes into horizontal layout
+        ui.horizontal(|ui| {
+            for (ki, kanji_str) in suggestion
+                .entry
+                .kanji_elements()
+                .map(|e| e.text)
+                .enumerate()
+            {
+                let hover_ui = |ui: &mut egui::Ui| {
+                    ui.set_max_width(400.0);
+                    dict_en_ui(ui, &suggestion.entry);
+                };
+                let mut text = egui::RichText::new(kanji_str);
+                if selected_suggestion == &Some(si) {
+                    text = text.color(egui::Color32::YELLOW);
+                }
+                if ui.button(text).on_hover_ui(hover_ui).clicked() {
+                    intp.insert(
+                        i,
+                        Intp::Dictionary {
+                            en: suggestion.entry,
+                            kanji_idx: ki,
+                            root: suggestion.mugo_root.clone(),
+                        },
+                    );
+                    ui.close_menu();
+                    return;
+                }
             }
-        }
+        });
     }
 }
