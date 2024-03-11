@@ -18,7 +18,7 @@ pub struct AppState {
     pub ui_state: UiState,
     pub dict_ui_state: DictUiState,
     pub kanji_ui_state: KanjiUiState,
-    pub selected_segment: Option<usize>,
+    pub selected_segment: usize,
     pub kanji_db: KanjiDb,
 }
 
@@ -40,7 +40,7 @@ impl AppState {
             ui_state: UiState::Input,
             dict_ui_state: DictUiState::default(),
             kanji_ui_state: KanjiUiState::default(),
-            selected_segment: None,
+            selected_segment: 0,
             kanji_db: KanjiDb::load(),
         })
     }

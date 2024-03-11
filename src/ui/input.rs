@@ -132,9 +132,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let segs = segment(&app.romaji_buf);
     let japanese = conv::to_japanese(&segs, &app.intp, &app.kanji_db);
     'intp_select_ui: {
-        let Some(i) = app.selected_segment else {
-            break 'intp_select_ui;
-        };
+        let i = app.selected_segment;
         let Some(seg) = segs.get(i) else {
             break 'intp_select_ui;
         };
@@ -205,14 +203,14 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             ui.horizontal_wrapped(|ui| {
                 for (i, seg) in segs.iter().enumerate() {
                     let mut text = egui::RichText::new(seg.label_string());
-                    if app.selected_segment == Some(i) {
+                    if app.selected_segment == i {
                         text = text.color(Color32::WHITE);
                     }
                     if ui
                         .add(egui::Label::new(text).sense(egui::Sense::click()))
                         .clicked()
                     {
-                        app.selected_segment = Some(i);
+                        app.selected_segment = i;
                     }
                 }
             });
