@@ -123,11 +123,17 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         });
     ui.separator();
     let segs = segment(&app.romaji_buf);
-    // Segmentation change handling
+    // region: Segmentation change handling
     let new_len = segs.len();
     if new_len > app.last_segs_len {
+        // Set selected segment to newly inserted one
         app.selected_segment = new_len - 1;
+        // Remove intp info for deleted segments
+        for i in app.last_segs_len..new_len {
+            app.intp.remove(&i);
+        }
     }
+    // endregion: Segmentation change handling
     app.last_segs_len = new_len;
     let japanese = conv::to_japanese(&segs, &app.intp, &app.kanji_db);
     'intp_select_ui: {
