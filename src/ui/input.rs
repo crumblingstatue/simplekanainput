@@ -74,6 +74,8 @@ impl RootKindExt for RootKind {
             RootKind::Iku => Part::GodanIkuVerb,
             RootKind::Kuru => Part::KuruVerb,
             RootKind::NaAdjective => Part::AdjectivalNoun,
+            RootKind::Suru => Part::SuruVerb,
+            RootKind::SpecialSuru => Part::SpecialSuruVerb,
         }
     }
 }
