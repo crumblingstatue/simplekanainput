@@ -80,7 +80,7 @@ impl RootKindExt for RootKind {
 
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut copy_jap_clicked = false;
-    let (ctrl_enter, f1, f2, f3, f5, f6, f7) = ui.input_mut(|inp| {
+    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc) = ui.input_mut(|inp| {
         (
             inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
             inp.key_pressed(egui::Key::F1),
@@ -89,8 +89,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             inp.key_pressed(egui::Key::F5),
             inp.key_pressed(egui::Key::F6),
             inp.key_pressed(egui::Key::F7),
+            inp.key_pressed(egui::Key::Escape),
         )
     });
+    if esc {
+        app.hide_requested = true;
+    }
     ui.horizontal(|ui| {
         if ui.button("[F1] 📖 Dict").clicked() || f1 {
             app.ui_state = UiState::Dict;
