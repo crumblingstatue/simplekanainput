@@ -3,7 +3,6 @@ use {
         kana::{RomajiKanaTable, HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         radicals::RadicalPair,
-        segment::Segment,
     },
     mugo::RootKind,
     serde::Deserialize,
@@ -93,21 +92,18 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
     }
     DecomposeResult { elems }
 }
-pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
+pub fn to_japanese<'a>(segments: &'a [&'a str], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
     let mut s = String::new();
     for (i, seg) in segments.iter().enumerate() {
         let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
         match intp {
-            Intp::AsIs => match seg {
-                Segment::Simple(text) => s.push_str(text),
-                Segment::DictAndExtra { .. } => s.push_str("<non-applicable, sorry>"),
-            },
+            Intp::AsIs => s.push_str(seg),
             Intp::Hiragana => {
-                let dec = decompose(seg.dict_root(), &HIRAGANA);
+                let dec = decompose(seg, &HIRAGANA);
                 s.push_str(&dec.to_kana_string());
             }
             Intp::Katakana => {
-                let dec = decompose(seg.dict_root(), &KATAKANA);
+                let dec = decompose(seg, &KATAKANA);
                 s.push_str(&dec.to_kana_string());
             }
             Intp::Dictionary {
@@ -116,34 +112,18 @@ pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap, kanji_db: &K
                 root,
             } => {
                 let kanji_str = en.kanji_elements().nth(*kanji_idx).unwrap().text;
-                match seg {
-                    Segment::Simple(_) => {
-                        s.push_str(kanji_str);
-                        if let Some(root) = root {
-                            // We want to pop the dictionary root for verbs/i adjectives
-                            // but not for na adjectives (and maybe more?)
-                            if !matches!(root.kind, RootKind::NaAdjective) {
-                                s.pop();
-                            }
-                            // Need to pop an extra character for suru verbs
-                            if matches!(root.kind, RootKind::Suru | RootKind::SpecialSuru) {
-                                s.pop();
-                            }
-                            s.push_str(&root.conjugation_suffix());
-                        }
+                s.push_str(kanji_str);
+                if let Some(root) = root {
+                    // We want to pop the dictionary root for verbs/i adjectives
+                    // but not for na adjectives (and maybe more?)
+                    if !matches!(root.kind, RootKind::NaAdjective) {
+                        s.pop();
                     }
-                    Segment::DictAndExtra {
-                        dict: _,
-                        extra,
-                        cutoff,
-                    } => {
-                        let mut kan_owned = kanji_str.to_owned();
-                        for _ in 0..*cutoff {
-                            kan_owned.pop();
-                        }
-                        s.push_str(&kan_owned);
-                        s.push_str(&decompose(extra, &HIRAGANA).to_kana_string());
+                    // Need to pop an extra character for suru verbs
+                    if matches!(root.kind, RootKind::Suru | RootKind::SpecialSuru) {
+                        s.pop();
                     }
+                    s.push_str(&root.conjugation_suffix());
                 }
             }
             Intp::Radical(pair) => {

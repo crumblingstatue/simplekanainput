@@ -140,9 +140,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         egui::ScrollArea::vertical()
             .max_height(100.0)
             .show(ui, |ui| {
-                let hiragana = decompose(seg.dict_root(), &HIRAGANA).to_kana_string();
+                let hiragana = decompose(seg, &HIRAGANA).to_kana_string();
                 let hiragana = hiragana.trim();
-                let katakana = decompose(seg.dict_root(), &KATAKANA).to_kana_string();
+                let katakana = decompose(seg, &KATAKANA).to_kana_string();
                 let katakana = katakana.trim();
                 gen_dict_ui_for_hiragana(Root::Bare(hiragana), ui, &mut app.intp, i);
                 for root in mugo::deconjugate(hiragana) {
@@ -186,7 +186,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             ui.horizontal_wrapped(|ui| {
                 for (i, seg) in segs.iter().enumerate() {
-                    let mut text = egui::RichText::new(seg.label_string());
+                    let mut text = egui::RichText::new(*seg);
                     if app.selected_segment == i {
                         text = text.color(Color32::WHITE);
                     }
