@@ -12,7 +12,7 @@ use {
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
-    let mut segmentation_count_changed = false;
+    let mut segmentation_count_changed = None;
     let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab) = ui.input_mut(|inp| {
         (
             inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
@@ -80,7 +80,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let segs = segment(&app.romaji_buf);
     let new_len = segs.len();
     if new_len > app.last_segs_len {
-        segmentation_count_changed = true;
+        segmentation_count_changed = Some(app.last_segs_len);
     }
     app.last_segs_len = new_len;
     if app.selected_segment != app.last_selected_segment {
@@ -171,12 +171,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.intp.clear();
         app.hide_requested = true;
     }
-    if segmentation_count_changed {
+    if let Some(old) = segmentation_count_changed {
         repopulate_suggestion_cache = true;
         // Set selected segment to newly inserted one
         app.selected_segment = new_len - 1;
         // Remove intp info for deleted segments
-        for i in app.last_segs_len..new_len {
+        for i in old..new_len {
             app.intp.remove(&i);
         }
     }
