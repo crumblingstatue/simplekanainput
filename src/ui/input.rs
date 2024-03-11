@@ -175,13 +175,13 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             let len = segs.len();
             if len != 0 {
                 if f5 {
-                    app.intp.insert(len - 1, Intp::Hiragana);
+                    app.intp.insert(app.selected_segment, Intp::Hiragana);
                 }
                 if f6 {
-                    app.intp.insert(len - 1, Intp::Katakana);
+                    app.intp.insert(app.selected_segment, Intp::Katakana);
                 }
                 if f7 {
-                    app.intp.insert(len - 1, Intp::AsIs);
+                    app.intp.insert(app.selected_segment, Intp::AsIs);
                 }
             }
             ui.horizontal_wrapped(|ui| {
