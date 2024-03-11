@@ -20,6 +20,8 @@ pub struct AppState {
     pub kanji_ui_state: KanjiUiState,
     pub selected_segment: usize,
     pub kanji_db: KanjiDb,
+    /// Used to keep track of whether the text segmentation has changed
+    pub last_segs_len: usize,
 }
 
 pub enum UiState {
@@ -42,6 +44,7 @@ impl AppState {
             kanji_ui_state: KanjiUiState::default(),
             selected_segment: 0,
             kanji_db: KanjiDb::load(),
+            last_segs_len: 0,
         })
     }
 }
