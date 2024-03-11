@@ -1,81 +1,18 @@
 use {
     super::dict_en_ui,
     crate::{
-        appstate::{AppState, UiState},
+        appstate::{AppState, CachedSuggestions, UiState},
         conv::{self, decompose, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
         segment::segment,
     },
     egui_sfml::egui::{self, Color32, Modifiers},
-    mugo::RootKind,
-    std::borrow::Cow,
 };
 
-enum Root<'a> {
-    Bare(&'a str),
-    Conj(mugo::Root),
-}
-
-impl<'a> Root<'a> {
-    fn dict_text(&self) -> Cow<str> {
-        match self {
-            Root::Bare(s) => Cow::Borrowed(s),
-            Root::Conj(root) => Cow::Owned(root.dict()),
-        }
-    }
-
-    fn matches(&self, e: jmdict::Entry) -> bool {
-        match self {
-            Root::Bare(_) => self.reading_matches(e),
-            Root::Conj(root) => {
-                root_kind_matches(&root.kind, e.senses()) && self.reading_matches(e)
-            }
-        }
-    }
-
-    fn reading_matches(&self, e: jmdict::Entry) -> bool {
-        e.reading_elements().any(|e| e.text == self.dict_text())
-    }
-}
-
-fn root_kind_matches(kind: &mugo::RootKind, mut senses: jmdict::Senses) -> bool {
-    senses.any(|sense| {
-        sense
-            .parts_of_speech()
-            .any(|part| part == kind.to_jmdict_part_of_speech())
-    })
-}
-
-trait RootKindExt {
-    fn to_jmdict_part_of_speech(&self) -> jmdict::PartOfSpeech;
-}
-
-impl RootKindExt for RootKind {
-    fn to_jmdict_part_of_speech(&self) -> jmdict::PartOfSpeech {
-        use jmdict::PartOfSpeech as Part;
-        match self {
-            RootKind::Ichidan => Part::IchidanVerb,
-            RootKind::GodanBu => Part::GodanBuVerb,
-            RootKind::GodanMu => Part::GodanMuVerb,
-            RootKind::GodanNu => Part::GodanNuVerb,
-            RootKind::GodanRu => Part::GodanRuVerb,
-            RootKind::GodanSu => Part::GodanSuVerb,
-            RootKind::GodanTsu => Part::GodanTsuVerb,
-            RootKind::GodanU => Part::GodanUVerb,
-            RootKind::GodanGu => Part::GodanGuVerb,
-            RootKind::GodanKu => Part::GodanKuVerb,
-            RootKind::IAdjective => Part::Adjective,
-            RootKind::Iku => Part::GodanIkuVerb,
-            RootKind::Kuru => Part::KuruVerb,
-            RootKind::NaAdjective => Part::AdjectivalNoun,
-            RootKind::Suru => Part::SuruVerb,
-            RootKind::SpecialSuru => Part::SpecialSuruVerb,
-        }
-    }
-}
-
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
+    let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
+    let mut segmentation_count_changed = false;
     let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc) = ui.input_mut(|inp| {
         (
             inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
@@ -114,27 +51,29 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .max_height(app.half_dims.h.into())
         .id_source("romaji_scroll")
         .show(ui, |ui| {
-            ui.add(
+            let re = ui.add(
                 egui::TextEdit::multiline(&mut app.romaji_buf)
                     .hint_text("Romaji")
                     .desired_width(f32::INFINITY),
-            )
-            .request_focus();
+            );
+            if re.changed() {
+                repopulate_suggestion_cache = true;
+            }
+            re.request_focus()
         });
     ui.separator();
+    // region: input state change handling
     let segs = segment(&app.romaji_buf);
-    // region: Segmentation change handling
     let new_len = segs.len();
     if new_len > app.last_segs_len {
-        // Set selected segment to newly inserted one
-        app.selected_segment = new_len - 1;
-        // Remove intp info for deleted segments
-        for i in app.last_segs_len..new_len {
-            app.intp.remove(&i);
-        }
+        segmentation_count_changed = true;
     }
-    // endregion: Segmentation change handling
     app.last_segs_len = new_len;
+    if app.selected_segment != app.last_selected_segment {
+        repopulate_suggestion_cache = true;
+    }
+    app.last_selected_segment = app.selected_segment;
+    // endregion: input state change handling
     let japanese = conv::to_japanese(&segs, &app.intp, &app.kanji_db);
     'intp_select_ui: {
         let i = app.selected_segment;
@@ -156,10 +95,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 let hiragana = hiragana.trim();
                 let katakana = decompose(seg, &KATAKANA).to_kana_string();
                 let katakana = katakana.trim();
-                gen_dict_ui_for_hiragana(Root::Bare(hiragana), ui, &mut app.intp, i);
-                for root in mugo::deconjugate(hiragana) {
-                    gen_dict_ui_for_hiragana(Root::Conj(root), ui, &mut app.intp, i);
-                }
+                gen_dict_ui_for_hiragana(ui, &mut app.intp, i, &app.cached_suggestions);
                 for pair in crate::radicals::by_name(hiragana) {
                     if ui
                         .button(format!("{} ({} radical)", pair.ch, pair.name))
@@ -221,6 +157,20 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.intp.clear();
         app.hide_requested = true;
     }
+    if segmentation_count_changed {
+        eprintln!("Segmentation count changed");
+        repopulate_suggestion_cache = true;
+        // Set selected segment to newly inserted one
+        app.selected_segment = new_len - 1;
+        // Remove intp info for deleted segments
+        for i in app.last_segs_len..new_len {
+            app.intp.remove(&i);
+        }
+    }
+    if repopulate_suggestion_cache {
+        eprintln!("Suggestion cache repopulate requested");
+        app.repopulate_suggestion_cache();
+    }
 }
 
 fn intp_button(
@@ -258,29 +208,34 @@ fn intp_matches_approx(a: &Intp, b: &Intp) -> bool {
     a_disc == b_disc
 }
 
-fn gen_dict_ui_for_hiragana(root: Root, ui: &mut egui::Ui, intp: &mut IntpMap, i: usize) {
-    for e in jmdict::entries() {
-        if root.matches(e) {
-            for (ki, kanji_str) in e.kanji_elements().map(|e| e.text).enumerate() {
-                let hover_ui = |ui: &mut egui::Ui| {
-                    ui.set_max_width(400.0);
-                    dict_en_ui(ui, &e);
-                };
-                if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
-                    intp.insert(
-                        i,
-                        Intp::Dictionary {
-                            en: e,
-                            kanji_idx: ki,
-                            root: match root {
-                                Root::Bare(_) => None,
-                                Root::Conj(root) => Some(root),
-                            },
-                        },
-                    );
-                    ui.close_menu();
-                    return;
-                }
+fn gen_dict_ui_for_hiragana(
+    ui: &mut egui::Ui,
+    intp: &mut IntpMap,
+    i: usize,
+    suggestions: &CachedSuggestions,
+) {
+    for suggestion in suggestions.jmdict.iter() {
+        for (ki, kanji_str) in suggestion
+            .entry
+            .kanji_elements()
+            .map(|e| e.text)
+            .enumerate()
+        {
+            let hover_ui = |ui: &mut egui::Ui| {
+                ui.set_max_width(400.0);
+                dict_en_ui(ui, &suggestion.entry);
+            };
+            if ui.button(kanji_str).on_hover_ui(hover_ui).clicked() {
+                intp.insert(
+                    i,
+                    Intp::Dictionary {
+                        en: suggestion.entry,
+                        kanji_idx: ki,
+                        root: suggestion.mugo_root.clone(),
+                    },
+                );
+                ui.close_menu();
+                return;
             }
         }
     }
