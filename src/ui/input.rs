@@ -33,30 +33,38 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.hide_requested = true;
     }
     if tab {
-        let selected_sug = match &mut app.selected_suggestion {
-            Some(sug) => {
-                if shift {
-                    *sug = sug.saturating_sub(1);
-                } else if (*sug + 1) < app.cached_suggestions.jmdict.len() {
-                    *sug += 1;
+        'tabhandler: {
+            let selected_sug = match &mut app.selected_suggestion {
+                Some(sug) => {
+                    if shift {
+                        if *sug == 0 {
+                            app.selected_suggestion = None;
+                            app.intp.remove(&app.selected_segment);
+                            break 'tabhandler;
+                        } else {
+                            *sug -= 1;
+                        }
+                    } else if (*sug + 1) < app.cached_suggestions.jmdict.len() {
+                        *sug += 1;
+                    }
+                    *sug
                 }
-                *sug
+                None => {
+                    app.selected_suggestion = Some(0);
+                    0
+                }
+            };
+            // Accept first suggestion if tab is pressed
+            if let Some(sug) = app.cached_suggestions.jmdict.get(selected_sug) {
+                app.intp.insert(
+                    app.selected_segment,
+                    Intp::Dictionary {
+                        en: sug.entry,
+                        kanji_idx: 0,
+                        root: sug.mugo_root.clone(),
+                    },
+                );
             }
-            None => {
-                app.selected_suggestion = Some(0);
-                0
-            }
-        };
-        // Accept first suggestion if tab is pressed
-        if let Some(sug) = app.cached_suggestions.jmdict.get(selected_sug) {
-            app.intp.insert(
-                app.selected_segment,
-                Intp::Dictionary {
-                    en: sug.entry,
-                    kanji_idx: 0,
-                    root: sug.mugo_root.clone(),
-                },
-            );
         }
     }
     ui.horizontal(|ui| {
