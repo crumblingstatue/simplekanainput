@@ -4,8 +4,10 @@ use {
         appstate::{AppState, CachedSuggestions, UiState},
         conv::{self, decompose, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
+        kanji::KanjiDb,
         segment::segment,
     },
+    egui_extras::{Size, StripBuilder},
     egui_sfml::egui::{self, Color32, Modifiers},
 };
 
@@ -117,75 +119,60 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             intp_button(&mut app.intp, i, ui, "ha", "F7", Intp::AsIs);
         });
         ui.separator();
-        egui::ScrollArea::vertical()
-            .max_height(100.0)
-            .show(ui, |ui| {
-                let hiragana = decompose(seg, &HIRAGANA).to_kana_string();
-                let hiragana = hiragana.trim();
-                let katakana = decompose(seg, &KATAKANA).to_kana_string();
-                let katakana = katakana.trim();
-                gen_dict_ui_for_hiragana(
-                    ui,
-                    &mut app.intp,
-                    i,
-                    &app.cached_suggestions,
-                    &app.selected_suggestion,
-                );
-                for pair in crate::radicals::by_name(hiragana) {
-                    if ui
-                        .button(format!("{} ({} radical)", pair.ch, pair.name))
-                        .clicked()
-                    {
-                        app.intp.insert(i, Intp::Radical(pair));
-                        ui.close_menu();
-                    }
-                }
-                ui.separator();
-                for (db_idx, kanji) in app.kanji_db.kanji.iter().enumerate() {
-                    if (kanji.readings.contains(&hiragana) || kanji.readings.contains(&katakana))
-                        && ui
-                            .button(format!("{} - {}", kanji.chars[0], kanji.meaning))
-                            .clicked()
-                    {
-                        app.intp.insert(i, Intp::Kanji { db_idx });
-                    }
-                }
+        StripBuilder::new(ui)
+            .size(Size::exact(100.0))
+            .size(Size::remainder())
+            .vertical(|mut strip| {
+                strip.strip(|builder| {
+                    suggestion_ui_strip(
+                        seg,
+                        i,
+                        &mut app.intp,
+                        &app.cached_suggestions,
+                        &app.selected_suggestion,
+                        &app.kanji_db,
+                        builder,
+                    );
+                });
+                strip.cell(|ui| {
+                    ui.separator();
+                    egui::ScrollArea::vertical()
+                        .id_source("kana_scroll")
+                        .show(ui, |ui| {
+                            let len = segs.len();
+                            if len != 0 {
+                                if f5 {
+                                    app.intp.insert(app.selected_segment, Intp::Hiragana);
+                                }
+                                if f6 {
+                                    app.intp.insert(app.selected_segment, Intp::Katakana);
+                                }
+                                if f7 {
+                                    app.intp.insert(app.selected_segment, Intp::AsIs);
+                                }
+                            }
+                            ui.horizontal_wrapped(|ui| {
+                                for (i, seg) in segs.iter().enumerate() {
+                                    let mut text = egui::RichText::new(*seg);
+                                    if app.selected_segment == i {
+                                        text = text.color(Color32::WHITE);
+                                    }
+                                    if ui
+                                        .add(egui::Label::new(text).sense(egui::Sense::click()))
+                                        .clicked()
+                                    {
+                                        app.selected_segment = i;
+                                    }
+                                }
+                            });
+                            ui.label(&japanese);
+                            if copy_jap_clicked {
+                                app.clipboard.set_text(&japanese).unwrap()
+                            }
+                        });
+                })
             });
     }
-    egui::ScrollArea::vertical()
-        .id_source("kana_scroll")
-        .show(ui, |ui| {
-            let len = segs.len();
-            if len != 0 {
-                if f5 {
-                    app.intp.insert(app.selected_segment, Intp::Hiragana);
-                }
-                if f6 {
-                    app.intp.insert(app.selected_segment, Intp::Katakana);
-                }
-                if f7 {
-                    app.intp.insert(app.selected_segment, Intp::AsIs);
-                }
-            }
-            ui.horizontal_wrapped(|ui| {
-                for (i, seg) in segs.iter().enumerate() {
-                    let mut text = egui::RichText::new(*seg);
-                    if app.selected_segment == i {
-                        text = text.color(Color32::WHITE);
-                    }
-                    if ui
-                        .add(egui::Label::new(text).sense(egui::Sense::click()))
-                        .clicked()
-                    {
-                        app.selected_segment = i;
-                    }
-                }
-            });
-            ui.label(&japanese);
-            if copy_jap_clicked {
-                app.clipboard.set_text(&japanese).unwrap()
-            }
-        });
     if ctrl_enter {
         app.clipboard.set_text(&japanese).unwrap();
         app.romaji_buf.clear();
@@ -206,6 +193,58 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.selected_suggestion = None;
         app.repopulate_suggestion_cache();
     }
+}
+
+fn suggestion_ui_strip(
+    seg: &str,
+    i: usize,
+    intp: &mut IntpMap,
+    cached_suggestions: &CachedSuggestions,
+    selected_suggestion: &Option<usize>,
+    kanji_db: &KanjiDb,
+    strip_builder: StripBuilder,
+) {
+    strip_builder
+        .clip(true)
+        .size(Size::exact(100.0))
+        .size(Size::remainder().at_least(100.0))
+        .horizontal(|mut strip| {
+            strip.cell(|ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    let hiragana = decompose(seg, &HIRAGANA).to_kana_string();
+                    let hiragana = hiragana.trim();
+                    let katakana = decompose(seg, &KATAKANA).to_kana_string();
+                    let katakana = katakana.trim();
+                    gen_dict_ui_for_hiragana(ui, intp, i, cached_suggestions, selected_suggestion);
+                    for pair in crate::radicals::by_name(hiragana) {
+                        if ui
+                            .button(format!("{} ({} radical)", pair.ch, pair.name))
+                            .clicked()
+                        {
+                            intp.insert(i, Intp::Radical(pair));
+                            ui.close_menu();
+                        }
+                    }
+                    ui.separator();
+                    for (db_idx, kanji) in kanji_db.kanji.iter().enumerate() {
+                        if (kanji.readings.contains(&hiragana)
+                            || kanji.readings.contains(&katakana))
+                            && ui
+                                .button(format!("{} - {}", kanji.chars[0], kanji.meaning))
+                                .clicked()
+                        {
+                            intp.insert(i, Intp::Kanji { db_idx });
+                        }
+                    }
+                });
+            });
+            strip.cell(|ui| {
+                if let Some(idx) = selected_suggestion {
+                    let en = &cached_suggestions.jmdict[*idx].entry;
+                    dict_en_ui(ui, en);
+                }
+            })
+        });
 }
 
 fn intp_button(

@@ -19,7 +19,6 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
     egui::ScrollArea::vertical()
         .id_source("en_scroll_vert")
         .show(ui, |ui| {
-            ui.label(egui::RichText::new("Kanji").size(12.0));
             for elem in en.kanji_elements() {
                 ui.horizontal(|ui| {
                     for char in elem.text.chars() {
@@ -38,15 +37,14 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
                             msg = DictUiMsg::KanjiClicked(char);
                         }
                     }
+                    ui.label("(");
+                    for elem in en.reading_elements() {
+                        ui.label(elem.text);
+                    }
+                    ui.label(")");
                 });
             }
             ui.separator();
-            ui.label(egui::RichText::new("Reading").size(12.0));
-            for elem in en.reading_elements() {
-                ui.label(elem.text);
-            }
-            ui.separator();
-            ui.label(egui::RichText::new("Senses").size(12.0));
             for sense in en.senses() {
                 ui.horizontal_wrapped(|ui| {
                     let mut begin = true;
