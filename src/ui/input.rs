@@ -11,12 +11,6 @@ use {
     std::borrow::Cow,
 };
 
-const HELP_TEXT: &str = "\
-F5: Hiragana
-F6: Katakana
-F7: As-is\
-";
-
 enum Root<'a> {
     Bare(&'a str),
     Conj(mugo::Root),
@@ -114,7 +108,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.button("Quit").clicked() {
             app.quit_requested = true;
         }
-        ui.link("？").on_hover_text(HELP_TEXT);
     });
     ui.separator();
     egui::ScrollArea::vertical()
@@ -137,20 +130,11 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             break 'intp_select_ui;
         };
         ui.horizontal(|ui| {
-            if ui.button("は").clicked() {
-                app.intp.insert(i, Intp::Hiragana);
-                ui.close_menu();
-            }
+            intp_button(&mut app.intp, i, ui, "は", "F5", Intp::Hiragana);
             ui.separator();
-            if ui.button("ハ").clicked() {
-                app.intp.insert(i, Intp::Katakana);
-                ui.close_menu();
-            }
+            intp_button(&mut app.intp, i, ui, "ハ", "F6", Intp::Katakana);
             ui.separator();
-            if ui.button("ha").clicked() {
-                app.intp.insert(i, Intp::AsIs);
-                ui.close_menu();
-            }
+            intp_button(&mut app.intp, i, ui, "ha", "F7", Intp::AsIs);
         });
         ui.separator();
         egui::ScrollArea::vertical()
@@ -225,6 +209,37 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.intp.clear();
         app.hide_requested = true;
     }
+}
+
+fn intp_button(
+    intp_map: &mut IntpMap,
+    i: usize,
+    ui: &mut egui::Ui,
+    button_text: &str,
+    shortcut_text: &str,
+    intp: Intp,
+) {
+    let mut text = egui::RichText::new(button_text);
+    if intp_map
+        .get(&i)
+        .is_some_and(|a| intp_matches_approx(a, &intp))
+    {
+        text = text.color(egui::Color32::YELLOW);
+    }
+    if ui
+        .add(egui::Button::new(text).shortcut_text(shortcut_text))
+        .clicked()
+    {
+        intp_map.insert(i, intp);
+        ui.close_menu();
+    }
+}
+
+/// Approximate match for intp (can't derive PartialEq)
+fn intp_matches_approx(a: &Intp, b: &Intp) -> bool {
+    let a_disc = std::mem::discriminant(a);
+    let b_disc = std::mem::discriminant(b);
+    a_disc == b_disc
 }
 
 fn gen_dict_ui_for_hiragana(root: Root, ui: &mut egui::Ui, intp: &mut IntpMap, i: usize) {
