@@ -261,8 +261,9 @@ fn suggestion_ui_strip(
             });
             strip.cell(|ui| {
                 if let Some(idx) = selected_suggestion {
-                    let en = &cached_suggestions.jmdict[*idx].entry;
-                    dict_en_ui(ui, en);
+                    if let Some(en) = &cached_suggestions.jmdict.get(*idx).map(|sug| sug.entry) {
+                        dict_en_ui(ui, en);
+                    }
                 }
             })
         });
