@@ -125,6 +125,10 @@ pub fn to_japanese<'a>(segments: &'a [Segment<'a>], intp: &IntpMap, kanji_db: &K
                             if !matches!(root.kind, RootKind::NaAdjective) {
                                 s.pop();
                             }
+                            // Need to pop an extra character for suru verbs
+                            if matches!(root.kind, RootKind::Suru | RootKind::SpecialSuru) {
+                                s.pop();
+                            }
                             s.push_str(&root.conjugation_suffix());
                         }
                     }
