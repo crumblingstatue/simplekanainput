@@ -14,7 +14,7 @@ enum DictUiMsg {
     KanjiClicked(char),
 }
 
-fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
+fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) -> DictUiMsg {
     let mut msg = DictUiMsg::None;
     egui::ScrollArea::vertical()
         .id_source("en_scroll_vert")
@@ -29,7 +29,7 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
                                 if let Some(en) = jmdict::entries()
                                     .find(|en| en.kanji_elements().any(|k| k.text == kanji_str))
                                 {
-                                    dict_en_ui(ui, &en);
+                                    dict_en_ui(ui, &en, root);
                                 }
                             })
                             .clicked()
@@ -42,6 +42,48 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
                         ui.label(elem.text);
                     }
                     ui.label(")");
+                    if let Some(root) = root {
+                        ui.separator();
+                        let mut steps_str = String::new();
+                        for (i, step) in root.steps.iter().enumerate() {
+                            steps_str.push_str(match step {
+                                mugo::Step::Te => "て",
+                                mugo::Step::Nai => "ない",
+                                mugo::Step::Naide => "ないで",
+                                mugo::Step::Nakatta => "なかった",
+                                mugo::Step::Ta => "た",
+                                mugo::Step::Volitional => "volitional",
+                                mugo::Step::AdverbialKu => "く (adverb)",
+                                mugo::Step::Imperative => "imperative",
+                                mugo::Step::Masu => "ます",
+                                mugo::Step::Masen => "ません",
+                                mugo::Step::Invitational => "invitational",
+                                mugo::Step::Continuous => "ている",
+                                mugo::Step::ContRuAbbrev => "てる",
+                                mugo::Step::Zu => "ず",
+                                mugo::Step::Ka => "か",
+                                mugo::Step::Tari => "たり",
+                                mugo::Step::Tara => "たら",
+                                mugo::Step::Nasai => "なさい",
+                                mugo::Step::Nagara => "ながら",
+                                mugo::Step::Causative => "causative",
+                                mugo::Step::Tai => "たい",
+                                mugo::Step::Ba => "ば (conditional)",
+                                mugo::Step::Potential => "potential",
+                                mugo::Step::Chau => "ちゃう",
+                                mugo::Step::Na => "な",
+                                mugo::Step::Katta => "かった",
+                            });
+                            if i != root.steps.len() - 1 {
+                                steps_str.push('➡');
+                            }
+                        }
+                        ui.label(
+                            egui::RichText::new(steps_str)
+                                .color(egui::Color32::LIGHT_BLUE)
+                                .size(14.0),
+                        );
+                    }
                 });
             }
             ui.separator();

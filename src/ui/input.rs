@@ -296,8 +296,8 @@ fn suggestion_ui_strip(
                 });
             });
             strip.cell(|ui| {
-                if let Some(Intp::Dictionary { en, .. }) = intp.get(&intp_idx) {
-                    dict_en_ui(ui, en);
+                if let Some(Intp::Dictionary { en, root, .. }) = intp.get(&intp_idx) {
+                    dict_en_ui(ui, en, root.as_ref());
                 }
             })
         });
@@ -356,7 +356,7 @@ fn gen_dict_ui_for_hiragana(
             {
                 let hover_ui = |ui: &mut egui::Ui| {
                     ui.set_max_width(400.0);
-                    dict_en_ui(ui, &suggestion.entry);
+                    dict_en_ui(ui, &suggestion.entry, suggestion.mugo_root.as_ref());
                 };
                 let mut text = egui::RichText::new(kanji_str);
                 let mut scroll = false;

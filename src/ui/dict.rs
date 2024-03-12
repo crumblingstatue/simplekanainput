@@ -71,7 +71,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             cols[1].label("<Couldn't get entry>");
             return;
         };
-        match dict_en_ui(&mut cols[1], en) {
+        match dict_en_ui(&mut cols[1], en, None) {
             DictUiMsg::None => {}
             DictUiMsg::KanjiClicked(ch) => {
                 app.dict_ui_state.lookup_method = LookupMethod::Kanji;
