@@ -5,6 +5,7 @@ use {
         conv::{self, decompose, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
+        segment::SegmentKind,
     },
     egui_extras::{Size, StripBuilder},
     egui_sfml::egui::{self, Color32, Modifiers},
@@ -35,13 +36,30 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     if esc {
         app.hide_requested = true;
     }
+    // Navigate to previous/next romaji segment to select
     if alt && left {
-        app.selected_segment = app.selected_segment.saturating_sub(1);
+        loop {
+            app.selected_segment = app.selected_segment.saturating_sub(1);
+            if app.segments.is_empty() {
+                break;
+            }
+            if app.selected_segment == 0
+                || app.segments[app.selected_segment].kind == SegmentKind::Romaji
+            {
+                break;
+            }
+        }
     }
     if alt && right {
-        // Technically we're one frame behind, but should be fine
-        if app.selected_segment + 1 < app.last_segs_len {
+        loop {
             app.selected_segment += 1;
+            if app.selected_segment >= app.segments.len() {
+                app.selected_segment = app.segments.len().saturating_sub(1);
+                break;
+            }
+            if app.segments[app.selected_segment].kind == SegmentKind::Romaji {
+                break;
+            }
         }
     }
     if tab {
@@ -178,9 +196,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                     if app.selected_segment == i {
                                         text = text.color(Color32::WHITE);
                                     }
-                                    if ui
-                                        .add(egui::Label::new(text).sense(egui::Sense::click()))
-                                        .clicked()
+                                    if span.kind == SegmentKind::Romaji
+                                        && ui
+                                            .add(egui::Label::new(text).sense(egui::Sense::click()))
+                                            .clicked()
                                     {
                                         app.selected_segment = i;
                                     }
