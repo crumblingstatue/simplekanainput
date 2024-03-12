@@ -40,37 +40,73 @@ const MAX_ROMAJI_ATOM_LEN: usize = 4;
 
 pub fn romaji_to_kana(romaji: &str, table: &RomajiKanaTable) -> String {
     let mut out = String::new();
-    let mut skip = 0;
-    for i in 0..romaji.len() {
-        if skip > 0 {
-            skip -= 1;
-            continue;
-        }
-        let mut found_kana = false;
-        for (j, end) in (i..=(i + MAX_ROMAJI_ATOM_LEN).min(romaji.len())).enumerate() {
-            let Some(src_atom) = romaji.get(i..end) else {
-                continue;
-            };
-            if let Some(kana) = table.lookup(src_atom) {
-                out.push_str(kana);
-                skip = j - 1;
-                found_kana = true;
-                break;
-            }
-        }
-        if !found_kana {
-            let &Some(atom) = &romaji.get(i..i + 1) else {
-                continue;
-            };
-            out.push_str(if atom == "n" {
-                table.lookup("nn").unwrap()
-            } else {
-                atom
-            });
-        }
+    let mut parser = RomajiParser::new(romaji);
+    while let Some(str) = parser.next_largest_match(table) {
+        out.push_str(str)
     }
     out
 }
+
+struct RomajiParser<'a> {
+    cursor: usize,
+    src: &'a str,
+}
+
+impl<'a> RomajiParser<'a> {
+    fn new(src: &'a str) -> Self {
+        Self { cursor: 0, src }
+    }
+    /// Attempts to find the largest romaji atom that matches.
+    ///
+    /// On match, returns a match from the kana table.
+    /// If there are no matches, returns a single character from the source string.
+    ///
+    /// At string end, returns None
+    fn next_largest_match(&mut self, table: &RomajiKanaTable) -> Option<&'a str> {
+        // The maximum end the match can reach (so it doesn't go out of bounds)
+        let max_match_end = std::cmp::min(self.cursor + MAX_ROMAJI_ATOM_LEN, self.src.len());
+        let mut match_len = std::cmp::min(MAX_ROMAJI_ATOM_LEN, max_match_end - self.cursor);
+        while match_len > 0 {
+            let end = self.cursor + match_len;
+            if end > max_match_end {
+                break;
+            }
+            match table.lookup(&self.src[self.cursor..end]) {
+                Some(kana) => {
+                    self.cursor += match_len;
+                    return Some(kana);
+                }
+                None => {
+                    match_len -= 1;
+                }
+            }
+        }
+        let ret = self.src.get(self.cursor..self.cursor + 1);
+        self.cursor += 1;
+        ret
+    }
+}
+
+#[test]
+fn test_find_largest_match() {
+    let mut parser = RomajiParser::new("...nani?");
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("…"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("な"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("に"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("?"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), None);
+    parser = RomajiParser::new("sonna...");
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("そ"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("ん"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("な"));
+    parser = RomajiParser::new("konnichiha...");
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("こ"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("ん"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("に"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("ち"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("は"));
+}
+
 pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
     let mut s = String::new();
     for (i, span) in segments.iter().enumerate() {
