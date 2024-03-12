@@ -161,7 +161,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         });
         ui.separator();
         StripBuilder::new(ui)
-            .size(Size::exact(100.0))
+            .size(Size::exact(120.0))
             .size(Size::remainder())
             .vertical(|mut strip| {
                 strip.strip(|builder| {
