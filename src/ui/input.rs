@@ -88,6 +88,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 app.intp.insert(
                     app.selected_segment,
                     Intp::Dictionary {
+                        cached_sug_idx: selected_sug,
                         en: sug.entry,
                         kanji_idx: 0,
                         root: sug.mugo_root.clone(),
@@ -264,7 +265,7 @@ fn suggestion_ui_strip(
                     let hiragana = hiragana.trim();
                     let katakana = romaji_to_kana(seg, &KATAKANA);
                     let katakana = katakana.trim();
-                    gen_dict_ui_for_hiragana(ui, intp, i, cached_suggestions, selected_suggestion);
+                    gen_dict_ui_for_hiragana(ui, intp, i, cached_suggestions);
                     for pair in crate::radicals::by_name(hiragana) {
                         if ui
                             .button(format!("{} ({} radical)", pair.ch, pair.name))
@@ -335,9 +336,8 @@ fn intp_matches_approx(a: &Intp, b: &Intp) -> bool {
 fn gen_dict_ui_for_hiragana(
     ui: &mut egui::Ui,
     intp: &mut IntpMap,
-    i: usize,
+    intp_idx: usize,
     suggestions: &CachedSuggestions,
-    selected_suggestion: &Option<usize>,
 ) {
     for (si, suggestion) in suggestions.jmdict.iter().enumerate() {
         // Same entry, different kanji goes into horizontal layout
@@ -353,13 +353,16 @@ fn gen_dict_ui_for_hiragana(
                     dict_en_ui(ui, &suggestion.entry);
                 };
                 let mut text = egui::RichText::new(kanji_str);
-                if selected_suggestion == &Some(si) {
-                    text = text.color(egui::Color32::YELLOW);
+                if let Some(Intp::Dictionary { cached_sug_idx, .. }) = intp.get(&intp_idx) {
+                    if *cached_sug_idx == si {
+                        text = text.color(egui::Color32::YELLOW);
+                    }
                 }
                 if ui.button(text).on_hover_ui(hover_ui).clicked() {
                     intp.insert(
-                        i,
+                        intp_idx,
                         Intp::Dictionary {
+                            cached_sug_idx: si,
                             en: suggestion.entry,
                             kanji_idx: ki,
                             root: suggestion.mugo_root.clone(),

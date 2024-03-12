@@ -15,6 +15,11 @@ pub enum Intp {
     Hiragana,
     Katakana,
     Dictionary {
+        /// Index into cached suggestions.
+        ///
+        /// Not ideal that the entry and this index can potentially get desynced,
+        /// but jmdict::Entry doesn't really provide a way to identify itself uniquely.
+        cached_sug_idx: usize,
         en: jmdict::Entry,
         kanji_idx: usize,
         root: Option<mugo::Root>,
@@ -125,6 +130,7 @@ pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &Kan
                 s.push_str(&romaji_to_kana(seg, &KATAKANA));
             }
             Intp::Dictionary {
+                cached_sug_idx: _,
                 en,
                 kanji_idx,
                 root,
