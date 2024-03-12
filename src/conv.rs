@@ -28,20 +28,15 @@ pub enum Intp {
 pub type IntpMap = HashMap<usize, Intp>;
 
 #[derive(Debug)]
-pub struct Element<'a> {
-    pub atom: &'a str,
-}
-
-#[derive(Debug)]
 pub struct DecomposeResult<'a> {
-    pub elems: Vec<Element<'a>>,
+    elems: Vec<&'a str>,
 }
 
 impl<'a> DecomposeResult<'a> {
     pub fn to_kana_string(&self) -> String {
         let mut out = String::new();
         for elem in &self.elems {
-            out.push_str(elem.atom);
+            out.push_str(elem);
         }
         out
     }
@@ -72,7 +67,7 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
                 continue;
             };
             if let Some(kana) = table.lookup(src_atom) {
-                elems.push(Element { atom: kana });
+                elems.push(kana);
                 skip = j - 1;
                 found_kana = true;
                 break;
@@ -82,12 +77,10 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
             let &Some(atom) = &romaji.get(i..i + 1) else {
                 continue;
             };
-            elems.push(Element {
-                atom: if atom == "n" {
-                    table.lookup("nn").unwrap()
-                } else {
-                    atom
-                },
+            elems.push(if atom == "n" {
+                table.lookup("nn").unwrap()
+            } else {
+                atom
             });
         }
     }
