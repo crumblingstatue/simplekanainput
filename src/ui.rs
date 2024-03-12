@@ -47,27 +47,22 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry) -> DictUiMsg {
             ui.separator();
             for sense in en.senses() {
                 ui.horizontal_wrapped(|ui| {
-                    let mut begin = true;
+                    let mut gloss_string = String::new();
                     for gloss in sense.glosses() {
-                        if !begin {
-                            ui.separator();
-                        }
-                        begin = false;
-                        ui.label(gloss.text);
+                        gloss_string += gloss.text;
+                        gloss_string.push_str(", ");
                     }
-                    ui.end_row();
-                    begin = true;
+                    ui.label(egui::RichText::new(gloss_string.trim_end_matches(", ")).size(16.0));
+                    let mut parts_string = String::new();
                     for part in sense.parts_of_speech() {
-                        if !begin {
-                            ui.separator();
-                        }
-                        begin = false;
-                        ui.label(
-                            egui::RichText::new(part.to_string())
-                                .size(12.0)
-                                .color(egui::Color32::DARK_GRAY),
-                        );
+                        parts_string += &part.to_string();
                     }
+                    ui.label(
+                        egui::RichText::new(parts_string.trim_end_matches(", "))
+                            .size(16.0)
+                            .italics()
+                            .color(egui::Color32::DARK_GRAY),
+                    );
                 });
             }
         });
