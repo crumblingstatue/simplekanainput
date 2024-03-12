@@ -43,7 +43,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 break;
             }
             if app.selected_segment == 0
-                || app.segments[app.selected_segment].kind == SegmentKind::Romaji
+                || app
+                    .segments
+                    .get(app.selected_segment)
+                    .is_some_and(|seg| seg.kind == SegmentKind::Romaji)
             {
                 break;
             }
