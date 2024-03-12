@@ -56,7 +56,7 @@ const MAX_ROMAJI_ATOM_LEN: usize = 4;
 pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResult<'a> {
     let mut elems = Vec::new();
     let mut skip = 0;
-    for (i, _c) in romaji.char_indices() {
+    for i in 0..romaji.len() {
         if skip > 0 {
             skip -= 1;
             continue;
