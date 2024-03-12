@@ -3,6 +3,7 @@ use {
         kana::{RomajiKanaTable, HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         radicals::RadicalPair,
+        segment::Span,
     },
     mugo::RootKind,
     serde::Deserialize,
@@ -92,9 +93,10 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
     }
     DecomposeResult { elems }
 }
-pub fn to_japanese<'a>(segments: &'a [&'a str], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
+pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
     let mut s = String::new();
-    for (i, seg) in segments.iter().enumerate() {
+    for (i, span) in segments.iter().enumerate() {
+        let seg = span.index(text);
         let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
         match intp {
             Intp::AsIs => s.push_str(seg),

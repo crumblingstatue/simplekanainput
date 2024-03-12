@@ -3,7 +3,7 @@ use {
         conv::{decompose, IntpMap},
         kana::HIRAGANA,
         kanji::KanjiDb,
-        segment::segment,
+        segment::Span,
         ui::{DictUiState, KanjiUiState},
         WinDims, WIN_DIMS,
     },
@@ -31,6 +31,7 @@ pub struct AppState {
     pub cached_suggestions: CachedSuggestions,
     /// Selected dictionary suggestion (index into cache)
     pub selected_suggestion: Option<usize>,
+    pub segments: Vec<Span>,
 }
 
 #[derive(Default)]
@@ -73,17 +74,17 @@ impl AppState {
             last_selected_segment: 0,
             cached_suggestions: CachedSuggestions::default(),
             selected_suggestion: None,
+            segments: Vec::new(),
         })
     }
     /// Populate the suggestion cache with entries for the selected segment
     pub(crate) fn repopulate_suggestion_cache(&mut self) {
         self.cached_suggestions.clear();
         let i = self.selected_segment;
-        let segs = segment(&self.romaji_buf);
-        let Some(seg) = segs.get(i) else {
+        let Some(span) = self.segments.get(i) else {
             return;
         };
-        let hiragana = decompose(seg, &HIRAGANA).to_kana_string();
+        let hiragana = decompose(span.index(&self.romaji_buf), &HIRAGANA).to_kana_string();
         let hiragana = hiragana.trim();
         let root = Root::Bare(hiragana);
         let mugo_roots: Vec<mugo::Root> = mugo::deconjugate(hiragana).into_iter().collect();

@@ -5,7 +5,6 @@ use {
         conv::{self, decompose, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
-        segment::segment,
     },
     egui_extras::{Size, StripBuilder},
     egui_sfml::egui::{self, Color32, Modifiers},
@@ -115,8 +114,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         });
     ui.separator();
     // region: input state change handling
-    let segs = segment(&app.romaji_buf);
-    let new_len = segs.len();
+    app.segments = crate::segment::segment(&app.romaji_buf);
+    let new_len = app.segments.len();
     if new_len > app.last_segs_len {
         segmentation_count_changed = Some(app.last_segs_len);
     }
@@ -126,10 +125,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     }
     app.last_selected_segment = app.selected_segment;
     // endregion: input state change handling
-    let japanese = conv::to_japanese(&segs, &app.intp, &app.kanji_db);
+    let japanese = conv::to_japanese(&app.romaji_buf, &app.segments, &app.intp, &app.kanji_db);
     'intp_select_ui: {
         let i = app.selected_segment;
-        let Some(seg) = segs.get(i) else {
+        let Some(span) = app.segments.get(i) else {
             break 'intp_select_ui;
         };
         ui.horizontal(|ui| {
@@ -145,6 +144,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             .size(Size::remainder())
             .vertical(|mut strip| {
                 strip.strip(|builder| {
+                    let seg = span.index(&app.romaji_buf);
                     suggestion_ui_strip(
                         seg,
                         i,
@@ -160,7 +160,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     egui::ScrollArea::vertical()
                         .id_source("kana_scroll")
                         .show(ui, |ui| {
-                            let len = segs.len();
+                            let len = app.segments.len();
                             if len != 0 {
                                 if f5 {
                                     app.intp.insert(app.selected_segment, Intp::Hiragana);
@@ -173,8 +173,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                 }
                             }
                             ui.horizontal_wrapped(|ui| {
-                                for (i, seg) in segs.iter().enumerate() {
-                                    let mut text = egui::RichText::new(*seg);
+                                for (i, span) in app.segments.iter().enumerate() {
+                                    let mut text = egui::RichText::new(span.index(&app.romaji_buf));
                                     if app.selected_segment == i {
                                         text = text.color(Color32::WHITE);
                                     }
