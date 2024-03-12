@@ -64,6 +64,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
         }
     }
+    // Propagates to the intp selection ui to scroll to the entry in case selection was changed
+    let mut sel_changed = false;
     if tab {
         'tabhandler: {
             let selected_sug = match &mut app.selected_suggestion {
@@ -75,9 +77,11 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             break 'tabhandler;
                         } else {
                             *sug -= 1;
+                            sel_changed = true;
                         }
                     } else if (*sug + 1) < app.cached_suggestions.jmdict.len() {
                         *sug += 1;
+                        sel_changed = true;
                     }
                     *sug
                 }
@@ -173,6 +177,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                         &app.cached_suggestions,
                         &app.kanji_db,
                         builder,
+                        sel_changed,
                     );
                 });
                 strip.cell(|ui| {
@@ -254,6 +259,7 @@ fn suggestion_ui_strip(
     cached_suggestions: &CachedSuggestions,
     kanji_db: &KanjiDb,
     strip_builder: StripBuilder,
+    sel_changed: bool,
 ) {
     strip_builder
         .clip(true)
@@ -266,7 +272,7 @@ fn suggestion_ui_strip(
                     let hiragana = hiragana.trim();
                     let katakana = romaji_to_kana(seg, &KATAKANA);
                     let katakana = katakana.trim();
-                    gen_dict_ui_for_hiragana(ui, intp, intp_idx, cached_suggestions);
+                    gen_dict_ui_for_hiragana(ui, intp, intp_idx, cached_suggestions, sel_changed);
                     for pair in crate::radicals::by_name(hiragana) {
                         if ui
                             .button(format!("{} ({} radical)", pair.ch, pair.name))
@@ -337,6 +343,7 @@ fn gen_dict_ui_for_hiragana(
     intp: &mut IntpMap,
     intp_idx: usize,
     suggestions: &CachedSuggestions,
+    sel_changed: bool,
 ) {
     for (si, suggestion) in suggestions.jmdict.iter().enumerate() {
         // Same entry, different kanji goes into horizontal layout
@@ -352,12 +359,18 @@ fn gen_dict_ui_for_hiragana(
                     dict_en_ui(ui, &suggestion.entry);
                 };
                 let mut text = egui::RichText::new(kanji_str);
+                let mut scroll = false;
                 if let Some(Intp::Dictionary { cached_sug_idx, .. }) = intp.get(&intp_idx) {
                     if *cached_sug_idx == si {
                         text = text.color(egui::Color32::YELLOW);
+                        scroll = true;
                     }
                 }
-                if ui.button(text).on_hover_ui(hover_ui).clicked() {
+                let re = ui.button(text).on_hover_ui(hover_ui);
+                if scroll && sel_changed {
+                    re.scroll_to_me(Some(egui::Align::Center));
+                }
+                if re.clicked() {
                     intp.insert(
                         intp_idx,
                         Intp::Dictionary {
