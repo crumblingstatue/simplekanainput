@@ -27,21 +27,6 @@ pub enum Intp {
 
 pub type IntpMap = HashMap<usize, Intp>;
 
-#[derive(Debug)]
-pub struct DecomposeResult<'a> {
-    elems: Vec<&'a str>,
-}
-
-impl<'a> DecomposeResult<'a> {
-    pub fn to_kana_string(&self) -> String {
-        let mut out = String::new();
-        for elem in &self.elems {
-            out.push_str(elem);
-        }
-        out
-    }
-}
-
 #[derive(Deserialize, Debug)]
 pub struct DictEntry {
     pub romaji: String,
@@ -53,8 +38,8 @@ pub struct DictEntry {
 /// "sshi" is an example of a romaji kana atom, with length of 4.
 const MAX_ROMAJI_ATOM_LEN: usize = 4;
 
-pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResult<'a> {
-    let mut elems = Vec::new();
+pub fn romaji_to_kana(romaji: &str, table: &RomajiKanaTable) -> String {
+    let mut out = String::new();
     let mut skip = 0;
     for i in 0..romaji.len() {
         if skip > 0 {
@@ -67,7 +52,7 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
                 continue;
             };
             if let Some(kana) = table.lookup(src_atom) {
-                elems.push(kana);
+                out.push_str(kana);
                 skip = j - 1;
                 found_kana = true;
                 break;
@@ -77,14 +62,14 @@ pub fn decompose<'a>(romaji: &'a str, table: &RomajiKanaTable) -> DecomposeResul
             let &Some(atom) = &romaji.get(i..i + 1) else {
                 continue;
             };
-            elems.push(if atom == "n" {
+            out.push_str(if atom == "n" {
                 table.lookup("nn").unwrap()
             } else {
                 atom
             });
         }
     }
-    DecomposeResult { elems }
+    out
 }
 pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
     let mut s = String::new();
@@ -94,12 +79,10 @@ pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &Kan
         match intp {
             Intp::AsIs => s.push_str(seg),
             Intp::Hiragana => {
-                let dec = decompose(seg, &HIRAGANA);
-                s.push_str(&dec.to_kana_string());
+                s.push_str(&romaji_to_kana(seg, &HIRAGANA));
             }
             Intp::Katakana => {
-                let dec = decompose(seg, &KATAKANA);
-                s.push_str(&dec.to_kana_string());
+                s.push_str(&romaji_to_kana(seg, &KATAKANA));
             }
             Intp::Dictionary {
                 en,
@@ -128,4 +111,9 @@ pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &Kan
         }
     }
     s
+}
+
+#[test]
+fn test_decompose() {
+    assert_eq!(romaji_to_kana("sugoi", &HIRAGANA), "すごい");
 }

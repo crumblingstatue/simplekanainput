@@ -2,7 +2,7 @@ use {
     super::dict_en_ui,
     crate::{
         appstate::{AppState, CachedSuggestions, UiState},
-        conv::{self, decompose, Intp, IntpMap},
+        conv::{self, romaji_to_kana, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         segment::SegmentKind,
@@ -260,9 +260,9 @@ fn suggestion_ui_strip(
         .horizontal(|mut strip| {
             strip.cell(|ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    let hiragana = decompose(seg, &HIRAGANA).to_kana_string();
+                    let hiragana = romaji_to_kana(seg, &HIRAGANA);
                     let hiragana = hiragana.trim();
-                    let katakana = decompose(seg, &KATAKANA).to_kana_string();
+                    let katakana = romaji_to_kana(seg, &KATAKANA);
                     let katakana = katakana.trim();
                     gen_dict_ui_for_hiragana(ui, intp, i, cached_suggestions, selected_suggestion);
                     for pair in crate::radicals::by_name(hiragana) {

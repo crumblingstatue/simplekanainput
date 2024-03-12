@@ -1,6 +1,6 @@
 use {
     crate::{
-        conv::{decompose, IntpMap},
+        conv::{romaji_to_kana, IntpMap},
         kana::HIRAGANA,
         kanji::KanjiDb,
         segment::Span,
@@ -84,7 +84,7 @@ impl AppState {
         let Some(span) = self.segments.get(i) else {
             return;
         };
-        let hiragana = decompose(span.index(&self.romaji_buf), &HIRAGANA).to_kana_string();
+        let hiragana = romaji_to_kana(span.index(&self.romaji_buf), &HIRAGANA);
         let hiragana = hiragana.trim();
         let root = Root::Bare(hiragana);
         let mugo_roots: Vec<mugo::Root> = mugo::deconjugate(hiragana).into_iter().collect();

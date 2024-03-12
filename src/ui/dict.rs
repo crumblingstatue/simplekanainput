@@ -2,7 +2,7 @@ use {
     super::{dict_en_ui, DictUiMsg},
     crate::{
         appstate::{AppState, UiState},
-        conv::decompose,
+        conv::romaji_to_kana,
         kana::HIRAGANA,
     },
     egui_sfml::egui,
@@ -90,7 +90,7 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.dict_ui_state.selected = 0;
         match app.dict_ui_state.lookup_method {
             LookupMethod::Kana => {
-                let kana = decompose(&app.dict_ui_state.search_buf, &HIRAGANA).to_kana_string();
+                let kana = romaji_to_kana(&app.dict_ui_state.search_buf, &HIRAGANA);
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| en.reading_elements().any(|elem| elem.text.contains(&kana)))
                     .collect()
