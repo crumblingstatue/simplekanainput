@@ -15,7 +15,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
     let mut segmentation_count_changed = None;
-    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift, alt, left, right) =
+    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift, alt_left, alt_right) =
         ui.input_mut(|inp| {
             (
                 inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
@@ -28,16 +28,15 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 inp.key_pressed(egui::Key::Escape),
                 inp.consume_key(Modifiers::NONE, egui::Key::Tab),
                 inp.modifiers.shift,
-                inp.modifiers.alt,
-                inp.key_pressed(egui::Key::ArrowLeft),
-                inp.key_pressed(egui::Key::ArrowRight),
+                inp.consume_key(Modifiers::ALT, egui::Key::ArrowLeft),
+                inp.consume_key(Modifiers::ALT, egui::Key::ArrowRight),
             )
         });
     if esc {
         app.hide_requested = true;
     }
     // Navigate to previous/next romaji segment to select
-    if alt && left {
+    if alt_left {
         loop {
             app.selected_segment = app.selected_segment.saturating_sub(1);
             if app.segments.is_empty() {
@@ -50,7 +49,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
         }
     }
-    if alt && right {
+    if alt_right {
         loop {
             app.selected_segment += 1;
             if app.selected_segment >= app.segments.len() {
