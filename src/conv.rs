@@ -99,12 +99,16 @@ fn test_find_largest_match() {
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("そ"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("ん"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("な"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("…"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), None);
     parser = RomajiParser::new("konnichiha...");
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("こ"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("ん"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("に"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("ち"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("は"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("…"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), None);
 }
 
 pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
