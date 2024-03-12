@@ -220,8 +220,18 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     }
     if let Some(old) = segmentation_count_changed {
         repopulate_suggestion_cache = true;
-        // Set selected segment to newly inserted one
-        app.selected_segment = new_len - 1;
+        // Set selected segment to the last romaji segment or 0
+        let mut any_set = false;
+        for (i, span) in app.segments.iter().enumerate().rev() {
+            if span.kind == SegmentKind::Romaji {
+                app.selected_segment = i;
+                any_set = true;
+                break;
+            }
+        }
+        if !any_set {
+            app.selected_segment = 0;
+        }
         // Remove intp info for deleted segments
         for i in old..new_len {
             app.intp.remove(&i);
