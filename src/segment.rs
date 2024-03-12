@@ -72,6 +72,10 @@ pub fn segment(input_text: &str) -> Vec<Span> {
     if remainder.len() != 0 {
         segs.push(remainder);
     }
+    // Special behavior: Get rid of single space segments. This allows
+    // nice continuous output, which Japanese readers usually expect.
+    // The user can still insert two spaces if they want to insert a space.
+    segs.retain(|seg| seg.index(input_text) != " ");
     segs
 }
 
@@ -89,11 +93,11 @@ fn test_segment() {
         };
     }
     test_cases! {
-        "watashi ha" => "watashi", " ", "ha";
+        "watashi ha" => "watashi", "ha";
         "watashi  ha" => "watashi", "  ", "ha";
-        "hai, sou desu. nani?" => "hai", ", ", "sou", " ", "desu", ". ", "nani", "?";
-        "are ha nandesu ka? zenkai boosto da!" => "are", " ", "ha", " ", "nandesu", " ",
-        "ka", "? ", "zenkai", " ", "boosto", " ", "da", "!";
-        "supe-su ha sugoi ne" => "supe-su", " ", "ha", " ", "sugoi", " ", "ne";
+        "hai, sou desu. nani?" => "hai", ", ", "sou","desu", ". ", "nani", "?";
+        "are ha nandesu ka? zenkai boosto da!" => "are", "ha", "nandesu", "ka", "? ", "zenkai",
+        "boosto", "da", "!";
+        "supe-su ha sugoi ne" => "supe-su", "ha", "sugoi", "ne";
     }
 }
