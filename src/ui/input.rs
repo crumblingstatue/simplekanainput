@@ -171,7 +171,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                         i,
                         &mut app.intp,
                         &app.cached_suggestions,
-                        &app.selected_suggestion,
                         &app.kanji_db,
                         builder,
                     );
@@ -250,10 +249,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
 
 fn suggestion_ui_strip(
     seg: &str,
-    i: usize,
+    intp_idx: usize,
     intp: &mut IntpMap,
     cached_suggestions: &CachedSuggestions,
-    selected_suggestion: &Option<usize>,
     kanji_db: &KanjiDb,
     strip_builder: StripBuilder,
 ) {
@@ -268,13 +266,13 @@ fn suggestion_ui_strip(
                     let hiragana = hiragana.trim();
                     let katakana = romaji_to_kana(seg, &KATAKANA);
                     let katakana = katakana.trim();
-                    gen_dict_ui_for_hiragana(ui, intp, i, cached_suggestions);
+                    gen_dict_ui_for_hiragana(ui, intp, intp_idx, cached_suggestions);
                     for pair in crate::radicals::by_name(hiragana) {
                         if ui
                             .button(format!("{} ({} radical)", pair.ch, pair.name))
                             .clicked()
                         {
-                            intp.insert(i, Intp::Radical(pair));
+                            intp.insert(intp_idx, Intp::Radical(pair));
                             ui.close_menu();
                         }
                     }
@@ -286,16 +284,14 @@ fn suggestion_ui_strip(
                                 .button(format!("{} - {}", kanji.chars[0], kanji.meaning))
                                 .clicked()
                         {
-                            intp.insert(i, Intp::Kanji { db_idx });
+                            intp.insert(intp_idx, Intp::Kanji { db_idx });
                         }
                     }
                 });
             });
             strip.cell(|ui| {
-                if let Some(idx) = selected_suggestion {
-                    if let Some(en) = &cached_suggestions.jmdict.get(*idx).map(|sug| sug.entry) {
-                        dict_en_ui(ui, en);
-                    }
+                if let Some(Intp::Dictionary { en, .. }) = intp.get(&intp_idx) {
+                    dict_en_ui(ui, en);
                 }
             })
         });
