@@ -113,6 +113,7 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) 
                             P::GodanMuVerb => "む verb",
                             P::GodanNuVerb => "ぬ verb",
                             P::GodanUVerb => "う verb",
+                            P::GodanSuVerb => "す verb",
                             P::GodanRuVerb => "godan る verb",
                             P::SuruVerb => "する verb",
                             P::IntransitiveVerb => "intransitive",
