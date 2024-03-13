@@ -14,7 +14,6 @@ use {
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
-    let mut segmentation_count_changed = None;
     let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift, alt_left, alt_right) =
         ui.input_mut(|inp| {
             (
@@ -139,6 +138,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         });
     ui.separator();
     // region: input state change handling
+    let mut segmentation_count_changed = None;
     app.segments = crate::segment::segment(&app.romaji_buf);
     let new_len = app.segments.len();
     if new_len > app.last_segs_len {
