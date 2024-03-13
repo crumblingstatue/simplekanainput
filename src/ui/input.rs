@@ -151,11 +151,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     app.last_selected_segment = app.selected_segment;
     // endregion: input state change handling
     let japanese = conv::to_japanese(&app.romaji_buf, &app.segments, &app.intp, &app.kanji_db);
-    'intp_select_ui: {
+    {
         let i = app.selected_segment;
-        let Some(span) = app.segments.get(i) else {
-            break 'intp_select_ui;
-        };
         ui.horizontal(|ui| {
             intp_button(&mut app.intp, i, ui, "は", "F5", Intp::Hiragana);
             ui.separator();
@@ -169,6 +166,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             .size(Size::remainder())
             .vertical(|mut strip| {
                 strip.strip(|builder| {
+                    let Some(span) = app.segments.get(i) else {
+                        return;
+                    };
                     let seg = span.index(&app.romaji_buf);
                     suggestion_ui_strip(
                         seg,
