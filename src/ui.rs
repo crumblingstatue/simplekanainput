@@ -98,12 +98,37 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) 
                     ui.label(egui::RichText::new(gloss_string.trim_end_matches(", ")).size(16.0));
                     let mut parts_string = String::new();
                     for part in sense.parts_of_speech() {
-                        parts_string += &part.to_string();
+                        use jmdict::PartOfSpeech as P;
+                        let str = match part {
+                            P::Adjective => "adjective",
+                            P::CommonNoun => "noun",
+                            P::AdjectivalNoun => "な adjective",
+                            P::Expression => "expression",
+                            P::NoAdjective => "の adjective",
+                            P::IchidanVerb => "ichidan verb",
+                            P::GodanBuVerb => "ぶ verb",
+                            P::GodanGuVerb => "ぐ verb",
+                            P::GodanKuVerb => "く verb",
+                            P::GodanIkuVerb => "行く verb",
+                            P::GodanMuVerb => "む verb",
+                            P::GodanNuVerb => "ぬ verb",
+                            P::GodanUVerb => "う verb",
+                            P::GodanRuVerb => "godan る verb",
+                            P::SuruVerb => "する verb",
+                            P::IntransitiveVerb => "intransitive",
+                            P::TransitiveVerb => "transitive",
+                            P::Adverb => "adverb",
+                            P::Pronoun => "pronoun",
+                            P::Suffix => "suffix",
+                            P::Interjection => "interjection",
+                            _ => jmdict::Enum::constant_name(&part),
+                        };
+                        parts_string.push_str(str);
+                        parts_string.push_str(", ");
                     }
                     ui.label(
                         egui::RichText::new(parts_string.trim_end_matches(", "))
-                            .size(16.0)
-                            .italics()
+                            .size(12.0)
                             .color(egui::Color32::DARK_GRAY),
                     );
                 });
