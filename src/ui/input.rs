@@ -11,7 +11,20 @@ use {
     egui_sfml::egui::{self, Color32, Modifiers},
 };
 
+/// Code that does some sanity checks on the application state, and corrects
+/// bad state.
+///
+/// Most of what this fixes is technically bugs, but it's better to have mostly sane behavior
+/// even in case of unforeseen bugs, or bugs that haven't been hunted down yet.
+fn ensure_ui_sanity(app: &mut AppState) {
+    if !app.segments.is_empty() && app.selected_segment >= app.segments.len() {
+        segment_sel_nav_left(app);
+        eprintln!("App segment selection out of bounds. Corrected.");
+    }
+}
+
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
+    ensure_ui_sanity(app);
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
     let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift, alt_left, alt_right) =
@@ -36,20 +49,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     }
     // Navigate to previous/next romaji segment to select
     if alt_left {
-        loop {
-            app.selected_segment = app.selected_segment.saturating_sub(1);
-            if app.segments.is_empty() {
-                break;
-            }
-            if app.selected_segment == 0
-                || app
-                    .segments
-                    .get(app.selected_segment)
-                    .is_some_and(|seg| seg.kind == SegmentKind::Romaji)
-            {
-                break;
-            }
-        }
+        segment_sel_nav_left(app);
     }
     if alt_right {
         loop {
@@ -249,6 +249,23 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         // Also clear the selected suggestion
         app.selected_suggestion = None;
         app.repopulate_suggestion_cache();
+    }
+}
+
+fn segment_sel_nav_left(app: &mut AppState) {
+    loop {
+        app.selected_segment = app.selected_segment.saturating_sub(1);
+        if app.segments.is_empty() {
+            break;
+        }
+        if app.selected_segment == 0
+            || app
+                .segments
+                .get(app.selected_segment)
+                .is_some_and(|seg| seg.kind == SegmentKind::Romaji)
+        {
+            break;
+        }
     }
 }
 
