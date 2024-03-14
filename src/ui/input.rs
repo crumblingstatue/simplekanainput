@@ -2,7 +2,7 @@ use {
     super::dict_en_ui,
     crate::{
         appstate::{AppState, CachedSuggestions, UiState},
-        conv::{self, romaji_to_kana, Intp, IntpMap},
+        conv::{self, romaji_to_kana, with_input_span_converted_form, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         segment::InputSpan,
@@ -203,26 +203,36 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                 }
                             }
                             ui.horizontal_wrapped(|ui| {
+                                let spacing = ui.spacing_mut();
+                                spacing.item_spacing = egui::vec2(0.0, 0.0);
                                 for (i, span) in app.segments.iter().enumerate() {
-                                    let InputSpan::RomajiWord { start, end } = *span else {
-                                        continue;
-                                    };
-                                    let mut text = egui::RichText::new(&app.romaji_buf[start..end]);
-                                    if span.contains_cursor(text_cursor) {
-                                        text = text.color(Color32::LIGHT_BLUE);
-                                    }
-                                    if app.selected_segment == i {
-                                        text = text.color(Color32::WHITE);
-                                    }
-                                    if ui
-                                        .add(egui::Label::new(text).sense(egui::Sense::click()))
-                                        .clicked()
-                                    {
-                                        app.selected_segment = i;
-                                    }
+                                    with_input_span_converted_form(
+                                        span,
+                                        i,
+                                        &app.romaji_buf,
+                                        &app.intp,
+                                        &app.kanji_db,
+                                        |conv_text| {
+                                            let mut text = egui::RichText::new(conv_text);
+                                            if span.contains_cursor(text_cursor) {
+                                                text = text.color(Color32::LIGHT_BLUE);
+                                            }
+                                            if app.selected_segment == i {
+                                                text = text.color(Color32::YELLOW);
+                                            }
+                                            if ui
+                                                .add(
+                                                    egui::Label::new(text)
+                                                        .sense(egui::Sense::click()),
+                                                )
+                                                .clicked()
+                                            {
+                                                app.selected_segment = i;
+                                            }
+                                        },
+                                    );
                                 }
                             });
-                            ui.label(&japanese);
                             if copy_jap_clicked {
                                 app.clipboard.set_text(&japanese).unwrap()
                             }

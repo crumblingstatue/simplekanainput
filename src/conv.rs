@@ -116,7 +116,7 @@ fn test_find_largest_match() {
     assert_eq!(parser.next_largest_match(&HIRAGANA), None);
 }
 
-fn with_input_span_converted_form(
+pub fn with_input_span_converted_form(
     span: &InputSpan,
     i: usize,
     text: &str,
