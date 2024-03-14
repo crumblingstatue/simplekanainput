@@ -138,13 +138,13 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         });
     ui.separator();
     // region: input state change handling
-    let mut segmentation_count_changed = None;
+    let mut segmentation_count_changed = false;
     let new = crate::segment::segment(&app.romaji_buf);
     crate::detect_edit::detect_edit_update_index_map(&mut app.intp, &app.segments, &new);
     app.segments = new;
     let new_len = app.segments.len();
     if new_len > app.last_segs_len {
-        segmentation_count_changed = Some(app.last_segs_len);
+        segmentation_count_changed = true;
     }
     app.last_segs_len = new_len;
     if app.selected_segment != app.last_selected_segment {
@@ -228,7 +228,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         app.intp.clear();
         app.hide_requested = true;
     }
-    if let Some(old) = segmentation_count_changed {
+    if segmentation_count_changed {
         repopulate_suggestion_cache = true;
         // Set selected segment to the last romaji segment or 0
         let mut any_set = false;
@@ -241,10 +241,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         }
         if !any_set {
             app.selected_segment = 0;
-        }
-        // Remove intp info for deleted segments
-        for i in old..new_len {
-            app.intp.remove(&i);
         }
     }
     if repopulate_suggestion_cache {

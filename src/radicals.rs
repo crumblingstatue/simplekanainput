@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct RadicalPair {
     pub name: &'static str,
     pub ch: char,

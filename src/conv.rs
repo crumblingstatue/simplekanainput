@@ -10,6 +10,7 @@ use {
     std::collections::HashMap,
 };
 
+#[derive(Debug)]
 pub enum Intp {
     AsIs,
     Hiragana,
