@@ -27,7 +27,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     ensure_ui_sanity(app);
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
-    let (ctrl_enter, f1, f2, f3, f5, f6, f7, esc, tab, shift, alt_left, alt_right) =
+    let (ctrl_enter, f1, f2, f3, f5, f6, esc, tab, shift, alt_left, alt_right) =
         ui.input_mut(|inp| {
             (
                 inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
@@ -36,7 +36,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 inp.key_pressed(egui::Key::F3),
                 inp.key_pressed(egui::Key::F5),
                 inp.key_pressed(egui::Key::F6),
-                inp.key_pressed(egui::Key::F7),
                 inp.key_pressed(egui::Key::Escape),
                 inp.consume_key(Modifiers::NONE, egui::Key::Tab),
                 inp.modifiers.shift,
@@ -168,8 +167,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             intp_button(&mut app.intp, i, ui, "は", "F5", Intp::Hiragana);
             ui.separator();
             intp_button(&mut app.intp, i, ui, "ハ", "F6", Intp::Katakana);
-            ui.separator();
-            intp_button(&mut app.intp, i, ui, "ha", "F7", Intp::AsIs);
         });
         ui.separator();
         StripBuilder::new(ui)
@@ -203,9 +200,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                 }
                                 if f6 {
                                     app.intp.insert(app.selected_segment, Intp::Katakana);
-                                }
-                                if f7 {
-                                    app.intp.insert(app.selected_segment, Intp::AsIs);
                                 }
                             }
                             ui.horizontal_wrapped(|ui| {

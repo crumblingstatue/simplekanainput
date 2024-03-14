@@ -12,7 +12,6 @@ use {
 
 #[derive(Debug)]
 pub enum Intp {
-    AsIs,
     Hiragana,
     Katakana,
     Dictionary {
@@ -135,7 +134,6 @@ pub fn to_japanese(
         };
         let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
         match intp {
-            Intp::AsIs => s.push_str(romaji),
             Intp::Hiragana => {
                 s.push_str(&romaji_to_kana(romaji, &HIRAGANA));
             }
