@@ -13,7 +13,10 @@ use {
         SfEgui,
     },
     sfml_xt::graphics::RenderWindowExt,
-    std::time::{Duration, Instant},
+    std::{
+        backtrace::Backtrace,
+        time::{Duration, Instant},
+    },
 };
 
 mod appstate;
@@ -101,6 +104,8 @@ fn main() {
             .set_title("Panic")
             .set_description(&info.to_string())
             .show();
+        let bt = Backtrace::capture();
+        eprintln!("{bt}");
     }));
     let mut rw = rw_create();
     let mut app = AppState::new().unwrap();
