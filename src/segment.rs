@@ -53,7 +53,7 @@ pub fn segment(input_text: &str) -> Vec<InputSpan> {
     let mut last_segment_begin = 0;
     for (pos, byte) in input_text.bytes().enumerate() {
         let is_romaji_word = byte.is_ascii_alphabetic() || matches!(byte, b'-');
-        let is_romaji_punct = matches!(byte, b'.' | b',' | b'!' | b'?');
+        let is_romaji_punct = matches!(byte, b'.' | b',' | b'!' | b'?' | b'[' | b']');
         match status {
             Status::Init => {
                 if is_romaji_word {
