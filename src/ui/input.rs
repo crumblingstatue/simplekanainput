@@ -144,7 +144,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             out.response.request_focus()
         });
-    ui.separator();
     // region: input state change handling
     let mut segmentation_count_changed = false;
     let new = crate::segment::segment(&app.romaji_buf);
@@ -161,49 +160,11 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     app.last_selected_segment = app.selected_segment;
     // endregion: input state change handling
     let japanese = conv::to_japanese(&app.romaji_buf, &app.segments, &app.intp, &app.kanji_db);
-    ui.horizontal(|ui| {
-        intp_button(
-            &mut app.intp,
-            app.selected_segment,
-            ui,
-            "は",
-            "F5",
-            Intp::Hiragana,
-        );
-        ui.separator();
-        intp_button(
-            &mut app.intp,
-            app.selected_segment,
-            ui,
-            "ハ",
-            "F6",
-            Intp::Katakana,
-        );
-    });
-    ui.separator();
     StripBuilder::new(ui)
         .size(Size::exact(120.0))
         .size(Size::remainder())
         .vertical(|mut strip| {
-            strip.strip(|builder| {
-                let Some(&InputSpan::RomajiWord { start, end }) =
-                    app.segments.get(app.selected_segment)
-                else {
-                    return;
-                };
-                let romaji = &app.romaji_buf[start..end];
-                suggestion_ui_strip(
-                    romaji,
-                    app.selected_segment,
-                    &mut app.intp,
-                    &app.cached_suggestions,
-                    &app.kanji_db,
-                    builder,
-                    sel_changed,
-                );
-            });
             strip.cell(|ui| {
-                ui.separator();
                 egui::ScrollArea::vertical()
                     .id_source("kana_scroll")
                     .show(ui, |ui| {
@@ -248,7 +209,24 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             app.clipboard.set_text(&japanese).unwrap()
                         }
                     });
-            })
+            });
+            strip.strip(|builder| {
+                let Some(&InputSpan::RomajiWord { start, end }) =
+                    app.segments.get(app.selected_segment)
+                else {
+                    return;
+                };
+                let romaji = &app.romaji_buf[start..end];
+                suggestion_ui_strip(
+                    romaji,
+                    app.selected_segment,
+                    &mut app.intp,
+                    &app.cached_suggestions,
+                    &app.kanji_db,
+                    builder,
+                    sel_changed,
+                );
+            });
         });
     if ctrl_enter {
         app.clipboard.set_text(&japanese).unwrap();
@@ -315,6 +293,12 @@ fn suggestion_ui_strip(
         .horizontal(|mut strip| {
             strip.cell(|ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        intp_button(intp, intp_idx, ui, "は", "Hiragana (F5)", Intp::Hiragana);
+                        ui.separator();
+                        intp_button(intp, intp_idx, ui, "ハ", "Katakana (F6)", Intp::Katakana);
+                    });
+                    ui.separator();
                     let hiragana = romaji_to_kana(seg, &HIRAGANA);
                     let hiragana = hiragana.trim();
                     let katakana = romaji_to_kana(seg, &KATAKANA);
@@ -355,7 +339,7 @@ fn intp_button(
     i: usize,
     ui: &mut egui::Ui,
     button_text: &str,
-    shortcut_text: &str,
+    hover_text: &str,
     intp: Intp,
 ) {
     let mut text = egui::RichText::new(button_text);
@@ -370,7 +354,8 @@ fn intp_button(
         text = text.color(egui::Color32::from_rgb(26, 226, 171));
     }
     if ui
-        .add(egui::Button::new(text).shortcut_text(shortcut_text))
+        .add(egui::Button::new(text))
+        .on_hover_text(hover_text)
         .clicked()
     {
         intp_map.insert(i, intp);
