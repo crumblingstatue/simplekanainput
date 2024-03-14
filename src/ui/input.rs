@@ -161,11 +161,24 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     app.last_selected_segment = app.selected_segment;
     // endregion: input state change handling
     let japanese = conv::to_japanese(&app.romaji_buf, &app.segments, &app.intp, &app.kanji_db);
-    let i = app.selected_segment;
     ui.horizontal(|ui| {
-        intp_button(&mut app.intp, i, ui, "は", "F5", Intp::Hiragana);
+        intp_button(
+            &mut app.intp,
+            app.selected_segment,
+            ui,
+            "は",
+            "F5",
+            Intp::Hiragana,
+        );
         ui.separator();
-        intp_button(&mut app.intp, i, ui, "ハ", "F6", Intp::Katakana);
+        intp_button(
+            &mut app.intp,
+            app.selected_segment,
+            ui,
+            "ハ",
+            "F6",
+            Intp::Katakana,
+        );
     });
     ui.separator();
     StripBuilder::new(ui)
@@ -173,13 +186,15 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .size(Size::remainder())
         .vertical(|mut strip| {
             strip.strip(|builder| {
-                let Some(&InputSpan::RomajiWord { start, end }) = app.segments.get(i) else {
+                let Some(&InputSpan::RomajiWord { start, end }) =
+                    app.segments.get(app.selected_segment)
+                else {
                     return;
                 };
                 let romaji = &app.romaji_buf[start..end];
                 suggestion_ui_strip(
                     romaji,
-                    i,
+                    app.selected_segment,
                     &mut app.intp,
                     &app.cached_suggestions,
                     &app.kanji_db,
