@@ -40,7 +40,7 @@ pub fn segment(input_text: &str) -> Vec<Span> {
     let mut status = Status::Init;
     let mut last_segment_begin = 0;
     for (pos, byte) in input_text.bytes().enumerate() {
-        let is_romaji = byte.is_ascii_lowercase() || byte == b'-';
+        let is_romaji = byte.is_ascii_alphabetic() || byte == b'-';
         match status {
             Status::Init => {
                 if is_romaji {
