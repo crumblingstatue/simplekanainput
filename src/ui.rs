@@ -75,6 +75,8 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) 
                                 mugo::Step::Katta => "かった",
                                 mugo::Step::Stem => "stem",
                                 mugo::Step::Nu => "ぬ",
+                                mugo::Step::Ki => "き (archaic い)",
+                                mugo::Step::Nda => "んだ",
                             });
                             if i != root.steps.len() - 1 {
                                 steps_str.push('➡');
