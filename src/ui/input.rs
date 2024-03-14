@@ -120,7 +120,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         }
         // Indicate attribute map status by disabling button if it's empty
         if ui
-            .add_enabled(!app.intp.is_empty(), egui::Button::new("[F3] 🗑 Clear attr"))
+            .add_enabled(
+                !app.intp.is_empty(),
+                egui::Button::new("[F3] 🗑 Clear attributes"),
+            )
             .clicked()
             || f3
         {
@@ -196,6 +199,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             let spacing = ui.spacing_mut();
                             spacing.item_spacing = egui::vec2(0.0, 0.0);
                             for (i, span) in app.segments.iter().enumerate() {
+                                let mut remove_intp = None;
                                 with_input_span_converted_form(
                                     span,
                                     i,
@@ -221,6 +225,16 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                                 app.selected_segment = i;
                                                 ui.close_menu();
                                             }
+                                            if ui
+                                                .add_enabled(
+                                                    app.intp.contains_key(&i),
+                                                    egui::Button::new("Clear attribute"),
+                                                )
+                                                .clicked()
+                                            {
+                                                remove_intp = Some(i);
+                                                ui.close_menu();
+                                            }
                                         });
                                         let (InputSpan::Other { start, end }
                                         | InputSpan::RomajiPunct { start, end }
@@ -231,6 +245,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                         }
                                     },
                                 );
+                                if let Some(idx) = remove_intp {
+                                    app.intp.remove(&idx);
+                                }
                             }
                         });
                         if copy_jap_clicked {
