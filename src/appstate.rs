@@ -4,7 +4,7 @@ use {
         kana::HIRAGANA,
         kanji::KanjiDb,
         segment::InputSpan,
-        ui::{DictUiState, KanjiUiState},
+        ui::{input::InputUiAction, DictUiState, KanjiUiState},
         WinDims, WIN_DIMS,
     },
     arboard::Clipboard,
@@ -32,6 +32,7 @@ pub struct AppState {
     /// Selected dictionary suggestion (index into cache)
     pub selected_suggestion: Option<usize>,
     pub segments: Vec<InputSpan>,
+    pub input_ui_action: Option<InputUiAction>,
 }
 
 #[derive(Default)]
@@ -75,6 +76,7 @@ impl AppState {
             cached_suggestions: CachedSuggestions::default(),
             selected_suggestion: None,
             segments: Vec::new(),
+            input_ui_action: None,
         })
     }
     /// Populate the suggestion cache with entries for the selected segment

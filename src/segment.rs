@@ -14,6 +14,17 @@ impl InputSpan {
         }
     }
 
+    /// Use this only to set input cursor position
+    ///
+    /// No indexing shenanigans please
+    pub fn cursor_end_pos(self) -> usize {
+        match self {
+            InputSpan::RomajiWord { end, .. }
+            | InputSpan::RomajiPunct { end, .. }
+            | InputSpan::Other { end, .. } => end,
+        }
+    }
+
     /// Private method, shouldn't be used willy-nilly, match on the enum first, then index.
     fn index(self, str: &str) -> &str {
         match self {

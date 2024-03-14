@@ -1,5 +1,5 @@
 mod dict;
-mod input;
+pub mod input;
 mod kanji_ui;
 
 pub use self::{

@@ -8,7 +8,11 @@ use {
         segment::InputSpan,
     },
     egui_extras::{Size, StripBuilder},
-    egui_sfml::egui::{self, Color32, Modifiers},
+    egui_sfml::egui::{
+        self,
+        text::{CCursor, CCursorRange},
+        Color32, Modifiers,
+    },
 };
 
 /// Code that does some sanity checks on the application state, and corrects
@@ -21,6 +25,10 @@ fn ensure_ui_sanity(app: &mut AppState) {
         segment_sel_nav_left(app);
         eprintln!("App segment selection out of bounds. Corrected.");
     }
+}
+
+pub enum InputUiAction {
+    SetCursor(usize),
 }
 
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
@@ -132,15 +140,22 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .max_height(app.half_dims.h.into())
         .id_source("romaji_scroll")
         .show(ui, |ui| {
-            let out = egui::TextEdit::multiline(&mut app.romaji_buf)
+            let mut out = egui::TextEdit::multiline(&mut app.romaji_buf)
                 .hint_text("Romaji")
                 .desired_width(f32::INFINITY)
                 .show(ui);
             if out.response.changed() {
                 repopulate_suggestion_cache = true;
             }
-            if let Some(range) = out.cursor_range {
+            if let Some(range) = &mut out.cursor_range {
                 text_cursor = range.primary.ccursor.index;
+            }
+            if let Some(InputUiAction::SetCursor(pos)) = app.input_ui_action.as_ref() {
+                out.state
+                    .cursor
+                    .set_char_range(Some(CCursorRange::one(CCursor::new(*pos))));
+                out.state.store(ui.ctx(), out.response.id);
+                app.input_ui_action = None;
             }
             out.response.request_focus()
         });
@@ -195,10 +210,19 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                         if app.selected_segment == i {
                                             text = text.color(Color32::YELLOW);
                                         }
-                                        if ui
-                                            .add(egui::Label::new(text).sense(egui::Sense::click()))
-                                            .clicked()
-                                        {
+                                        let re = ui.add(
+                                            egui::Label::new(text).sense(egui::Sense::click()),
+                                        );
+                                        re.context_menu(|ui| {
+                                            if ui.button("Edit here").clicked() {
+                                                app.input_ui_action = Some(
+                                                    InputUiAction::SetCursor(span.cursor_end_pos()),
+                                                );
+                                                app.selected_segment = i;
+                                                ui.close_menu();
+                                            }
+                                        });
+                                        if re.clicked() {
                                             app.selected_segment = i;
                                         }
                                     },
