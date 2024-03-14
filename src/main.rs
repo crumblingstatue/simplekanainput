@@ -18,6 +18,7 @@ use {
 
 mod appstate;
 mod conv;
+mod detect_edit;
 mod ipc;
 mod kana;
 mod kanji;

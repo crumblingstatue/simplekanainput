@@ -139,7 +139,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     ui.separator();
     // region: input state change handling
     let mut segmentation_count_changed = None;
-    app.segments = crate::segment::segment(&app.romaji_buf);
+    let new = crate::segment::segment(&app.romaji_buf);
+    crate::detect_edit::detect_edit_update_index_map(&mut app.intp, &app.segments, &new);
+    app.segments = new;
     let new_len = app.segments.len();
     if new_len > app.last_segs_len {
         segmentation_count_changed = Some(app.last_segs_len);
