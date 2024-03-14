@@ -82,12 +82,16 @@ pub fn segment(input_text: &str) -> Vec<InputSpan> {
                 }
             }
             Status::OtherText => {
-                if is_romaji_word {
+                if is_romaji_word | is_romaji_punct {
                     segs.push(InputSpan::Other {
                         start: last_segment_begin,
                         end: pos,
                     });
-                    status = Status::RomajiWord;
+                    if is_romaji_word {
+                        status = Status::RomajiWord;
+                    } else {
+                        status = Status::RomajiPunct;
+                    }
                     last_segment_begin = pos;
                 } else if byte == b'{' {
                     segs.push(InputSpan::Other {
@@ -169,5 +173,6 @@ fn test_segment() {
         "konnichiha {Yes. This is a free space 空.} rafaeru san." => "konnichiha",
             "Yes. This is a free space 空.", "rafaeru", "san";
         "{free space}" => "free space";
+        "ore no [chikara]" => "ore", "no", "[", "chikara", "]";
     }
 }
