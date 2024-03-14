@@ -116,6 +116,65 @@ fn test_find_largest_match() {
     assert_eq!(parser.next_largest_match(&HIRAGANA), None);
 }
 
+fn with_input_span_converted_form(
+    span: &InputSpan,
+    i: usize,
+    text: &str,
+    intp: &IntpMap,
+    kanji_db: &KanjiDb,
+    mut f: impl FnMut(&str),
+) {
+    let romaji = match *span {
+        InputSpan::RomajiWord { start, end } | InputSpan::RomajiPunct { start, end } => {
+            &text[start..end]
+        }
+        InputSpan::Other { start, end } => {
+            // We don't want to touch non-romaji segments at all
+            f(&text[start..end]);
+            return;
+        }
+    };
+    let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
+    match intp {
+        Intp::Hiragana => {
+            f(&romaji_to_kana(romaji, &HIRAGANA));
+        }
+        Intp::Katakana => {
+            f(&romaji_to_kana(romaji, &KATAKANA));
+        }
+        Intp::Dictionary {
+            cached_sug_idx: _,
+            en,
+            kanji_idx,
+            root,
+        } => {
+            let mut kanji_string = en
+                .kanji_elements()
+                .nth(*kanji_idx)
+                .unwrap()
+                .text
+                .to_string();
+            if let Some(root) = root {
+                // We want to pop the dictionary root for verbs/i adjectives
+                // but not for na adjectives (and maybe more?)
+                if !matches!(root.kind, RootKind::NaAdjective) {
+                    kanji_string.pop();
+                }
+                // Need to pop an extra character for suru verbs
+                if matches!(root.kind, RootKind::Suru | RootKind::SpecialSuru) {
+                    kanji_string.pop();
+                }
+                kanji_string.push_str(&root.conjugation_suffix());
+            }
+            f(&kanji_string);
+        }
+        Intp::Radical(pair) => {
+            f(&pair.ch.to_string());
+        }
+        Intp::Kanji { db_idx } => f(kanji_db.kanji[*db_idx].chars[0]),
+    }
+}
+
 pub fn to_japanese(
     text: &str,
     segments: &[InputSpan],
@@ -124,50 +183,9 @@ pub fn to_japanese(
 ) -> String {
     let mut s = String::new();
     for (i, span) in segments.iter().enumerate() {
-        let romaji = match *span {
-            InputSpan::RomajiWord { start, end } | InputSpan::RomajiPunct { start, end } => {
-                &text[start..end]
-            }
-            InputSpan::Other { start, end } => {
-                // We don't want to touch non-romaji segments at all
-                s.push_str(&text[start..end]);
-                continue;
-            }
-        };
-        let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
-        match intp {
-            Intp::Hiragana => {
-                s.push_str(&romaji_to_kana(romaji, &HIRAGANA));
-            }
-            Intp::Katakana => {
-                s.push_str(&romaji_to_kana(romaji, &KATAKANA));
-            }
-            Intp::Dictionary {
-                cached_sug_idx: _,
-                en,
-                kanji_idx,
-                root,
-            } => {
-                let kanji_str = en.kanji_elements().nth(*kanji_idx).unwrap().text;
-                s.push_str(kanji_str);
-                if let Some(root) = root {
-                    // We want to pop the dictionary root for verbs/i adjectives
-                    // but not for na adjectives (and maybe more?)
-                    if !matches!(root.kind, RootKind::NaAdjective) {
-                        s.pop();
-                    }
-                    // Need to pop an extra character for suru verbs
-                    if matches!(root.kind, RootKind::Suru | RootKind::SpecialSuru) {
-                        s.pop();
-                    }
-                    s.push_str(&root.conjugation_suffix());
-                }
-            }
-            Intp::Radical(pair) => {
-                s.push(pair.ch);
-            }
-            Intp::Kanji { db_idx } => s.push_str(kanji_db.kanji[*db_idx].chars[0]),
-        }
+        with_input_span_converted_form(span, i, text, intp, kanji_db, |conv| {
+            s.push_str(conv);
+        })
     }
     s
 }
