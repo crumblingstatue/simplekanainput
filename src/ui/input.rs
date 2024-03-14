@@ -210,7 +210,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                         if app.selected_segment == i {
                                             text = text.color(Color32::YELLOW);
                                         }
-                                        let re = ui.add(
+                                        let mut re = ui.add(
                                             egui::Label::new(text).sense(egui::Sense::click()),
                                         );
                                         re.context_menu(|ui| {
@@ -222,6 +222,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                                 ui.close_menu();
                                             }
                                         });
+                                        let (InputSpan::Other { start, end }
+                                        | InputSpan::RomajiPunct { start, end }
+                                        | InputSpan::RomajiWord { start, end }) = *span;
+                                        re = re.on_hover_text(&app.romaji_buf[start..end]);
                                         if re.clicked() {
                                             app.selected_segment = i;
                                         }
