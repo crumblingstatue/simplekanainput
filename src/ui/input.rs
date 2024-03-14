@@ -161,85 +161,80 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     app.last_selected_segment = app.selected_segment;
     // endregion: input state change handling
     let japanese = conv::to_japanese(&app.romaji_buf, &app.segments, &app.intp, &app.kanji_db);
-    {
-        let i = app.selected_segment;
-        ui.horizontal(|ui| {
-            intp_button(&mut app.intp, i, ui, "は", "F5", Intp::Hiragana);
-            ui.separator();
-            intp_button(&mut app.intp, i, ui, "ハ", "F6", Intp::Katakana);
-        });
+    let i = app.selected_segment;
+    ui.horizontal(|ui| {
+        intp_button(&mut app.intp, i, ui, "は", "F5", Intp::Hiragana);
         ui.separator();
-        StripBuilder::new(ui)
-            .size(Size::exact(120.0))
-            .size(Size::remainder())
-            .vertical(|mut strip| {
-                strip.strip(|builder| {
-                    let Some(&InputSpan::RomajiWord { start, end }) = app.segments.get(i) else {
-                        return;
-                    };
-                    let romaji = &app.romaji_buf[start..end];
-                    suggestion_ui_strip(
-                        romaji,
-                        i,
-                        &mut app.intp,
-                        &app.cached_suggestions,
-                        &app.kanji_db,
-                        builder,
-                        sel_changed,
-                    );
-                });
-                strip.cell(|ui| {
-                    ui.separator();
-                    egui::ScrollArea::vertical()
-                        .id_source("kana_scroll")
-                        .show(ui, |ui| {
-                            let len = app.segments.len();
-                            if len != 0 {
-                                if f5 {
-                                    app.intp.insert(app.selected_segment, Intp::Hiragana);
-                                }
-                                if f6 {
-                                    app.intp.insert(app.selected_segment, Intp::Katakana);
-                                }
+        intp_button(&mut app.intp, i, ui, "ハ", "F6", Intp::Katakana);
+    });
+    ui.separator();
+    StripBuilder::new(ui)
+        .size(Size::exact(120.0))
+        .size(Size::remainder())
+        .vertical(|mut strip| {
+            strip.strip(|builder| {
+                let Some(&InputSpan::RomajiWord { start, end }) = app.segments.get(i) else {
+                    return;
+                };
+                let romaji = &app.romaji_buf[start..end];
+                suggestion_ui_strip(
+                    romaji,
+                    i,
+                    &mut app.intp,
+                    &app.cached_suggestions,
+                    &app.kanji_db,
+                    builder,
+                    sel_changed,
+                );
+            });
+            strip.cell(|ui| {
+                ui.separator();
+                egui::ScrollArea::vertical()
+                    .id_source("kana_scroll")
+                    .show(ui, |ui| {
+                        let len = app.segments.len();
+                        if len != 0 {
+                            if f5 {
+                                app.intp.insert(app.selected_segment, Intp::Hiragana);
                             }
-                            ui.horizontal_wrapped(|ui| {
-                                let spacing = ui.spacing_mut();
-                                spacing.item_spacing = egui::vec2(0.0, 0.0);
-                                for (i, span) in app.segments.iter().enumerate() {
-                                    with_input_span_converted_form(
-                                        span,
-                                        i,
-                                        &app.romaji_buf,
-                                        &app.intp,
-                                        &app.kanji_db,
-                                        |conv_text| {
-                                            let mut text = egui::RichText::new(conv_text);
-                                            if span.contains_cursor(text_cursor) {
-                                                text = text.color(Color32::LIGHT_BLUE);
-                                            }
-                                            if app.selected_segment == i {
-                                                text = text.color(Color32::YELLOW);
-                                            }
-                                            if ui
-                                                .add(
-                                                    egui::Label::new(text)
-                                                        .sense(egui::Sense::click()),
-                                                )
-                                                .clicked()
-                                            {
-                                                app.selected_segment = i;
-                                            }
-                                        },
-                                    );
-                                }
-                            });
-                            if copy_jap_clicked {
-                                app.clipboard.set_text(&japanese).unwrap()
+                            if f6 {
+                                app.intp.insert(app.selected_segment, Intp::Katakana);
+                            }
+                        }
+                        ui.horizontal_wrapped(|ui| {
+                            let spacing = ui.spacing_mut();
+                            spacing.item_spacing = egui::vec2(0.0, 0.0);
+                            for (i, span) in app.segments.iter().enumerate() {
+                                with_input_span_converted_form(
+                                    span,
+                                    i,
+                                    &app.romaji_buf,
+                                    &app.intp,
+                                    &app.kanji_db,
+                                    |conv_text| {
+                                        let mut text = egui::RichText::new(conv_text);
+                                        if span.contains_cursor(text_cursor) {
+                                            text = text.color(Color32::LIGHT_BLUE);
+                                        }
+                                        if app.selected_segment == i {
+                                            text = text.color(Color32::YELLOW);
+                                        }
+                                        if ui
+                                            .add(egui::Label::new(text).sense(egui::Sense::click()))
+                                            .clicked()
+                                        {
+                                            app.selected_segment = i;
+                                        }
+                                    },
+                                );
                             }
                         });
-                })
-            });
-    }
+                        if copy_jap_clicked {
+                            app.clipboard.set_text(&japanese).unwrap()
+                        }
+                    });
+            })
+        });
     if ctrl_enter {
         app.clipboard.set_text(&japanese).unwrap();
         app.romaji_buf.clear();
