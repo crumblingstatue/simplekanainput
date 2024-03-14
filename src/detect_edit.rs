@@ -39,13 +39,16 @@ fn test_various() {
 
 fn update_index_map<V>(map: &mut HashMap<usize, V>, pos: usize, extent: isize) {
     let mut kvpairs: Vec<_> = map.drain().collect();
-    // Somehow this sort makes the `index_tracking_proof_of_concept` test deterministic.
-    kvpairs.sort_by_key(|(k, _)| *k);
-    for (k, _) in &mut kvpairs {
+    kvpairs.retain_mut(|(k, _)| {
+        let mut retain = true;
         if *k >= pos {
-            *k = k.saturating_add_signed(extent);
+            match k.checked_add_signed(extent) {
+                Some(val) => *k = val,
+                None => retain = false,
+            }
         }
-    }
+        retain
+    });
     *map = HashMap::from_iter(kvpairs);
 }
 
