@@ -2,6 +2,7 @@ enum Status {
     Init,
     RomajiText,
     OtherText,
+    ExplicitOther,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -45,6 +46,9 @@ pub fn segment(input_text: &str) -> Vec<Span> {
             Status::Init => {
                 if is_romaji {
                     status = Status::RomajiText;
+                } else if byte == b'{' {
+                    status = Status::ExplicitOther;
+                    last_segment_begin = pos + 1;
                 } else {
                     status = Status::OtherText;
                 }
@@ -61,6 +65,17 @@ pub fn segment(input_text: &str) -> Vec<Span> {
                     segs.push(Span::new(last_segment_begin, pos, SegmentKind::Other));
                     status = Status::RomajiText;
                     last_segment_begin = pos;
+                } else if byte == b'{' {
+                    segs.push(Span::new(last_segment_begin, pos, SegmentKind::Other));
+                    status = Status::ExplicitOther;
+                    last_segment_begin = pos + 1;
+                }
+            }
+            Status::ExplicitOther => {
+                if byte == b'}' {
+                    segs.push(Span::new(last_segment_begin, pos, SegmentKind::Other));
+                    status = Status::Init;
+                    last_segment_begin = pos + 1;
                 }
             }
         }
@@ -71,7 +86,7 @@ pub fn segment(input_text: &str) -> Vec<Span> {
             return segs;
         }
         Status::RomajiText => SegmentKind::Romaji,
-        Status::OtherText => SegmentKind::Other,
+        Status::OtherText | Status::ExplicitOther => SegmentKind::Other,
     };
     let remainder = Span::new(last_segment_begin, input_text.len(), remainder_kind);
     if remainder.len() != 0 {
@@ -102,7 +117,10 @@ fn test_segment() {
         "watashi  ha" => "watashi", "  ", "ha";
         "hai, sou desu. nani?" => "hai", ", ", "sou","desu", ". ", "nani", "?";
         "are ha nandesu ka? zenkai boosto da!" => "are", "ha", "nandesu", "ka", "? ", "zenkai",
-        "boosto", "da", "!";
+            "boosto", "da", "!";
         "supe-su ha sugoi ne" => "supe-su", "ha", "sugoi", "ne";
+        "konnichiha {Yes. This is a free space 空.} rafaeru san." => "konnichiha",
+            "Yes. This is a free space 空.", "rafaeru", "san";
+        "{free space}" => "free space";
     }
 }
