@@ -122,19 +122,23 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         }
     });
     ui.separator();
+    // Character (not byte) position of the text cursor in the romaji editor
+    let mut text_cursor = 0;
     egui::ScrollArea::vertical()
         .max_height(app.half_dims.h.into())
         .id_source("romaji_scroll")
         .show(ui, |ui| {
-            let re = ui.add(
-                egui::TextEdit::multiline(&mut app.romaji_buf)
-                    .hint_text("Romaji")
-                    .desired_width(f32::INFINITY),
-            );
-            if re.changed() {
+            let out = egui::TextEdit::multiline(&mut app.romaji_buf)
+                .hint_text("Romaji")
+                .desired_width(f32::INFINITY)
+                .show(ui);
+            if out.response.changed() {
                 repopulate_suggestion_cache = true;
             }
-            re.request_focus()
+            if let Some(range) = out.cursor_range {
+                text_cursor = range.primary.ccursor.index;
+            }
+            out.response.request_focus()
         });
     ui.separator();
     // region: input state change handling
@@ -202,6 +206,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             ui.horizontal_wrapped(|ui| {
                                 for (i, span) in app.segments.iter().enumerate() {
                                     let mut text = egui::RichText::new(span.index(&app.romaji_buf));
+                                    if span.contains_cursor(text_cursor) {
+                                        text = text.color(Color32::LIGHT_BLUE);
+                                    }
                                     if app.selected_segment == i {
                                         text = text.color(Color32::WHITE);
                                     }
@@ -230,10 +237,14 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     }
     if segmentation_count_changed {
         repopulate_suggestion_cache = true;
-        // Set selected segment to the last romaji segment or 0
+        // Set selected segment to the nearest romaji segment at the cursor
         let mut any_set = false;
+        let mut found_cursor_span = false;
         for (i, span) in app.segments.iter().enumerate().rev() {
-            if span.kind == SegmentKind::Romaji {
+            if span.contains_cursor(text_cursor) {
+                found_cursor_span = true;
+            }
+            if found_cursor_span && span.kind == SegmentKind::Romaji {
                 app.selected_segment = i;
                 any_set = true;
                 break;

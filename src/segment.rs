@@ -28,6 +28,11 @@ impl Span {
     pub(crate) fn index<'a>(&self, str: &'a str) -> &'a str {
         &str[self.start..self.end]
     }
+
+    /// Used to check whether the text cursor is "on" this span
+    pub fn contains_cursor(&self, cursor: usize) -> bool {
+        (self.start..=self.end).contains(&cursor)
+    }
 }
 
 pub fn segment(input_text: &str) -> Vec<Span> {
