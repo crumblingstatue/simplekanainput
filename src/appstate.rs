@@ -3,7 +3,7 @@ use {
         conv::{romaji_to_kana, IntpMap},
         kana::HIRAGANA,
         kanji::KanjiDb,
-        segment::Span,
+        segment::InputSpan,
         ui::{DictUiState, KanjiUiState},
         WinDims, WIN_DIMS,
     },
@@ -31,7 +31,7 @@ pub struct AppState {
     pub cached_suggestions: CachedSuggestions,
     /// Selected dictionary suggestion (index into cache)
     pub selected_suggestion: Option<usize>,
-    pub segments: Vec<Span>,
+    pub segments: Vec<InputSpan>,
 }
 
 #[derive(Default)]
@@ -81,10 +81,10 @@ impl AppState {
     pub(crate) fn repopulate_suggestion_cache(&mut self) {
         self.cached_suggestions.clear();
         let i = self.selected_segment;
-        let Some(span) = self.segments.get(i) else {
+        let Some(&InputSpan::Romaji { start, end }) = self.segments.get(i) else {
             return;
         };
-        let hiragana = romaji_to_kana(span.index(&self.romaji_buf), &HIRAGANA);
+        let hiragana = romaji_to_kana(&self.romaji_buf[start..end], &HIRAGANA);
         let hiragana = hiragana.trim();
         let root = Root::Bare(hiragana);
         let mugo_roots: Vec<mugo::Root> = mugo::deconjugate(hiragana).into_iter().collect();

@@ -6,37 +6,43 @@ enum Status {
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
-pub struct Span {
-    pub start: usize,
-    pub end: usize,
-    pub kind: SegmentKind,
+pub enum InputSpan {
+    Romaji { start: usize, end: usize },
+    Other { start: usize, end: usize },
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub enum SegmentKind {
-    Romaji,
-    Other,
-}
-
-impl Span {
-    pub fn new(start: usize, end: usize, kind: SegmentKind) -> Self {
-        Self { start, end, kind }
-    }
-    pub fn len(&self) -> usize {
-        self.end - self.start
+impl InputSpan {
+    pub fn len(self) -> usize {
+        match self {
+            InputSpan::Romaji { start, end } | InputSpan::Other { start, end } => end - start,
+        }
     }
 
-    pub(crate) fn index<'a>(&self, str: &'a str) -> &'a str {
-        &str[self.start..self.end]
+    /// Private method, shouldn't be used willy-nilly, match on the enum first, then index.
+    fn index(self, str: &str) -> &str {
+        match self {
+            InputSpan::Romaji { start, end } | InputSpan::Other { start, end } => &str[start..end],
+        }
     }
 
     /// Used to check whether the text cursor is "on" this span
-    pub fn contains_cursor(&self, cursor: usize) -> bool {
-        (self.start..=self.end).contains(&cursor)
+    pub fn contains_cursor(self, cursor: usize) -> bool {
+        match self {
+            InputSpan::Romaji { start, end } | InputSpan::Other { start, end } => {
+                (start..=end).contains(&cursor)
+            }
+        }
+    }
+
+    pub(crate) fn is_romaji(self) -> bool {
+        match self {
+            InputSpan::Romaji { .. } => true,
+            InputSpan::Other { .. } => false,
+        }
     }
 }
 
-pub fn segment(input_text: &str) -> Vec<Span> {
+pub fn segment(input_text: &str) -> Vec<InputSpan> {
     let mut segs = Vec::new();
     let mut status = Status::Init;
     let mut last_segment_begin = 0;
@@ -55,40 +61,54 @@ pub fn segment(input_text: &str) -> Vec<Span> {
             }
             Status::RomajiText => {
                 if !is_romaji {
-                    segs.push(Span::new(last_segment_begin, pos, SegmentKind::Romaji));
+                    segs.push(InputSpan::Romaji {
+                        start: last_segment_begin,
+                        end: pos,
+                    });
                     status = Status::OtherText;
                     last_segment_begin = pos;
                 }
             }
             Status::OtherText => {
                 if is_romaji {
-                    segs.push(Span::new(last_segment_begin, pos, SegmentKind::Other));
+                    segs.push(InputSpan::Other {
+                        start: last_segment_begin,
+                        end: pos,
+                    });
                     status = Status::RomajiText;
                     last_segment_begin = pos;
                 } else if byte == b'{' {
-                    segs.push(Span::new(last_segment_begin, pos, SegmentKind::Other));
+                    segs.push(InputSpan::Other {
+                        start: last_segment_begin,
+                        end: pos,
+                    });
                     status = Status::ExplicitOther;
                     last_segment_begin = pos + 1;
                 }
             }
             Status::ExplicitOther => {
                 if byte == b'}' {
-                    segs.push(Span::new(last_segment_begin, pos, SegmentKind::Other));
+                    segs.push(InputSpan::Other {
+                        start: last_segment_begin,
+                        end: pos,
+                    });
                     status = Status::Init;
                     last_segment_begin = pos + 1;
                 }
             }
         }
     }
-    let remainder_kind = match status {
+    // Deal with remainder
+    let start = last_segment_begin;
+    let end = input_text.len();
+    let remainder = match status {
         Status::Init => {
             // The most likely (only?) scenario here is that the input text was empty.
             return segs;
         }
-        Status::RomajiText => SegmentKind::Romaji,
-        Status::OtherText | Status::ExplicitOther => SegmentKind::Other,
+        Status::RomajiText => InputSpan::Romaji { start, end },
+        Status::OtherText | Status::ExplicitOther => InputSpan::Other { start, end },
     };
-    let remainder = Span::new(last_segment_begin, input_text.len(), remainder_kind);
     if remainder.len() != 0 {
         segs.push(remainder);
     }

@@ -5,7 +5,7 @@ use {
         conv::{self, romaji_to_kana, Intp, IntpMap},
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
-        segment::SegmentKind,
+        segment::InputSpan,
     },
     egui_extras::{Size, StripBuilder},
     egui_sfml::egui::{self, Color32, Modifiers},
@@ -58,7 +58,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 app.selected_segment = app.segments.len().saturating_sub(1);
                 break;
             }
-            if app.segments[app.selected_segment].kind == SegmentKind::Romaji {
+            if app.segments[app.selected_segment].is_romaji() {
                 break;
             }
         }
@@ -177,12 +177,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             .size(Size::remainder())
             .vertical(|mut strip| {
                 strip.strip(|builder| {
-                    let Some(span) = app.segments.get(i) else {
+                    let Some(&InputSpan::Romaji { start, end }) = app.segments.get(i) else {
                         return;
                     };
-                    let seg = span.index(&app.romaji_buf);
+                    let romaji = &app.romaji_buf[start..end];
                     suggestion_ui_strip(
-                        seg,
+                        romaji,
                         i,
                         &mut app.intp,
                         &app.cached_suggestions,
@@ -210,17 +210,19 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             }
                             ui.horizontal_wrapped(|ui| {
                                 for (i, span) in app.segments.iter().enumerate() {
-                                    let mut text = egui::RichText::new(span.index(&app.romaji_buf));
+                                    let InputSpan::Romaji { start, end } = *span else {
+                                        continue;
+                                    };
+                                    let mut text = egui::RichText::new(&app.romaji_buf[start..end]);
                                     if span.contains_cursor(text_cursor) {
                                         text = text.color(Color32::LIGHT_BLUE);
                                     }
                                     if app.selected_segment == i {
                                         text = text.color(Color32::WHITE);
                                     }
-                                    if span.kind == SegmentKind::Romaji
-                                        && ui
-                                            .add(egui::Label::new(text).sense(egui::Sense::click()))
-                                            .clicked()
+                                    if ui
+                                        .add(egui::Label::new(text).sense(egui::Sense::click()))
+                                        .clicked()
                                     {
                                         app.selected_segment = i;
                                     }
@@ -249,7 +251,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             if span.contains_cursor(text_cursor) {
                 found_cursor_span = true;
             }
-            if found_cursor_span && span.kind == SegmentKind::Romaji {
+            if found_cursor_span && span.is_romaji() {
                 app.selected_segment = i;
                 any_set = true;
                 break;
@@ -276,7 +278,7 @@ fn segment_sel_nav_left(app: &mut AppState) {
             || app
                 .segments
                 .get(app.selected_segment)
-                .is_some_and(|seg| seg.kind == SegmentKind::Romaji)
+                .is_some_and(|seg| seg.is_romaji())
         {
             break;
         }

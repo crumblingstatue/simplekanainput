@@ -3,7 +3,7 @@ use {
         kana::{RomajiKanaTable, HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         radicals::RadicalPair,
-        segment::Span,
+        segment::InputSpan,
     },
     mugo::RootKind,
     serde::Deserialize,
@@ -117,18 +117,30 @@ fn test_find_largest_match() {
     assert_eq!(parser.next_largest_match(&HIRAGANA), None);
 }
 
-pub fn to_japanese(text: &str, segments: &[Span], intp: &IntpMap, kanji_db: &KanjiDb) -> String {
+pub fn to_japanese(
+    text: &str,
+    segments: &[InputSpan],
+    intp: &IntpMap,
+    kanji_db: &KanjiDb,
+) -> String {
     let mut s = String::new();
     for (i, span) in segments.iter().enumerate() {
-        let seg = span.index(text);
+        let romaji = match *span {
+            InputSpan::Romaji { start, end } => &text[start..end],
+            InputSpan::Other { start, end } => {
+                // We don't want to touch non-romaji segments at all
+                s.push_str(&text[start..end]);
+                continue;
+            }
+        };
         let intp = intp.get(&i).unwrap_or(&Intp::Hiragana);
         match intp {
-            Intp::AsIs => s.push_str(seg),
+            Intp::AsIs => s.push_str(romaji),
             Intp::Hiragana => {
-                s.push_str(&romaji_to_kana(seg, &HIRAGANA));
+                s.push_str(&romaji_to_kana(romaji, &HIRAGANA));
             }
             Intp::Katakana => {
-                s.push_str(&romaji_to_kana(seg, &KATAKANA));
+                s.push_str(&romaji_to_kana(romaji, &KATAKANA));
             }
             Intp::Dictionary {
                 cached_sug_idx: _,
