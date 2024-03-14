@@ -111,7 +111,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.button("[F2] 📋 Copy").clicked() || f2 {
             copy_jap_clicked = true;
         }
-        if ui.button("[F3] 🗑 Clear attr").clicked() || f3 {
+        // Indicate attribute map status by disabling button if it's empty
+        if ui
+            .add_enabled(!app.intp.is_empty(), egui::Button::new("[F3] 🗑 Clear attr"))
+            .clicked()
+            || f3
+        {
             app.intp.clear();
         }
         if ui.button("Kanji dict").clicked() {
