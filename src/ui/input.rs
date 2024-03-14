@@ -57,7 +57,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 app.selected_segment = app.segments.len().saturating_sub(1);
                 break;
             }
-            if app.segments[app.selected_segment].is_romaji() {
+            if app.segments[app.selected_segment].is_romaji_word() {
                 break;
             }
         }
@@ -174,7 +174,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             .size(Size::remainder())
             .vertical(|mut strip| {
                 strip.strip(|builder| {
-                    let Some(&InputSpan::Romaji { start, end }) = app.segments.get(i) else {
+                    let Some(&InputSpan::RomajiWord { start, end }) = app.segments.get(i) else {
                         return;
                     };
                     let romaji = &app.romaji_buf[start..end];
@@ -204,7 +204,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             }
                             ui.horizontal_wrapped(|ui| {
                                 for (i, span) in app.segments.iter().enumerate() {
-                                    let InputSpan::Romaji { start, end } = *span else {
+                                    let InputSpan::RomajiWord { start, end } = *span else {
                                         continue;
                                     };
                                     let mut text = egui::RichText::new(&app.romaji_buf[start..end]);
@@ -245,7 +245,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             if span.contains_cursor(text_cursor) {
                 found_cursor_span = true;
             }
-            if found_cursor_span && span.is_romaji() {
+            if found_cursor_span && span.is_romaji_word() {
                 app.selected_segment = i;
                 any_set = true;
                 break;
@@ -272,7 +272,7 @@ fn segment_sel_nav_left(app: &mut AppState) {
             || app
                 .segments
                 .get(app.selected_segment)
-                .is_some_and(|seg| seg.is_romaji())
+                .is_some_and(|seg| seg.is_romaji_word())
         {
             break;
         }

@@ -98,7 +98,7 @@ fn test_find_largest_match() {
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("…"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("な"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("に"));
-    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("?"));
+    assert_eq!(parser.next_largest_match(&HIRAGANA), Some("？"));
     assert_eq!(parser.next_largest_match(&HIRAGANA), None);
     parser = RomajiParser::new("sonna...");
     assert_eq!(parser.next_largest_match(&HIRAGANA), Some("そ"));
@@ -125,7 +125,9 @@ pub fn to_japanese(
     let mut s = String::new();
     for (i, span) in segments.iter().enumerate() {
         let romaji = match *span {
-            InputSpan::Romaji { start, end } => &text[start..end],
+            InputSpan::RomajiWord { start, end } | InputSpan::RomajiPunct { start, end } => {
+                &text[start..end]
+            }
             InputSpan::Other { start, end } => {
                 // We don't want to touch non-romaji segments at all
                 s.push_str(&text[start..end]);

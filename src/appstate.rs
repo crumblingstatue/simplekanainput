@@ -81,7 +81,7 @@ impl AppState {
     pub(crate) fn repopulate_suggestion_cache(&mut self) {
         self.cached_suggestions.clear();
         let i = self.selected_segment;
-        let Some(&InputSpan::Romaji { start, end }) = self.segments.get(i) else {
+        let Some(&InputSpan::RomajiWord { start, end }) = self.segments.get(i) else {
             return;
         };
         let hiragana = romaji_to_kana(&self.romaji_buf[start..end], &HIRAGANA);
