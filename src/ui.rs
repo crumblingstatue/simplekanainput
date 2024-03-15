@@ -80,7 +80,7 @@ fn dict_en_ui(
             );
             ui.horizontal(|ui| {
                 for (i, elem) in en.kanji_elements().enumerate() {
-                    ui.spacing_mut().item_spacing = egui::vec2(4.0, 0.0);
+                    ui.spacing_mut().item_spacing = egui::vec2(8.0, 0.0);
                     let mut layout_job = LayoutJob::default();
                     for char in elem.text.chars() {
                         let char_str = char.to_string();
