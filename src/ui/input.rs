@@ -140,7 +140,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     // Character (not byte) position of the text cursor in the romaji editor
     let mut text_cursor = 0;
     egui::ScrollArea::vertical()
-        .max_height(app.half_dims.h.into())
+        .max_height(120.0)
         .id_source("romaji_scroll")
         .show(ui, |ui| {
             let mut out = egui::TextEdit::multiline(&mut app.romaji_buf)
