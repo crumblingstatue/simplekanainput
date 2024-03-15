@@ -57,6 +57,7 @@ fn dict_en_ui(
                         mugo::Step::Nasai => "なさい",
                         mugo::Step::Nagara => "ながら",
                         mugo::Step::Causative => "causative",
+                        mugo::Step::Passive => "passive",
                         mugo::Step::Tai => "たい",
                         mugo::Step::Ba => "ば (conditional)",
                         mugo::Step::Potential => "potential",
