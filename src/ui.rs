@@ -14,15 +14,25 @@ enum DictUiMsg {
     KanjiClicked(char),
 }
 
+fn char_is_hiragana(ch: char) -> bool {
+    (0x3040..0x309F).contains(&(ch as u32))
+}
+
 fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) -> DictUiMsg {
     let mut msg = DictUiMsg::None;
     egui::ScrollArea::vertical()
         .id_source("en_scroll_vert")
         .show(ui, |ui| {
+            let mut steps_str = String::new();
+            for elem in en.reading_elements() {
+                steps_str.push_str(elem.text);
+                steps_str.push_str(", ");
+            }
+            steps_str.truncate(steps_str.trim_end_matches(", ").len());
             if let Some(root) = root {
-                let mut steps_str = String::new();
+                steps_str.push_str(" (");
                 steps_str.push_str(mugo_root_kind_label(root.kind));
-                steps_str.push('➡');
+                steps_str.push_str(") ➡ ");
                 for (i, step) in root.steps.iter().enumerate() {
                     steps_str.push_str(match step {
                         mugo::Step::Te => "て",
@@ -60,37 +70,46 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) 
                         steps_str.push('➡');
                     }
                 }
-                ui.label(
-                    egui::RichText::new(steps_str)
-                        .color(egui::Color32::LIGHT_BLUE)
-                        .size(14.0),
-                );
             }
-            for elem in en.kanji_elements() {
-                ui.horizontal(|ui| {
-                    for char in elem.text.chars() {
-                        let kanji_str = char.to_string();
-                        if ui
-                            .add(egui::Label::new(&kanji_str).sense(egui::Sense::click()))
-                            .on_hover_ui(|ui| {
-                                if let Some(en) = jmdict::entries()
-                                    .find(|en| en.kanji_elements().any(|k| k.text == kanji_str))
-                                {
-                                    dict_en_ui(ui, &en, root);
-                                }
-                            })
-                            .clicked()
-                        {
-                            msg = DictUiMsg::KanjiClicked(char);
+            ui.label(
+                egui::RichText::new(steps_str)
+                    .color(egui::Color32::LIGHT_BLUE)
+                    .size(14.0),
+            );
+            ui.horizontal(|ui| {
+                for elem in en.kanji_elements() {
+                    ui.spacing_mut().item_spacing = egui::vec2(4.0, 0.0);
+                    let frame = egui::Frame::default()
+                        .stroke(egui::Stroke::new(1.0, egui::Color32::DARK_GRAY))
+                        .inner_margin(3.0)
+                        .rounding(2.0);
+                    frame.show(ui, |ui| {
+                        for char in elem.text.chars() {
+                            let char_str = char.to_string();
+                            if char_is_hiragana(char) {
+                                //spacing.
+                                ui.label(
+                                    egui::RichText::new(char_str)
+                                        .color(egui::Color32::DARK_GRAY)
+                                        .size(14.0),
+                                );
+                            } else if ui
+                                .add(egui::Label::new(&char_str).sense(egui::Sense::click()))
+                                .on_hover_ui(|ui| {
+                                    if let Some(en) = jmdict::entries()
+                                        .find(|en| en.kanji_elements().any(|k| k.text == char_str))
+                                    {
+                                        dict_en_ui(ui, &en, root);
+                                    }
+                                })
+                                .clicked()
+                            {
+                                msg = DictUiMsg::KanjiClicked(char);
+                            }
                         }
-                    }
-                    ui.label("(");
-                    for elem in en.reading_elements() {
-                        ui.label(elem.text);
-                    }
-                    ui.label(")");
-                });
-            }
+                    });
+                }
+            });
             ui.separator();
             for sense in en.senses() {
                 ui.horizontal_wrapped(|ui| {
