@@ -136,9 +136,11 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             ui.menu_button("☰ Menu", |ui| {
                 if ui.button("Kanji dict").clicked() {
                     app.ui_state = UiState::Kanji;
+                    ui.close_menu();
                 }
                 if ui.button("Normalize case").clicked() {
                     app.romaji_buf.make_ascii_lowercase();
+                    ui.close_menu();
                 }
             });
         });
