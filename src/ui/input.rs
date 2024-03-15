@@ -185,6 +185,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             strip.cell(|ui| {
                 egui::ScrollArea::vertical()
                     .id_source("kana_scroll")
+                    .auto_shrink(false)
                     .show(ui, |ui| {
                         let len = app.segments.len();
                         if len != 0 {
