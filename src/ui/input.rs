@@ -348,6 +348,7 @@ fn suggestion_ui_strip(
         .size(Size::remainder().at_least(100.0))
         .horizontal(|mut strip| {
             strip.cell(|ui| {
+                ui.separator();
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.horizontal(|ui| {
                         intp_button(intp, intp_idx, ui, "は", "Hiragana (F5)", Intp::Hiragana);
@@ -383,6 +384,7 @@ fn suggestion_ui_strip(
                 });
             });
             strip.cell(|ui| {
+                ui.separator();
                 if let Some(Intp::Dictionary {
                     en,
                     root,
