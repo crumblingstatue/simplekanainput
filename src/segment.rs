@@ -146,17 +146,17 @@ pub fn segment(input_text: &str) -> Vec<InputSpan> {
     // Deal with remainder
     let start = last_segment_begin;
     let end = input_text.len();
-    let remainder = match status {
-        Status::Init => {
-            // The most likely (only?) scenario here is that the input text was empty.
-            return segs;
+    'remainder_push: {
+        let remainder = match status {
+            // We don't know what to do in this case, so I guess we don't push anything (FIXME?)
+            Status::Init => break 'remainder_push,
+            Status::RomajiWord => InputSpan::RomajiWord { start, end },
+            Status::RomajiPunct => InputSpan::RomajiPunct { start, end },
+            Status::OtherText | Status::ExplicitOther => InputSpan::Other { start, end },
+        };
+        if remainder.len() != 0 {
+            segs.push(remainder);
         }
-        Status::RomajiWord => InputSpan::RomajiWord { start, end },
-        Status::RomajiPunct => InputSpan::RomajiPunct { start, end },
-        Status::OtherText | Status::ExplicitOther => InputSpan::Other { start, end },
-    };
-    if remainder.len() != 0 {
-        segs.push(remainder);
     }
     // Special behavior: Get rid of single space segments. This allows
     // nice continuous output, which Japanese readers usually expect.
@@ -190,5 +190,6 @@ fn test_segment() {
         "{free space}" => "free space";
         "ore no [chikara]" => "ore", "no", "[", "chikara", "]";
         "saikou{english}" => "saikou", "english";
+        "taisetsu mono desu{english}" => "taisetsu", "mono", "desu", "english";
     }
 }
