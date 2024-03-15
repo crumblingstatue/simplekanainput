@@ -169,6 +169,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             }
             out.response.request_focus()
         });
+    ui.separator();
     // region: input state change handling
     let mut segmentation_count_changed = false;
     let new = crate::segment::segment(&app.romaji_buf);
