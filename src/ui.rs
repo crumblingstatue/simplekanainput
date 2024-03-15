@@ -7,19 +7,18 @@ pub use self::{
     input::input_ui,
     kanji_ui::{kanji_ui, KanjiUiState},
 };
-use egui_sfml::egui;
-
-enum DictUiMsg {
-    None,
-    KanjiClicked(char),
-}
+use egui_sfml::egui::{self, text::LayoutJob, TextFormat};
 
 fn char_is_hiragana(ch: char) -> bool {
     (0x3040..0x309F).contains(&(ch as u32))
 }
 
-fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) -> DictUiMsg {
-    let mut msg = DictUiMsg::None;
+fn dict_en_ui(
+    ui: &mut egui::Ui,
+    en: &jmdict::Entry,
+    root: Option<&mugo::Root>,
+    mut kanji_idx: Option<&mut usize>,
+) {
     egui::ScrollArea::vertical()
         .id_source("en_scroll_vert")
         .show(ui, |ui| {
@@ -77,37 +76,51 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) 
                     .size(14.0),
             );
             ui.horizontal(|ui| {
-                for elem in en.kanji_elements() {
+                for (i, elem) in en.kanji_elements().enumerate() {
                     ui.spacing_mut().item_spacing = egui::vec2(4.0, 0.0);
-                    let frame = egui::Frame::default()
-                        .stroke(egui::Stroke::new(1.0, egui::Color32::DARK_GRAY))
-                        .inner_margin(3.0)
-                        .rounding(2.0);
-                    frame.show(ui, |ui| {
-                        for char in elem.text.chars() {
-                            let char_str = char.to_string();
-                            if char_is_hiragana(char) {
-                                //spacing.
-                                ui.label(
-                                    egui::RichText::new(char_str)
-                                        .color(egui::Color32::DARK_GRAY)
-                                        .size(14.0),
-                                );
-                            } else if ui
-                                .add(egui::Label::new(&char_str).sense(egui::Sense::click()))
-                                .on_hover_ui(|ui| {
-                                    if let Some(en) = jmdict::entries()
-                                        .find(|en| en.kanji_elements().any(|k| k.text == char_str))
-                                    {
-                                        dict_en_ui(ui, &en, root);
-                                    }
-                                })
-                                .clicked()
-                            {
-                                msg = DictUiMsg::KanjiClicked(char);
+                    let mut layout_job = LayoutJob::default();
+                    for char in elem.text.chars() {
+                        let char_str = char.to_string();
+                        if char_is_hiragana(char) {
+                            layout_job.append(
+                                &char_str,
+                                0.0,
+                                TextFormat {
+                                    font_id: egui::FontId::new(
+                                        14.0,
+                                        egui::FontFamily::Proportional,
+                                    ),
+                                    color: egui::Color32::DARK_GRAY,
+                                    ..Default::default()
+                                },
+                            );
+                        } else {
+                            layout_job.append(
+                                &char_str,
+                                0.0,
+                                TextFormat {
+                                    font_id: egui::FontId::new(
+                                        18.0,
+                                        egui::FontFamily::Proportional,
+                                    ),
+                                    color: egui::Color32::WHITE,
+                                    ..Default::default()
+                                },
+                            );
+                        }
+                    }
+                    match &mut kanji_idx {
+                        Some(idx) => {
+                            ui.style_mut().visuals.selection.bg_fill =
+                                egui::Color32::from_rgb(27, 7, 29);
+                            if ui.selectable_label(i == **idx, layout_job).clicked() {
+                                **idx = i;
                             }
                         }
-                    });
+                        None => {
+                            ui.label(layout_job);
+                        }
+                    }
                 }
             });
             ui.separator();
@@ -158,7 +171,6 @@ fn dict_en_ui(ui: &mut egui::Ui, en: &jmdict::Entry, root: Option<&mugo::Root>) 
                 });
             }
         });
-    msg
 }
 
 fn mugo_root_kind_label(kind: mugo::RootKind) -> &'static str {

@@ -372,8 +372,14 @@ fn suggestion_ui_strip(
                 });
             });
             strip.cell(|ui| {
-                if let Some(Intp::Dictionary { en, root, .. }) = intp.get(&intp_idx) {
-                    dict_en_ui(ui, en, root.as_ref());
+                if let Some(Intp::Dictionary {
+                    en,
+                    root,
+                    kanji_idx,
+                    ..
+                }) = intp.get_mut(&intp_idx)
+                {
+                    dict_en_ui(ui, en, root.as_ref(), Some(kanji_idx));
                 }
             })
         });
@@ -432,7 +438,7 @@ fn gen_dict_ui_for_hiragana(
             .unwrap_or("??? (bug)");
         let hover_ui = |ui: &mut egui::Ui| {
             ui.set_max_width(400.0);
-            dict_en_ui(ui, &suggestion.entry, suggestion.mugo_root.as_ref());
+            dict_en_ui(ui, &suggestion.entry, suggestion.mugo_root.as_ref(), None);
         };
         let mut scroll = false;
         let mut selected = false;

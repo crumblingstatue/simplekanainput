@@ -1,5 +1,5 @@
 use {
-    super::{dict_en_ui, DictUiMsg},
+    super::dict_en_ui,
     crate::{
         appstate::{AppState, UiState},
         conv::romaji_to_kana,
@@ -71,14 +71,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             cols[1].label("<Couldn't get entry>");
             return;
         };
-        match dict_en_ui(&mut cols[1], en, None) {
-            DictUiMsg::None => {}
-            DictUiMsg::KanjiClicked(ch) => {
-                app.dict_ui_state.lookup_method = LookupMethod::Kanji;
-                app.dict_ui_state.search_buf = ch.to_string();
-                want_focus = true;
-            }
-        }
+        dict_en_ui(&mut cols[1], en, None, None);
     });
     app.dict_ui_state.focus_textinput = want_focus;
 }
