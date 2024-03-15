@@ -33,6 +33,9 @@ pub struct AppState {
     pub selected_suggestion: Option<usize>,
     pub segments: Vec<InputSpan>,
     pub input_ui_action: Option<InputUiAction>,
+    /// For some reason the egui memory fails me in getting the scroll offset, so we store it here
+    /// Used for synchronizing output scroll and input (romaji) scroll
+    pub out_scroll_last_offset: f32,
 }
 
 #[derive(Default)]
@@ -77,6 +80,7 @@ impl AppState {
             selected_suggestion: None,
             segments: Vec::new(),
             input_ui_action: None,
+            out_scroll_last_offset: 0.0,
         })
     }
     /// Populate the suggestion cache with entries for the selected segment

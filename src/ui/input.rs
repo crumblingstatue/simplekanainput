@@ -148,7 +148,8 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     ui.separator();
     // Character (not byte) position of the text cursor in the romaji editor
     let mut text_cursor = 0;
-    egui::ScrollArea::vertical()
+    let mut set_textedit_scroll_offset = None;
+    let mut scroll_out = egui::ScrollArea::vertical()
         .max_height(120.0)
         .id_source("romaji_scroll")
         .show(ui, |ui| {
@@ -167,10 +168,15 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     .cursor
                     .set_char_range(Some(CCursorRange::one(CCursor::new(*pos))));
                 out.state.store(ui.ctx(), out.response.id);
+                set_textedit_scroll_offset = Some(app.out_scroll_last_offset);
                 app.input_ui_action = None;
             }
             out.response.request_focus()
         });
+    if let Some(offset) = set_textedit_scroll_offset {
+        scroll_out.state.offset.y = offset;
+        scroll_out.state.store(ui.ctx(), scroll_out.id);
+    }
     ui.separator();
     // region: input state change handling
     let mut segmentation_count_changed = false;
@@ -193,7 +199,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .size(Size::remainder())
         .vertical(|mut strip| {
             strip.cell(|ui| {
-                egui::ScrollArea::vertical()
+                let scroll_out = egui::ScrollArea::vertical()
                     .id_source("kana_scroll")
                     .auto_shrink(false)
                     .show(ui, |ui| {
@@ -265,6 +271,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             app.clipboard.set_text(&japanese).unwrap()
                         }
                     });
+                app.out_scroll_last_offset = scroll_out.state.offset.y;
             });
             strip.strip(|builder| {
                 let Some(&InputSpan::RomajiWord { start, end }) =
