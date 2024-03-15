@@ -7,7 +7,10 @@ pub use self::{
     input::input_ui,
     kanji_ui::{kanji_ui, KanjiUiState},
 };
-use egui_sfml::egui::{self, text::LayoutJob, TextFormat};
+use {
+    crate::appstate::RootKindExt,
+    egui_sfml::egui::{self, text::LayoutJob, TextFormat},
+};
 
 fn char_is_hiragana(ch: char) -> bool {
     (0x3040..0x309F).contains(&(ch as u32))
@@ -135,6 +138,17 @@ fn dict_en_ui(
                     let mut parts_string = String::new();
                     for part in sense.parts_of_speech() {
                         use jmdict::PartOfSpeech as P;
+
+                        if let Some(root) = root {
+                            // If the root kind equals the jmdict part, we don't need
+                            // to show it again.
+                            // We're already showing it earlier
+                            if root.kind.to_jmdict_part_of_speech() == part {
+                                parts_string.push_str("✅ ");
+                                continue;
+                            }
+                        }
+
                         let str = match part {
                             P::Adjective => "adjective",
                             P::CommonNoun => "noun",

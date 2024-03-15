@@ -152,7 +152,7 @@ fn root_kind_matches(kind: &mugo::RootKind, mut senses: jmdict::Senses) -> bool 
     })
 }
 
-trait RootKindExt {
+pub trait RootKindExt {
     fn to_jmdict_part_of_speech(&self) -> jmdict::PartOfSpeech;
 }
 
