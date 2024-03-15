@@ -129,12 +129,19 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         {
             app.intp.clear();
         }
-        if ui.button("Kanji dict").clicked() {
-            app.ui_state = UiState::Kanji;
-        }
-        if ui.button("Quit").clicked() {
-            app.quit_requested = true;
-        }
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if ui.button("🚪 Quit").clicked() {
+                app.quit_requested = true;
+            }
+            ui.menu_button("☰ Menu", |ui| {
+                if ui.button("Kanji dict").clicked() {
+                    app.ui_state = UiState::Kanji;
+                }
+                if ui.button("Normalize case").clicked() {
+                    app.romaji_buf.make_ascii_lowercase();
+                }
+            });
+        });
     });
     ui.separator();
     // Character (not byte) position of the text cursor in the romaji editor
