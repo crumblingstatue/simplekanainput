@@ -424,43 +424,42 @@ fn gen_dict_ui_for_hiragana(
 ) {
     for (si, suggestion) in suggestions.jmdict.iter().enumerate() {
         // Same entry, different kanji goes into horizontal layout
-        ui.horizontal(|ui| {
-            for (ki, kanji_str) in suggestion
-                .entry
-                .kanji_elements()
-                .map(|e| e.text)
-                .enumerate()
-            {
-                let hover_ui = |ui: &mut egui::Ui| {
-                    ui.set_max_width(400.0);
-                    dict_en_ui(ui, &suggestion.entry, suggestion.mugo_root.as_ref());
-                };
-                let mut text = egui::RichText::new(kanji_str);
-                let mut scroll = false;
-                if let Some(Intp::Dictionary { cached_sug_idx, .. }) = intp.get(&intp_idx) {
-                    if *cached_sug_idx == si {
-                        text = text.color(egui::Color32::YELLOW);
-                        scroll = true;
-                    }
-                }
-                let re = ui.button(text).on_hover_ui(hover_ui);
-                if scroll && sel_changed {
-                    re.scroll_to_me(Some(egui::Align::Center));
-                }
-                if re.clicked() {
-                    intp.insert(
-                        intp_idx,
-                        Intp::Dictionary {
-                            cached_sug_idx: si,
-                            en: suggestion.entry,
-                            kanji_idx: ki,
-                            root: suggestion.mugo_root.clone(),
-                        },
-                    );
-                    ui.close_menu();
-                    return;
-                }
+        let kanji_str = suggestion
+            .entry
+            .kanji_elements()
+            .map(|e| e.text)
+            .next()
+            .unwrap_or("??? (bug)");
+        let hover_ui = |ui: &mut egui::Ui| {
+            ui.set_max_width(400.0);
+            dict_en_ui(ui, &suggestion.entry, suggestion.mugo_root.as_ref());
+        };
+        let mut scroll = false;
+        let mut selected = false;
+        if let Some(Intp::Dictionary { cached_sug_idx, .. }) = intp.get(&intp_idx) {
+            if *cached_sug_idx == si {
+                selected = true;
+                scroll = true;
             }
-        });
+        }
+        let re = ui
+            .selectable_label(selected, kanji_str)
+            .on_hover_ui(hover_ui);
+        if scroll && sel_changed {
+            re.scroll_to_me(Some(egui::Align::Center));
+        }
+        if re.clicked() {
+            intp.insert(
+                intp_idx,
+                Intp::Dictionary {
+                    cached_sug_idx: si,
+                    en: suggestion.entry,
+                    kanji_idx: 0,
+                    root: suggestion.mugo_root.clone(),
+                },
+            );
+            ui.close_menu();
+            return;
+        }
     }
 }
