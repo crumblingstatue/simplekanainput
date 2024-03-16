@@ -756,8 +756,7 @@ dependencies = [
 [[package]]
 name = "jmdict"
 version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "226bd816a06393ed54ccde3c16e6886f5245e570dbcfa3616cdd243d9824c2c6"
+source = "git+https://github.com/crumblingstatue/rust-jmdict.git#cbb3195802aea74ed3a7c9e0950749075283a64f"
 dependencies = [
  "align-data",
  "jmdict-enums",
@@ -767,8 +766,7 @@ dependencies = [
 [[package]]
 name = "jmdict-enums"
 version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5af6e8b067b3d5d37dd6b83916e811394625bfd4869996ef206025c08ced966f"
+source = "git+https://github.com/crumblingstatue/rust-jmdict.git#cbb3195802aea74ed3a7c9e0950749075283a64f"
 dependencies = [
  "json",
 ]
@@ -776,8 +774,7 @@ dependencies = [
 [[package]]
 name = "jmdict-traverse"
 version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "523430217db87b8472d81bdce1049adb68192e3fb86b49affc57cbe6cfbf2334"
+source = "git+https://github.com/crumblingstatue/rust-jmdict.git#cbb3195802aea74ed3a7c9e0950749075283a64f"
 dependencies = [
  "directories",
  "hex-literal",
