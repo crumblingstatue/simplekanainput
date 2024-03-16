@@ -93,7 +93,7 @@ impl AppState {
         let hiragana = romaji_to_kana(&self.romaji_buf[start..end], &HIRAGANA);
         let hiragana = hiragana.trim();
         let root = Root::Bare(hiragana);
-        let mugo_roots: Vec<mugo::Root> = mugo::deconjugate(hiragana).into_iter().collect();
+        let mugo_roots = mugo::deconjugate(hiragana);
         self.cached_suggestions.jmdict = jmdict::entries()
             .filter_map(|en| {
                 // Filter out entries with no kanji elements
