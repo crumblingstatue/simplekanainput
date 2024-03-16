@@ -5,7 +5,6 @@ use {
         radicals::RadicalPair,
         segment::InputSpan,
     },
-    mugo::RootKind,
     serde::Deserialize,
     std::collections::HashMap,
 };
@@ -155,14 +154,8 @@ pub fn with_input_span_converted_form(
                 .text
                 .to_string();
             if let Some(root) = root {
-                // We want to pop the dictionary root for verbs/i adjectives
-                // but not for na adjectives (and maybe more?)
-                if !matches!(root.kind, RootKind::NaAdjective) {
-                    kanji_string.pop();
-                }
-                // Need to pop an extra character for suru verbs
-                if matches!(root.kind, RootKind::Suru | RootKind::SpecialSuru) {
-                    kanji_string.pop();
+                if let Some(pos) = kanji_string.rfind(root.dict_suffix()) {
+                    kanji_string.truncate(pos);
                 }
                 kanji_string.push_str(&root.conjugation_suffix());
             }
