@@ -68,6 +68,8 @@ fn dict_en_ui(
                         mugo::Step::Nu => "ぬ",
                         mugo::Step::Ki => "き (archaic い)",
                         mugo::Step::Nda => "んだ",
+                        mugo::Step::Kereba => "ければ",
+                        mugo::Step::Nakya => "なきゃ",
                     });
                     if i != root.steps.len() - 1 {
                         steps_str.push('➡');
