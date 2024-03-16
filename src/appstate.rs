@@ -107,7 +107,7 @@ impl AppState {
                     });
                 } else {
                     for mugo_root in &mugo_roots {
-                        if Root::Conj(mugo_root.clone()).matches(&en) {
+                        if Root::Conj(mugo_root).matches(&en) {
                             return Some(CachedJmdictSuggestion {
                                 entry: en,
                                 mugo_root: Some(mugo_root.clone()),
@@ -123,7 +123,7 @@ impl AppState {
 
 pub enum Root<'a> {
     Bare(&'a str),
-    Conj(mugo::Root),
+    Conj(&'a mugo::Root),
 }
 
 impl<'a> Root<'a> {
