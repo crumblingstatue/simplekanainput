@@ -70,6 +70,7 @@ fn dict_en_ui(
                         mugo::Step::Nda => "んだ",
                         mugo::Step::Kereba => "ければ",
                         mugo::Step::Nakya => "なきゃ",
+                        mugo::Step::Sa => "さ",
                     });
                     if i != root.steps.len() - 1 {
                         steps_str.push('➡');
