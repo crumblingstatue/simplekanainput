@@ -29,6 +29,11 @@ use ::eframe::egui;
 #[cfg(feature = "backend-sfml")]
 use egui_sfml::egui;
 
+#[cfg(not(target_arch = "wasm32"))]
+const IS_WEB: bool = false;
+#[cfg(target_arch = "wasm32")]
+const IS_WEB: bool = true;
+
 pub struct WinDims {
     w: u16,
     h: u16,

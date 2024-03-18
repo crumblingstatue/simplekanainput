@@ -130,7 +130,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             app.intp.clear();
         }
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if ui.button("🚪 Quit").clicked() {
+            if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {
                 app.quit_requested = true;
             }
             ui.menu_button("☰ Menu", |ui| {
