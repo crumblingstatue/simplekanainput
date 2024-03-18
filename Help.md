@@ -28,3 +28,15 @@ Alt + left           | Jump to previous word            |
 Alt + right          | Jump to next word                |
 Ctrl + left bracket  | Set style to hiragana            | `ctrl` + `[`
 Ctrl + right bracket | Set Style to katakana            | `ctrl` + `]`
+
+## Special characters
+Certain characters have special use
+
+- `{` and `}`   Delimit a "literal" segment that doesn't get converted to japanese
+- `[` and `]`   Japanese quote marks 「 and 」
+- `-`         Prolonged sound mark **ー**
+- `.`         Japanese 。
+- `,`         Japanese 、
+- `!`         Japanese ！
+- `?`         Japanese ？
+- `...`       Japanese …
