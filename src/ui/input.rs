@@ -35,20 +35,20 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     ensure_ui_sanity(app);
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
-    let (ctrl_enter, f1, f2, f3, f5, f6, esc, tab, shift, alt_left, alt_right) =
-        ui.input_mut(|inp| {
+    let (ctrl_enter, f1, f2, f3, esc, tab, shift, alt_left, alt_right, c_obr, c_cbr) = ui
+        .input_mut(|inp| {
             (
                 inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
                 inp.key_pressed(egui::Key::F1),
                 inp.key_pressed(egui::Key::F2),
                 inp.key_pressed(egui::Key::F3),
-                inp.key_pressed(egui::Key::F5),
-                inp.key_pressed(egui::Key::F6),
                 inp.key_pressed(egui::Key::Escape),
                 inp.consume_key(Modifiers::NONE, egui::Key::Tab),
                 inp.modifiers.shift,
                 inp.consume_key(Modifiers::ALT, egui::Key::ArrowLeft),
                 inp.consume_key(Modifiers::ALT, egui::Key::ArrowRight),
+                inp.consume_key(Modifiers::CTRL, egui::Key::OpenBracket),
+                inp.consume_key(Modifiers::CTRL, egui::Key::CloseBracket),
             )
         });
     if esc {
@@ -213,10 +213,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     .show(ui, |ui| {
                         let len = app.segments.len();
                         if len != 0 {
-                            if f5 {
+                            if c_obr {
                                 app.intp.insert(app.selected_segment, Intp::Hiragana);
                             }
-                            if f6 {
+                            if c_cbr {
                                 app.intp.insert(app.selected_segment, Intp::Katakana);
                             }
                         }
@@ -366,9 +366,23 @@ fn suggestion_ui_strip(
                 ui.separator();
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.horizontal(|ui| {
-                        intp_button(intp, intp_idx, ui, "は", "Hiragana (F5)", Intp::Hiragana);
+                        intp_button(
+                            intp,
+                            intp_idx,
+                            ui,
+                            "は",
+                            "Hiragana (ctrl+[)",
+                            Intp::Hiragana,
+                        );
                         ui.separator();
-                        intp_button(intp, intp_idx, ui, "ハ", "Katakana (F6)", Intp::Katakana);
+                        intp_button(
+                            intp,
+                            intp_idx,
+                            ui,
+                            "ハ",
+                            "Katakana (ctrl+])",
+                            Intp::Katakana,
+                        );
                     });
                     ui.separator();
                     let hiragana = romaji_to_kana(seg, &HIRAGANA);
