@@ -19,7 +19,8 @@ jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features 
 rfd = "0.11.3"
 serde = { version = "1.0.160", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git" }
-egui_extras = "0.26.2"
+egui_extras = {version = "0.26.2", default-features = false }
+egui_commonmark = {version = "0.13.0", default-features = false, features = ["pulldown_cmark"] }
 
 # SFML backend
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }

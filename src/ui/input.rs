@@ -148,6 +148,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     ui.close_menu();
                 }
             });
+            if ui.button("？ Help").clicked() {
+                app.ui_state = UiState::Help;
+            }
         });
     });
     ui.separator();

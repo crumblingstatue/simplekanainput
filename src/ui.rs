@@ -1,11 +1,13 @@
 mod about;
 mod dict;
+mod help;
 pub mod input;
 mod kanji_ui;
 
 pub use self::{
     about::about_ui,
     dict::{dict_ui, DictUiState},
+    help::help_ui,
     input::input_ui,
     kanji_ui::{kanji_ui, KanjiUiState},
 };
@@ -233,6 +235,7 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
         UiState::Dict => dict_ui(ui, app),
         UiState::Kanji => kanji_ui(ui, app),
         UiState::About => about_ui(ui, app),
+        UiState::Help => help_ui(ui, app),
     });
     if app.hide_requested {
         IpcState::Hidden.write().unwrap();
