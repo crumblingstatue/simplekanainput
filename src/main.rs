@@ -1,9 +1,8 @@
 #![feature(array_try_from_fn)]
 
 use {
-    crate::{ipc::IpcState, sfml::do_sfml_event_loop},
+    crate::ipc::IpcState,
     appstate::AppState,
-    egui_sfml::egui,
     std::{
         backtrace::Backtrace,
         time::{Duration, Instant},
@@ -18,8 +17,13 @@ mod kana;
 mod kanji;
 mod radicals;
 mod segment;
-mod sfml;
 mod ui;
+
+#[cfg(feature = "backend-sfml")]
+mod sfml;
+
+#[cfg(feature = "backend-sfml")]
+use egui_sfml::egui;
 
 pub struct WinDims {
     w: u16,
@@ -109,6 +113,7 @@ fn main() {
         };
         font_id.size = size;
     }
-    do_sfml_event_loop(font_defs, style, &mut app);
+    #[cfg(feature = "backend-sfml")]
+    crate::sfml::do_sfml_event_loop(font_defs, style, &mut app);
     eprintln!("{:?}", IpcState::remove());
 }
