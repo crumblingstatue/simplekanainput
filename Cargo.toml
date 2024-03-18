@@ -8,7 +8,8 @@ edition = "2021"
 [features]
 backend-sfml = ["dep:egui-sfml", "dep:sfml-xt", "dep:arboard"]
 backend-eframe = ["dep:eframe"]
-default = ["backend-sfml"]
+ipc = []
+default = ["backend-sfml", "ipc"]
 
 [dependencies]
 anyhow = "1.0.71"
@@ -27,6 +28,10 @@ arboard = { version = "3.2.0", optional = true }
 
 # eframe backend
 eframe = { version = "0.26.2", optional = true }
+
+# Eframe (web)
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
 
 # Compile deps with optimizations in dev mode
 [profile.dev.package."*"]

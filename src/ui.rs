@@ -216,14 +216,15 @@ fn mugo_root_kind_label(kind: mugo::RootKind) -> &'static str {
 /// Returns false if there was a quit request
 #[must_use]
 pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
-    match IpcState::read().unwrap() {
-        IpcState::Visible => {}
-        IpcState::Hidden => {}
-        IpcState::ShowRequested => {
+    match IpcState::read() {
+        Ok(IpcState::Visible) => {}
+        Ok(IpcState::Hidden) => {}
+        Ok(IpcState::ShowRequested) => {
             ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
             IpcState::Visible.write().unwrap();
         }
-        IpcState::QuitRequested => return false,
+        Ok(IpcState::QuitRequested) => return false,
+        Err(e) => eprintln!("{e}"),
     }
     egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
         appstate::UiState::Input => input_ui(ui, app),

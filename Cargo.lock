@@ -2831,6 +2831,7 @@ dependencies = [
  "rfd",
  "serde",
  "sfml-xt",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
