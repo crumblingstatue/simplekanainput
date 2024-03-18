@@ -7,9 +7,9 @@ pub use self::{
     input::input_ui,
     kanji_ui::{kanji_ui, KanjiUiState},
 };
-use {
-    crate::appstate::RootKindExt,
-    egui_sfml::egui::{self, text::LayoutJob, TextFormat},
+use crate::{
+    appstate::RootKindExt,
+    egui::{self, text::LayoutJob, TextFormat},
 };
 
 fn char_is_hiragana(ch: char) -> bool {

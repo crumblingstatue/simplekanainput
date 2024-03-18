@@ -1,6 +1,6 @@
-use {
-    crate::appstate::{AppState, UiState},
-    egui_sfml::egui,
+use crate::{
+    appstate::{AppState, UiState},
+    egui,
 };
 
 #[derive(Default)]

@@ -3,16 +3,16 @@ use {
     crate::{
         appstate::{AppState, CachedSuggestions, UiState},
         conv::{self, romaji_to_kana, with_input_span_converted_form, Intp, IntpMap},
+        egui::{
+            self,
+            text::{CCursor, CCursorRange},
+            Color32, Modifiers,
+        },
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         segment::InputSpan,
     },
     egui_extras::{Size, StripBuilder},
-    egui_sfml::egui::{
-        self,
-        text::{CCursor, CCursorRange},
-        Color32, Modifiers,
-    },
 };
 
 /// Code that does some sanity checks on the application state, and corrects

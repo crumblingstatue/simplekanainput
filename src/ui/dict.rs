@@ -3,9 +3,9 @@ use {
     crate::{
         appstate::{AppState, UiState},
         conv::romaji_to_kana,
+        egui,
         kana::HIRAGANA,
     },
-    egui_sfml::egui,
 };
 
 pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {

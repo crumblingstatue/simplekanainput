@@ -4,7 +4,7 @@ use {
     crate::ipc::IpcState,
     appstate::AppState,
     egui_sfml::{
-        egui::{self, FontData, FontFamily},
+        egui,
         sfml::{
             graphics::{Rect, RenderTarget, RenderWindow, View},
             system::Vector2,
@@ -125,11 +125,11 @@ fn main() {
     let mut font_defs = egui::FontDefinitions::default();
     font_defs.font_data.insert(
         "ipag".to_owned(),
-        FontData::from_static(include_bytes!("../NotoSansJP-VariableFont_wght.ttf")),
+        egui::FontData::from_static(include_bytes!("../NotoSansJP-VariableFont_wght.ttf")),
     );
     font_defs
         .families
-        .get_mut(&FontFamily::Proportional)
+        .get_mut(&egui::FontFamily::Proportional)
         .unwrap()
         .push("ipag".to_owned());
     sf_egui.context().set_fonts(font_defs);
