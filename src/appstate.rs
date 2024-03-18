@@ -5,7 +5,6 @@ use {
         kanji::KanjiDb,
         segment::InputSpan,
         ui::{input::InputUiAction, DictUiState, KanjiUiState},
-        WinDims, WIN_DIMS,
     },
     arboard::Clipboard,
     mugo::RootKind,
@@ -13,7 +12,6 @@ use {
 
 pub struct AppState {
     pub intp: IntpMap,
-    pub half_dims: WinDims,
     pub romaji_buf: String,
     pub clipboard: Clipboard,
     pub hide_requested: bool,
@@ -63,7 +61,6 @@ impl AppState {
     pub fn new() -> anyhow::Result<Self> {
         Ok(Self {
             intp: IntpMap::default(),
-            half_dims: WIN_DIMS.half(),
             romaji_buf: String::new(),
             clipboard: Clipboard::new()?,
             hide_requested: false,

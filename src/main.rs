@@ -4,10 +4,9 @@ use {
     crate::ipc::IpcState,
     appstate::AppState,
     egui_sfml::{
-        egui,
+        egui::{self, ViewportCommand},
         sfml::{
             graphics::{Rect, RenderTarget, RenderWindow, View},
-            system::Vector2,
             window::{ContextSettings, Event, Style, VideoMode},
         },
         SfEgui,
@@ -40,12 +39,6 @@ impl WinDims {
             width: self.w.into(),
             height: self.h.into(),
             bits_per_pixel: 32,
-        }
-    }
-    fn half(&self) -> Self {
-        Self {
-            w: self.w / 2,
-            h: self.h / 2,
         }
     }
 }
@@ -116,11 +109,7 @@ fn main() {
     );
     rw.center();
     let mut app = AppState::new().unwrap();
-    rw.set_framerate_limit(60);
-    rw.set_position(Vector2::new(
-        1920 / 2 - app.half_dims.w as i32,
-        1080 / 2 - app.half_dims.h as i32,
-    ));
+    rw.set_vertical_sync_enabled(true);
     let mut sf_egui = SfEgui::new(&rw);
     let mut font_defs = egui::FontDefinitions::default();
     font_defs.font_data.insert(
@@ -152,11 +141,7 @@ fn main() {
             IpcState::Visible => {}
             IpcState::Hidden => {}
             IpcState::ShowRequested => {
-                // Need this set_visible(false) trick to refocus a visible, but unfocused window.
-                // Requesting focus just flashes the tray icon.
-                rw.set_visible(false);
-                rw.set_visible(true);
-                rw.center();
+                sf_egui.context().send_viewport_cmd(ViewportCommand::Focus);
                 IpcState::Visible.write().unwrap();
             }
             IpcState::QuitRequested => break,
@@ -176,7 +161,7 @@ fn main() {
             }
         }
         sf_egui
-            .do_frame(|ctx| {
+            .do_frame(&mut rw, |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
                     appstate::UiState::Input => ui::input_ui(ui, &mut app),
                     appstate::UiState::Dict => ui::dict_ui(ui, &mut app),
@@ -186,7 +171,9 @@ fn main() {
             .unwrap();
         if app.hide_requested {
             IpcState::Hidden.write().unwrap();
-            rw.set_visible(false);
+            sf_egui
+                .context()
+                .send_viewport_cmd(ViewportCommand::Visible(false));
             app.hide_requested = false;
         }
         if app.quit_requested {
