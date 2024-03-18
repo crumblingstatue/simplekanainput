@@ -106,6 +106,7 @@ fn main() {
             .show();
         let bt = Backtrace::capture();
         eprintln!("{bt}");
+        eprintln!("remove ipc result: {:?}", IpcState::remove());
     }));
     let mut rw = rw_create();
     let mut app = AppState::new().unwrap();
