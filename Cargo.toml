@@ -7,19 +7,26 @@ edition = "2021"
 
 [features]
 backend-sfml = ["dep:egui-sfml", "dep:sfml-xt"]
-backend-eframe = []
+backend-eframe = ["dep:eframe"]
 default = ["backend-sfml"]
 
 [dependencies]
 anyhow = "1.0.71"
 arboard = "3.2.0"
-egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
-sfml-xt = { git = "https://github.com/crumblingstatue/sfml-xt.git", optional = true }
-jmdict =  { git = "https://github.com/crumblingstatue/rust-jmdict.git", features = ["scope-uncommon"] }
+jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features = [
+    "scope-uncommon",
+] }
 rfd = "0.11.3"
 serde = { version = "1.0.160", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git" }
 egui_extras = "0.26.2"
+
+# SFML backend
+egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
+sfml-xt = { git = "https://github.com/crumblingstatue/sfml-xt.git", optional = true }
+
+# eframe backend
+eframe = { version = "0.26.2", optional = true }
 
 # Compile deps with optimizations in dev mode
 [profile.dev.package."*"]

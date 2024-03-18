@@ -19,9 +19,13 @@ mod radicals;
 mod segment;
 mod ui;
 
+#[cfg(feature = "backend-eframe")]
+mod eframe;
 #[cfg(feature = "backend-sfml")]
 mod sfml;
 
+#[cfg(feature = "backend-eframe")]
+use ::eframe::egui;
 #[cfg(feature = "backend-sfml")]
 use egui_sfml::egui;
 
@@ -115,5 +119,7 @@ fn main() {
     }
     #[cfg(feature = "backend-sfml")]
     crate::sfml::do_sfml_event_loop(font_defs, style, &mut app);
+    #[cfg(feature = "backend-eframe")]
+    crate::eframe::do_eframe_event_loop(font_defs, style, app);
     eprintln!("{:?}", IpcState::remove());
 }
