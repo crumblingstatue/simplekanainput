@@ -4,7 +4,7 @@ use {
 };
 
 impl eframe::App for AppState {
-    fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         if !crate::ui::update(ctx, self) {
             eprintln!("Wants to quit, I guess");
         }

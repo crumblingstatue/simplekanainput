@@ -1,3 +1,5 @@
+#[cfg(feature = "backend-sfml")]
+use arboard::Clipboard;
 use {
     crate::{
         conv::{romaji_to_kana, IntpMap},
@@ -6,13 +8,13 @@ use {
         segment::InputSpan,
         ui::{input::InputUiAction, DictUiState, KanjiUiState},
     },
-    arboard::Clipboard,
     mugo::RootKind,
 };
 
 pub struct AppState {
     pub intp: IntpMap,
     pub romaji_buf: String,
+    #[cfg(feature = "backend-sfml")]
     pub clipboard: Clipboard,
     pub hide_requested: bool,
     pub quit_requested: bool,
@@ -62,6 +64,7 @@ impl AppState {
         Ok(Self {
             intp: IntpMap::default(),
             romaji_buf: String::new(),
+            #[cfg(feature = "backend-sfml")]
             clipboard: Clipboard::new()?,
             hide_requested: false,
             quit_requested: false,
@@ -114,6 +117,13 @@ impl AppState {
                 None
             })
             .collect();
+    }
+
+    pub(crate) fn set_clipboard_text(&mut self, ctx: &crate::egui::Context, text: &str) {
+        #[cfg(feature = "backend-sfml")]
+        self.clipboard.set_text(text).unwrap();
+        #[cfg(feature = "backend-eframe")]
+        ctx.output_mut(|out| out.copied_text = text.to_owned());
     }
 }
 

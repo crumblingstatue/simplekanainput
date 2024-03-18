@@ -268,7 +268,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             }
                         });
                         if copy_jap_clicked {
-                            app.clipboard.set_text(&japanese).unwrap()
+                            app.set_clipboard_text(ui.ctx(), &japanese);
                         }
                     });
                 app.out_scroll_last_offset = scroll_out.state.offset.y;
@@ -292,7 +292,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             });
         });
     if ctrl_enter {
-        app.clipboard.set_text(&japanese).unwrap();
+        app.set_clipboard_text(ui.ctx(), &japanese);
         app.romaji_buf.clear();
         app.intp.clear();
         app.hide_requested = true;
