@@ -65,7 +65,7 @@ impl<'a> RomajiParser<'a> {
     /// On match, returns a match from the kana table.
     /// If there are no matches, returns a single character from the source string.
     ///
-    /// At string end, returns None
+    /// At string end, or non-unicode-boundary index, it returns None
     fn next_largest_match(&mut self, table: &RomajiKanaTable) -> Option<&'a str> {
         // The maximum end the match can reach (so it doesn't go out of bounds)
         let max_match_end = std::cmp::min(self.cursor + MAX_ROMAJI_ATOM_LEN, self.src.len());
@@ -75,7 +75,8 @@ impl<'a> RomajiParser<'a> {
             if end > max_match_end {
                 break;
             }
-            match table.lookup(&self.src[self.cursor..end]) {
+            let atom = self.src.get(self.cursor..end)?;
+            match table.lookup(atom) {
                 Some(kana) => {
                     self.cursor += match_len;
                     return Some(kana);
