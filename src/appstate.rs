@@ -119,6 +119,9 @@ impl AppState {
             .collect();
     }
 
+    /// The SFML backend uses a more robust clipboard mechanism than what SFML offers (arboard),
+    /// but it doesn't support wasm32, so we need diverging behavior here
+    #[allow(unused_variables)]
     pub(crate) fn set_clipboard_text(&mut self, ctx: &crate::egui::Context, text: &str) {
         #[cfg(feature = "backend-sfml")]
         self.clipboard.set_text(text).unwrap();
