@@ -108,7 +108,13 @@ fn main() {
         eprintln!("{bt}");
         eprintln!("remove ipc result: {:?}", IpcState::remove());
     }));
-    let mut rw = rw_create();
+    let mut rw = RenderWindow::new(
+        WIN_DIMS.to_sf_video_mode(),
+        "Simple Kana Input",
+        Style::DEFAULT,
+        &ContextSettings::default(),
+    );
+    rw.center();
     let mut app = AppState::new().unwrap();
     rw.set_framerate_limit(60);
     rw.set_position(Vector2::new(
@@ -142,33 +148,18 @@ fn main() {
     sf_egui.context().set_style(style);
 
     loop {
-        if !rw.is_open() {
-            match IpcState::read().unwrap() {
-                IpcState::Visible => panic!("Visible state set, even though window is not visible"),
-                IpcState::Hidden => {}
-                IpcState::ShowRequested => {
-                    rw = rw_create();
-                    IpcState::Visible.write().unwrap();
-                    continue;
-                }
-                IpcState::QuitRequested => break,
+        match IpcState::read().unwrap() {
+            IpcState::Visible => {}
+            IpcState::Hidden => {}
+            IpcState::ShowRequested => {
+                // Need this set_visible(false) trick to refocus a visible, but unfocused window.
+                // Requesting focus just flashes the tray icon.
+                rw.set_visible(false);
+                rw.set_visible(true);
+                rw.center();
+                IpcState::Visible.write().unwrap();
             }
-            std::thread::sleep(Duration::from_millis(500));
-            continue;
-        } else {
-            match IpcState::read().unwrap() {
-                IpcState::Visible => {}
-                IpcState::Hidden => {}
-                IpcState::ShowRequested => {
-                    if !rw.has_focus() {
-                        eprintln!("Recreating window...");
-                        rw.close();
-                        rw = rw_create();
-                    }
-                    IpcState::Visible.write().unwrap();
-                }
-                IpcState::QuitRequested => break,
-            }
+            IpcState::QuitRequested => break,
         }
         while let Some(ev) = rw.poll_event() {
             sf_egui.add_event(&ev);
@@ -195,7 +186,7 @@ fn main() {
             .unwrap();
         if app.hide_requested {
             IpcState::Hidden.write().unwrap();
-            rw.close();
+            rw.set_visible(false);
             app.hide_requested = false;
         }
         if app.quit_requested {
@@ -205,15 +196,4 @@ fn main() {
         rw.display();
     }
     eprintln!("{:?}", IpcState::remove());
-}
-
-fn rw_create() -> RenderWindow {
-    let mut rw = RenderWindow::new(
-        WIN_DIMS.to_sf_video_mode(),
-        "Simple Kana Input",
-        Style::DEFAULT,
-        &ContextSettings::default(),
-    );
-    rw.center();
-    rw
 }
