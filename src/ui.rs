@@ -8,8 +8,9 @@ pub use self::{
     kanji_ui::{kanji_ui, KanjiUiState},
 };
 use crate::{
-    appstate::RootKindExt,
+    appstate::{self, AppState, RootKindExt},
     egui::{self, text::LayoutJob, TextFormat},
+    ipc::IpcState,
 };
 
 fn char_is_hiragana(ch: char) -> bool {
@@ -210,4 +211,32 @@ fn mugo_root_kind_label(kind: mugo::RootKind) -> &'static str {
         mugo::RootKind::IAdjective => "い adjective",
         mugo::RootKind::NaAdjective => "な adjective",
     }
+}
+
+/// Returns false if there was a quit request
+#[must_use]
+pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
+    match IpcState::read().unwrap() {
+        IpcState::Visible => {}
+        IpcState::Hidden => {}
+        IpcState::ShowRequested => {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+            IpcState::Visible.write().unwrap();
+        }
+        IpcState::QuitRequested => return false,
+    }
+    egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
+        appstate::UiState::Input => input_ui(ui, app),
+        appstate::UiState::Dict => dict_ui(ui, app),
+        appstate::UiState::Kanji => kanji_ui(ui, app),
+    });
+    if app.hide_requested {
+        IpcState::Hidden.write().unwrap();
+        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+        app.hide_requested = false;
+    }
+    if app.quit_requested {
+        return false;
+    }
+    true
 }

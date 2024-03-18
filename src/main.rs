@@ -1,17 +1,9 @@
 #![feature(array_try_from_fn)]
 
 use {
-    crate::ipc::IpcState,
+    crate::{ipc::IpcState, sfml::do_sfml_event_loop},
     appstate::AppState,
-    egui_sfml::{
-        egui::{self, ViewportCommand},
-        sfml::{
-            graphics::{Rect, RenderTarget, RenderWindow, View},
-            window::{ContextSettings, Event, Style, VideoMode},
-        },
-        SfEgui,
-    },
-    sfml_xt::graphics::RenderWindowExt,
+    egui_sfml::egui,
     std::{
         backtrace::Backtrace,
         time::{Duration, Instant},
@@ -26,21 +18,12 @@ mod kana;
 mod kanji;
 mod radicals;
 mod segment;
+mod sfml;
 mod ui;
 
 pub struct WinDims {
     w: u16,
     h: u16,
-}
-
-impl WinDims {
-    fn to_sf_video_mode(&self) -> VideoMode {
-        VideoMode {
-            width: self.w.into(),
-            height: self.h.into(),
-            bits_per_pixel: 32,
-        }
-    }
 }
 
 const WIN_DIMS: WinDims = WinDims { w: 640, h: 512 };
@@ -101,16 +84,9 @@ fn main() {
         eprintln!("{bt}");
         eprintln!("remove ipc result: {:?}", IpcState::remove());
     }));
-    let mut rw = RenderWindow::new(
-        WIN_DIMS.to_sf_video_mode(),
-        "Simple Kana Input",
-        Style::DEFAULT,
-        &ContextSettings::default(),
-    );
-    rw.center();
+
     let mut app = AppState::new().unwrap();
-    rw.set_vertical_sync_enabled(true);
-    let mut sf_egui = SfEgui::new(&rw);
+
     let mut font_defs = egui::FontDefinitions::default();
     font_defs.font_data.insert(
         "ipag".to_owned(),
@@ -121,7 +97,6 @@ fn main() {
         .get_mut(&egui::FontFamily::Proportional)
         .unwrap()
         .push("ipag".to_owned());
-    sf_egui.context().set_fonts(font_defs);
     let mut style = egui::Style::default();
     for (text_style, font_id) in style.text_styles.iter_mut() {
         let size = match *text_style {
@@ -134,53 +109,6 @@ fn main() {
         };
         font_id.size = size;
     }
-    sf_egui.context().set_style(style);
-
-    loop {
-        match IpcState::read().unwrap() {
-            IpcState::Visible => {}
-            IpcState::Hidden => {}
-            IpcState::ShowRequested => {
-                sf_egui.context().send_viewport_cmd(ViewportCommand::Focus);
-                IpcState::Visible.write().unwrap();
-            }
-            IpcState::QuitRequested => break,
-        }
-        while let Some(ev) = rw.poll_event() {
-            sf_egui.add_event(&ev);
-
-            match ev {
-                Event::Closed => app.hide_requested = true,
-                Event::Resized { width, height } => rw.set_view(&View::from_rect(Rect::new(
-                    0.,
-                    0.,
-                    width as f32,
-                    height as f32,
-                ))),
-                _ => {}
-            }
-        }
-        sf_egui
-            .do_frame(&mut rw, |ctx| {
-                egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
-                    appstate::UiState::Input => ui::input_ui(ui, &mut app),
-                    appstate::UiState::Dict => ui::dict_ui(ui, &mut app),
-                    appstate::UiState::Kanji => ui::kanji_ui(ui, &mut app),
-                });
-            })
-            .unwrap();
-        if app.hide_requested {
-            IpcState::Hidden.write().unwrap();
-            sf_egui
-                .context()
-                .send_viewport_cmd(ViewportCommand::Visible(false));
-            app.hide_requested = false;
-        }
-        if app.quit_requested {
-            break;
-        }
-        sf_egui.draw(&mut rw, None);
-        rw.display();
-    }
+    do_sfml_event_loop(font_defs, style, &mut app);
     eprintln!("{:?}", IpcState::remove());
 }
