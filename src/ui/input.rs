@@ -142,6 +142,11 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     app.romaji_buf.make_ascii_lowercase();
                     ui.close_menu();
                 }
+                ui.separator();
+                if ui.button("About").clicked() {
+                    app.ui_state = UiState::About;
+                    ui.close_menu();
+                }
             });
         });
     });

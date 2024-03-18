@@ -57,6 +57,7 @@ pub enum UiState {
     Input,
     Dict,
     Kanji,
+    About,
 }
 
 impl AppState {

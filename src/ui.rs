@@ -1,14 +1,16 @@
+mod about;
 mod dict;
 pub mod input;
 mod kanji_ui;
 
 pub use self::{
+    about::about_ui,
     dict::{dict_ui, DictUiState},
     input::input_ui,
     kanji_ui::{kanji_ui, KanjiUiState},
 };
 use crate::{
-    appstate::{self, AppState, RootKindExt},
+    appstate::{AppState, RootKindExt, UiState},
     egui::{self, text::LayoutJob, TextFormat},
     ipc::IpcState,
 };
@@ -227,9 +229,10 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
         Err(e) => eprintln!("{e}"),
     }
     egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
-        appstate::UiState::Input => input_ui(ui, app),
-        appstate::UiState::Dict => dict_ui(ui, app),
-        appstate::UiState::Kanji => kanji_ui(ui, app),
+        UiState::Input => input_ui(ui, app),
+        UiState::Dict => dict_ui(ui, app),
+        UiState::Kanji => kanji_ui(ui, app),
+        UiState::About => about_ui(ui, app),
     });
     if app.hide_requested {
         IpcState::Hidden.write().unwrap();

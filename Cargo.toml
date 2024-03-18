@@ -36,3 +36,6 @@ wasm-bindgen-futures = "0.4"
 # Compile deps with optimizations in dev mode
 [profile.dev.package."*"]
 opt-level = 2
+
+[build-dependencies]
+vergen = { version = "8.3.1", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
