@@ -6,7 +6,8 @@ Provides kanji suggestions as well as dictionary info.
 
 ## Platform support
 
-Right now it only supports Linux (due to the IPC mechanism using `/dev/shmem`), but contributions are welcome.
+It is tested on Linux, and there is a web version at <https://crumblingstatue.github.io/simplekanainput/>.
+Currently no one is testing it on Windows or Mac OS, so I can't promise anything about them.
 
 ## Usage
 

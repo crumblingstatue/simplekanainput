@@ -14,7 +14,7 @@ pub use self::{
 use crate::{
     appstate::{AppState, RootKindExt, UiState},
     egui::{self, text::LayoutJob, TextFormat},
-    ipc::IpcState,
+    IPC_FOCUS, IPC_QUIT,
 };
 
 fn char_is_hiragana(ch: char) -> bool {
@@ -220,16 +220,6 @@ fn mugo_root_kind_label(kind: mugo::RootKind) -> &'static str {
 /// Returns false if there was a quit request
 #[must_use]
 pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
-    match IpcState::read() {
-        Ok(IpcState::Visible) => {}
-        Ok(IpcState::Hidden) => {}
-        Ok(IpcState::ShowRequested) => {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
-            IpcState::Visible.write().unwrap();
-        }
-        Ok(IpcState::QuitRequested) => return false,
-        Err(e) => eprintln!("{e}"),
-    }
     egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
         UiState::Input => input_ui(ui, app),
         UiState::Dict => dict_ui(ui, app),
@@ -237,8 +227,18 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
         UiState::About => about_ui(ui, app),
         UiState::Help => help_ui(ui, app),
     });
+    if let Some(mut stream) = app.ipc_listener.accept() {
+        match stream.recv() {
+            Some(IPC_FOCUS) => {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+            }
+            Some(IPC_QUIT) => {
+                app.quit_requested = true;
+            }
+            _ => {}
+        }
+    }
     if app.hide_requested {
-        IpcState::Hidden.write().unwrap();
         ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
         app.hide_requested = false;
     }

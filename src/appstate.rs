@@ -8,6 +8,7 @@ use {
         segment::InputSpan,
         ui::{input::InputUiAction, DictUiState, KanjiUiState},
     },
+    existing_instance::Listener,
     mugo::RootKind,
 };
 
@@ -35,6 +36,7 @@ pub struct AppState {
     /// For some reason the egui memory fails me in getting the scroll offset, so we store it here
     /// Used for synchronizing output scroll and input (romaji) scroll
     pub out_scroll_last_offset: f32,
+    pub ipc_listener: Listener,
 }
 
 #[derive(Default)]
@@ -62,7 +64,7 @@ pub enum UiState {
 }
 
 impl AppState {
-    pub fn new() -> anyhow::Result<Self> {
+    pub fn new(ipc_listener: Listener) -> anyhow::Result<Self> {
         Ok(Self {
             intp: IntpMap::default(),
             romaji_buf: String::new(),
@@ -82,6 +84,7 @@ impl AppState {
             segments: Vec::new(),
             input_ui_action: None,
             out_scroll_last_offset: 0.0,
+            ipc_listener,
         })
     }
     /// Populate the suggestion cache with entries for the selected segment

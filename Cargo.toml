@@ -8,7 +8,7 @@ edition = "2021"
 [features]
 backend-sfml = ["dep:egui-sfml", "dep:sfml-xt", "dep:arboard"]
 backend-eframe = ["dep:eframe"]
-ipc = []
+ipc = ["dep:existing_instance"]
 default = ["backend-sfml", "ipc"]
 
 [dependencies]
@@ -19,8 +19,11 @@ jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features 
 rfd = "0.11.3"
 serde = { version = "1.0.160", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git" }
-egui_extras = {version = "0.26.2", default-features = false }
-egui_commonmark = {version = "0.13.0", default-features = false, features = ["pulldown_cmark"] }
+egui_extras = { version = "0.26.2", default-features = false }
+egui_commonmark = { version = "0.13.0", default-features = false, features = [
+    "pulldown_cmark",
+] }
+existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git", optional = true }
 
 # SFML backend
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
@@ -39,4 +42,10 @@ wasm-bindgen-futures = "0.4"
 opt-level = 2
 
 [build-dependencies]
-vergen = { version = "8.3.1", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
+vergen = { version = "8.3.1", default-features = false, features = [
+    "build",
+    "cargo",
+    "git",
+    "gitcl",
+    "rustc",
+] }
