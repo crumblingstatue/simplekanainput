@@ -10,7 +10,7 @@ pub struct KanjiUiState {
 
 pub fn kanji_ui(ui: &mut egui::Ui, app: &mut AppState) {
     ui.horizontal(|ui| {
-        if ui.link("Back").clicked() {
+        if ui.link("Back (Esc)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
             app.ui_state = UiState::Input;
         }
         ui.add(

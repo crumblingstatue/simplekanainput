@@ -7,9 +7,14 @@ use {
 };
 
 pub fn help_ui(ui: &mut egui::Ui, app: &mut AppState) {
-    if ui.link("Back").clicked() {
-        app.ui_state = UiState::Input;
-    }
+    ui.horizontal(|ui| {
+        if ui.link("Back (Esc)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
+            app.ui_state = UiState::Input;
+        }
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            ui.hyperlink("https://github.com/crumblingstatue/simplekanainput");
+        });
+    });
     ui.separator();
     egui::ScrollArea::vertical().show(ui, |ui| {
         let mut cache = CommonMarkCache::default();
