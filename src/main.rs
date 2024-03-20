@@ -1,10 +1,8 @@
 #![feature(array_try_from_fn)]
 
-use {
-    appstate::AppState,
-    existing_instance::{Endpoint, Msg},
-    std::backtrace::Backtrace,
-};
+#[cfg(feature = "ipc")]
+use existing_instance::{Endpoint, Msg};
+use {appstate::AppState, std::backtrace::Backtrace};
 
 mod appstate;
 mod conv;
@@ -36,12 +34,16 @@ pub struct WinDims {
 }
 
 const WIN_DIMS: WinDims = WinDims { w: 640, h: 512 };
-const IPC_FOCUS: Msg = Msg::Num(0);
-const IPC_QUIT: Msg = Msg::Num(1);
 
+#[cfg(feature = "ipc")]
+const IPC_FOCUS: Msg = Msg::Num(0);
+#[cfg(feature = "ipc")]
+const IPC_QUIT: Msg = Msg::Num(1);
+#[cfg(feature = "ipc")]
 const IPC_CHANNEL_ID: &str = "simple-kana-input";
 
 fn main() {
+    #[cfg(feature = "ipc")]
     let listener = match existing_instance::establish_endpoint(IPC_CHANNEL_ID, true).unwrap() {
         Endpoint::New(listener) => listener,
         Endpoint::Existing(mut stream) => {
@@ -70,7 +72,11 @@ fn main() {
         eprintln!("{bt}");
     }));
 
-    let mut app = AppState::new(listener).unwrap();
+    let mut app = AppState::new(
+        #[cfg(feature = "ipc")]
+        listener,
+    )
+    .unwrap();
 
     let mut font_defs = egui::FontDefinitions::default();
     font_defs.font_data.insert(

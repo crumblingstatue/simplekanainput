@@ -1,5 +1,7 @@
 #[cfg(feature = "backend-sfml")]
 use arboard::Clipboard;
+#[cfg(feature = "ipc")]
+use existing_instance::Listener;
 use {
     crate::{
         conv::{romaji_to_kana, IntpMap},
@@ -8,7 +10,6 @@ use {
         segment::InputSpan,
         ui::{input::InputUiAction, DictUiState, KanjiUiState},
     },
-    existing_instance::Listener,
     mugo::RootKind,
 };
 
@@ -36,6 +37,7 @@ pub struct AppState {
     /// For some reason the egui memory fails me in getting the scroll offset, so we store it here
     /// Used for synchronizing output scroll and input (romaji) scroll
     pub out_scroll_last_offset: f32,
+    #[cfg(feature = "ipc")]
     pub ipc_listener: Listener,
 }
 
@@ -64,7 +66,7 @@ pub enum UiState {
 }
 
 impl AppState {
-    pub fn new(ipc_listener: Listener) -> anyhow::Result<Self> {
+    pub fn new(#[cfg(feature = "ipc")] ipc_listener: Listener) -> anyhow::Result<Self> {
         Ok(Self {
             intp: IntpMap::default(),
             romaji_buf: String::new(),
@@ -84,6 +86,7 @@ impl AppState {
             segments: Vec::new(),
             input_ui_action: None,
             out_scroll_last_offset: 0.0,
+            #[cfg(feature = "ipc")]
             ipc_listener,
         })
     }

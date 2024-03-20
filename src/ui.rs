@@ -14,7 +14,6 @@ pub use self::{
 use crate::{
     appstate::{AppState, RootKindExt, UiState},
     egui::{self, text::LayoutJob, TextFormat},
-    IPC_FOCUS, IPC_QUIT,
 };
 
 fn char_is_hiragana(ch: char) -> bool {
@@ -227,13 +226,14 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
         UiState::About => about_ui(ui, app),
         UiState::Help => help_ui(ui, app),
     });
+    #[cfg(feature = "ipc")]
     if let Some(mut stream) = app.ipc_listener.accept() {
         match stream.recv() {
-            Some(IPC_FOCUS) => {
+            Some(crate::IPC_FOCUS) => {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
             }
-            Some(IPC_QUIT) => {
+            Some(crate::IPC_QUIT) => {
                 app.quit_requested = true;
             }
             _ => {}
