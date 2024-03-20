@@ -230,6 +230,7 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
     if let Some(mut stream) = app.ipc_listener.accept() {
         match stream.recv() {
             Some(IPC_FOCUS) => {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
             }
             Some(IPC_QUIT) => {

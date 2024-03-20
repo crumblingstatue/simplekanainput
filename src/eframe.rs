@@ -1,10 +1,15 @@
-use {crate::appstate::AppState, eframe::egui::FontDefinitions};
+use {
+    crate::appstate::AppState,
+    eframe::egui::{FontDefinitions, ViewportCommand},
+};
 
 impl eframe::App for AppState {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         if !crate::ui::update(ctx, self) {
-            eprintln!("Wants to quit, I guess");
+            // On the eframe backend, the app automatically quits if the window is closed
+            ctx.send_viewport_cmd(ViewportCommand::Close);
         }
+        ctx.request_repaint();
     }
 }
 
