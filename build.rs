@@ -6,6 +6,7 @@ fn main() {
         .cargo_target_triple()
         .cargo_debug()
         .cargo_opt_level()
+        .cargo_features()
         .rustc_semver()
         .emit()
     {

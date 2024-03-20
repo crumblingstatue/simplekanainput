@@ -37,7 +37,8 @@ pub fn about_ui(ui: &mut egui::Ui, app: &mut AppState) {
             );
         };
     }
-    pair!("Git SHA: ", "VERGEN_GIT_SHA");
+    pair!("Features: ", "VERGEN_CARGO_FEATURES");
+    pair!("\nGit SHA: ", "VERGEN_GIT_SHA");
     pair!("\nCommit time: ", "VERGEN_GIT_COMMIT_TIMESTAMP");
     pair!("\nBuild time: ", "VERGEN_BUILD_TIMESTAMP");
     pair!("\nTarget: ", "VERGEN_CARGO_TARGET_TRIPLE");
