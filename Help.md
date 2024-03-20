@@ -18,25 +18,27 @@ For example, if you type **jittoshiterarenai**, it will get recognized as **凝�
 which is a **する** verb, and the conjugation is **て** form + **potential** + **ない**.
 
 ## Shortcut keys
-key                  | effect                           | Note
----------------------|----------------------------------|-----------
-F2                   | Copy output to clipboard         |
-Ctrl + enter         | Copy output and hide window      | not on web
-Tab                  | Select next kanji suggestion     |
-Shift + tab          | Select previous kanji suggestion |
-Alt + left           | Jump to previous word            |
-Alt + right          | Jump to next word                |
-Ctrl + left bracket  | Set style to hiragana            | `ctrl` + `[`
-Ctrl + right bracket | Set Style to katakana            | `ctrl` + `]`
+key              | effect                           | Note
+-----------------|----------------------------------|-----------
+`F2`             | Copy output to clipboard         |
+`Ctrl` + `enter` | Copy output and hide window      | not on web
+`Tab`            | Select next kanji suggestion     |
+`Shift` + `tab`  | Select previous kanji suggestion |
+`Alt` + `left`   | Jump to previous word            |
+`Alt` + `right`  | Jump to next word                |
+`Ctrl` + `[`     | Set style to hiragana            |
+`Ctrl` + `]`     | Set Style to katakana            |
 
 ## Special characters
 Certain characters have special use
 
-- `{` and `}`   Delimit a "literal" segment that doesn't get converted to japanese
-- `[` and `]`   Japanese quote marks 「 and 」
-- `-`         Prolonged sound mark **ー**
-- `.`         Japanese 。
-- `,`         Japanese 、
-- `!`         Japanese ！
-- `?`         Japanese ？
-- `...`       Japanese …
+character   | effect
+------------|-------------------------------------------------------------------
+`{` and `}` | Delimit a "literal" segment that doesn't get converted to japanese
+`[` and `]` | Japanese quote marks 「 and 」
+`-`         | Prolonged sound mark **ー**
+`.`         | Japanese 。
+`,`         | Japanese 、
+`!`         | Japanese ！
+`?`         | Japanese ？
+`...`       | Japanese …

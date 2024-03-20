@@ -1115,8 +1115,7 @@ dependencies = [
 [[package]]
 name = "egui_commonmark"
 version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "972eb9d0bcd507f4b30d3bd8f6f362fbf3b85095ae64a347aee7b330f46059e1"
+source = "git+https://github.com/lampsitter/egui_commonmark.git?branch=table-column-fix#26a89c98d2a61464bf33564fffffc43cb828d7f0"
 dependencies = [
  "egui",
  "egui_extras",
