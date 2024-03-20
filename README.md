@@ -4,6 +4,8 @@ Simple kana input that copies its output to the clipboard.
 
 Provides kanji suggestions as well as dictionary info.
 
+![image](https://github.com/crumblingstatue/simplekanainput/assets/1521976/f9797f6c-9df2-4103-a2ce-8e9621d46f1c)
+
 ## Platform support
 
 It is tested on Linux, and there is a web version at <https://crumblingstatue.github.io/simplekanainput/>.
