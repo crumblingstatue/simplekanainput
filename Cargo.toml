@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 backend-sfml = ["dep:egui-sfml", "dep:sfml-xt", "dep:arboard"]
 backend-eframe = ["dep:eframe"]
 ipc = ["dep:existing_instance"]
-default = ["backend-sfml", "ipc"]
+default = ["backend-eframe", "ipc"]
 
 [dependencies]
 anyhow = "1.0.71"

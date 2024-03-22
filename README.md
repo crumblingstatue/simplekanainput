@@ -13,12 +13,10 @@ Currently no one is testing it on Windows or Mac OS, so I can't promise anything
 
 ## Building
 There are two backends, `backend-sfml` and `backend-eframe`.
-Currently, `backend-sfml` is the default, but it requires
+Currently, `backend-eframe` is the default.
+
+`backend-sfml` requires
 [SFML](https://github.com/jeremyletang/rust-sfml?tab=readme-ov-file#requirements).
-If you just want an easy to build version, try building with
-```
-cargo build --release --no-default-features --features=backend-eframe,ipc
-```
 
 ## Usage
 
