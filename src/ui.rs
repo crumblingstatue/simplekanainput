@@ -42,6 +42,7 @@ fn dict_en_ui(
                 for (i, step) in root.steps.iter().enumerate() {
                     steps_str.push_str(match step {
                         mugo::Step::Te => "て",
+                        mugo::Step::Teku => "てく (て + いく)",
                         mugo::Step::Nai => "ない",
                         mugo::Step::Naide => "ないで",
                         mugo::Step::Nakatta => "なかった",
