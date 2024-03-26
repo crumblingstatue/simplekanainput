@@ -13,12 +13,12 @@ ipc = ["dep:existing_instance"]
 default = ["backend-eframe", "ipc"]
 
 [dependencies]
-anyhow = "1.0.71"
+anyhow = "1.0.81"
 jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features = [
     "scope-uncommon",
 ] }
-rfd = "0.11.3"
-serde = { version = "1.0.160", features = ["derive"] }
+rfd = "0.11.4"
+serde = { version = "1.0.197", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git" }
 egui_extras = { version = "0.26.2", default-features = false }
 egui_commonmark = { git = "https://github.com/lampsitter/egui_commonmark.git", branch = "table-column-fix", default-features = false, features = [
@@ -29,7 +29,7 @@ existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-in
 # SFML backend
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
 sfml-xt = { git = "https://github.com/crumblingstatue/sfml-xt.git", optional = true }
-arboard = { version = "3.2.0", optional = true }
+arboard = { version = "3.3.2", optional = true }
 
 # eframe backend
 eframe = { version = "0.26.2", optional = true }
