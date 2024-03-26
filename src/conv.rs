@@ -5,7 +5,6 @@ use {
         radicals::RadicalPair,
         segment::InputSpan,
     },
-    serde::Deserialize,
     std::collections::HashMap,
 };
 
@@ -30,13 +29,6 @@ pub enum Intp {
 }
 
 pub type IntpMap = HashMap<usize, Intp>;
-
-#[derive(Deserialize, Debug)]
-pub struct DictEntry {
-    pub romaji: String,
-    pub kanji: String,
-    pub desc: String,
-}
 
 /// Max possible length of a romaji kana "atom".
 /// "sshi" is an example of a romaji kana atom, with length of 4.
