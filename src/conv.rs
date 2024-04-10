@@ -108,6 +108,7 @@ fn test_find_largest_match() {
     assert_eq!(parser.next_largest_match(&HIRAGANA), None);
 }
 
+/// Precondition: If a text atom has an intp, it must have a kanji reading
 pub fn with_input_span_converted_form(
     span: &InputSpan,
     i: usize,

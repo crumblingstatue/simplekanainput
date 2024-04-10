@@ -1,5 +1,5 @@
 use {
-    super::dict_en_ui,
+    super::{dict_en_ui, dict_en_ui_scroll},
     crate::{
         appstate::{AppState, CachedSuggestions, UiState},
         conv::{self, romaji_to_kana, with_input_span_converted_form, Intp, IntpMap},
@@ -73,40 +73,37 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     // Propagates to the intp selection ui to scroll to the entry in case selection was changed
     let mut sel_changed = false;
     if tab {
-        'tabhandler: {
-            let selected_sug = match &mut app.selected_suggestion {
-                Some(sug) => {
-                    if shift {
-                        if *sug == 0 {
-                            app.selected_suggestion = None;
-                            app.intp.remove(&app.selected_segment);
-                            break 'tabhandler;
-                        } else {
-                            *sug -= 1;
-                            sel_changed = true;
-                        }
-                    } else if (*sug + 1) < app.cached_suggestions.jmdict.len() {
-                        *sug += 1;
-                        sel_changed = true;
-                    }
-                    *sug
-                }
-                None => {
-                    app.selected_suggestion = Some(0);
-                    0
-                }
-            };
-            // Accept first suggestion if tab is pressed
-            if let Some(sug) = app.cached_suggestions.jmdict.get(selected_sug) {
-                app.intp.insert(
-                    app.selected_segment,
-                    Intp::Dictionary {
-                        cached_sug_idx: selected_sug,
-                        en: sug.entry,
-                        kanji_idx: 0,
-                        root: sug.mugo_root.clone(),
-                    },
+        {
+            if shift {
+                kanji_sugg_cursor_back(
+                    &app.cached_suggestions,
+                    &mut app.selected_suggestion,
+                    &mut sel_changed,
                 );
+            } else {
+                kanji_sugg_cursor_forward(
+                    &app.cached_suggestions,
+                    &mut app.selected_suggestion,
+                    &mut sel_changed,
+                );
+            }
+            // Accept first suggestion if tab is pressed
+            if sel_changed {
+                if let Some(selected_sug) = app.selected_suggestion
+                    && let Some(sug) = app.cached_suggestions.jmdict.get(selected_sug)
+                {
+                    app.intp.insert(
+                        app.selected_segment,
+                        Intp::Dictionary {
+                            cached_sug_idx: selected_sug,
+                            en: sug.entry,
+                            kanji_idx: 0,
+                            root: sug.mugo_root.clone(),
+                        },
+                    );
+                } else {
+                    app.intp.remove(&app.selected_segment);
+                }
             }
         }
     }
@@ -331,6 +328,48 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     }
 }
 
+fn kanji_sugg_cursor_forward(
+    cached_suggestions: &CachedSuggestions,
+    sug: &mut Option<usize>,
+    sel_changed: &mut bool,
+) {
+    let new = sug.is_none();
+    let starting_idx = sug.unwrap_or(0);
+    for (i, sugg) in
+        cached_suggestions
+            .jmdict
+            .iter()
+            .enumerate()
+            .skip(if new { 0 } else { starting_idx + 1 })
+    {
+        if sugg.entry.kanji_elements().len() != 0 {
+            *sel_changed = true;
+            *sug = Some(i);
+            break;
+        }
+    }
+}
+
+fn kanji_sugg_cursor_back(
+    cached_suggestions: &CachedSuggestions,
+    sug_opt: &mut Option<usize>,
+    sel_changed: &mut bool,
+) {
+    if let Some(sug) = sug_opt {
+        *sel_changed = true;
+        let mut i = *sug;
+        while i > 0 {
+            i -= 1;
+            let sugg = &cached_suggestions.jmdict[i];
+            if sugg.entry.kanji_elements().len() != 0 {
+                *sug = i;
+                return;
+            }
+        }
+        *sug_opt = None;
+    }
+}
+
 fn segment_sel_nav_left(app: &mut AppState) {
     loop {
         app.selected_segment = app.selected_segment.saturating_sub(1);
@@ -421,7 +460,13 @@ fn suggestion_ui_strip(
                     ..
                 }) = intp.get_mut(&intp_idx)
                 {
-                    dict_en_ui(ui, en, root.as_ref(), Some(kanji_idx));
+                    dict_en_ui_scroll(ui, en, root.as_ref(), Some(kanji_idx));
+                } else {
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        for sugg in &cached_suggestions.jmdict {
+                            dict_en_ui(ui, &sugg.entry, sugg.mugo_root.as_ref(), None);
+                        }
+                    });
                 }
             })
         });
@@ -472,15 +517,12 @@ fn gen_dict_ui_for_hiragana(
 ) {
     for (si, suggestion) in suggestions.jmdict.iter().enumerate() {
         // Same entry, different kanji goes into horizontal layout
-        let kanji_str = suggestion
-            .entry
-            .kanji_elements()
-            .map(|e| e.text)
-            .next()
-            .unwrap_or("??? (bug)");
+        let Some(kanji_str) = suggestion.entry.kanji_elements().map(|e| e.text).next() else {
+            continue;
+        };
         let hover_ui = |ui: &mut egui::Ui| {
             ui.set_max_width(400.0);
-            dict_en_ui(ui, &suggestion.entry, suggestion.mugo_root.as_ref(), None);
+            dict_en_ui_scroll(ui, &suggestion.entry, suggestion.mugo_root.as_ref(), None);
         };
         let mut scroll = false;
         let mut selected = false;

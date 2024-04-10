@@ -1,5 +1,5 @@
 use {
-    super::dict_en_ui,
+    super::dict_en_ui_scroll,
     crate::{
         appstate::{AppState, UiState},
         conv::romaji_to_kana,
@@ -71,7 +71,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             cols[1].label("<Couldn't get entry>");
             return;
         };
-        dict_en_ui(&mut cols[1], en, None, None);
+        dict_en_ui_scroll(&mut cols[1], en, None, None);
     });
     app.dict_ui_state.focus_textinput = want_focus;
 }

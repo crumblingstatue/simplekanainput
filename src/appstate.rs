@@ -5,7 +5,7 @@ use existing_instance::Listener;
 use {
     crate::{
         conv::{romaji_to_kana, IntpMap},
-        kana::HIRAGANA,
+        kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         segment::InputSpan,
         ui::{input::InputUiAction, DictUiState, KanjiUiState},
@@ -99,14 +99,12 @@ impl AppState {
         };
         let hiragana = romaji_to_kana(&self.romaji_buf[start..end], &HIRAGANA);
         let hiragana = hiragana.trim();
+        let katakana = romaji_to_kana(&self.romaji_buf[start..end], &KATAKANA);
+        let katakana = katakana.trim();
         let root = Root::Bare(hiragana);
         let mugo_roots = mugo::deconjugate(hiragana);
         self.cached_suggestions.jmdict = jmdict::entries()
             .filter_map(|en| {
-                // Filter out entries with no kanji elements
-                if en.kanji_elements().len() == 0 {
-                    return None;
-                }
                 if root.matches(&en) {
                     return Some(CachedJmdictSuggestion {
                         entry: en,
@@ -121,6 +119,12 @@ impl AppState {
                             });
                         }
                     }
+                }
+                if Root::Bare(katakana).reading_matches(&en) {
+                    return Some(CachedJmdictSuggestion {
+                        entry: en,
+                        mugo_root: None,
+                    });
                 }
                 None
             })
