@@ -16,6 +16,7 @@ default = ["backend-eframe", "ipc"]
 anyhow = "1.0.81"
 jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features = [
     "scope-uncommon",
+    "scope-archaic",
 ] }
 rfd = "0.11.4"
 serde = { version = "1.0.197", features = ["derive"] }
