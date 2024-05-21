@@ -46,46 +46,10 @@ fn dict_en_ui(
         steps_str.truncate(steps_str.trim_end_matches(", ").len());
         if let Some(root) = root {
             steps_str.push_str(" (");
-            steps_str.push_str(mugo_root_kind_label(root.kind));
+            steps_str.push_str(root.kind.label());
             steps_str.push_str(") ➡ ");
             for (i, step) in root.steps.iter().enumerate() {
-                steps_str.push_str(match step {
-                    mugo::Step::Te => "て",
-                    mugo::Step::Teku => "てく (て + いく)",
-                    mugo::Step::Nai => "ない",
-                    mugo::Step::Naide => "ないで",
-                    mugo::Step::Nakatta => "なかった",
-                    mugo::Step::Ta => "た",
-                    mugo::Step::Volitional => "volitional",
-                    mugo::Step::AdverbialKu => "く (adverb)",
-                    mugo::Step::Imperative => "imperative",
-                    mugo::Step::Masu => "ます",
-                    mugo::Step::Masen => "ません",
-                    mugo::Step::Invitational => "invitational",
-                    mugo::Step::Continuous => "ている",
-                    mugo::Step::ContRuAbbrev => "てる",
-                    mugo::Step::Zu => "ず",
-                    mugo::Step::Ka => "か",
-                    mugo::Step::Tari => "たり",
-                    mugo::Step::Tara => "たら",
-                    mugo::Step::Nasai => "なさい",
-                    mugo::Step::Nagara => "ながら",
-                    mugo::Step::Causative => "causative",
-                    mugo::Step::Passive => "passive",
-                    mugo::Step::Tai => "たい",
-                    mugo::Step::Ba => "ば (conditional)",
-                    mugo::Step::Potential => "potential",
-                    mugo::Step::Chau => "ちゃう",
-                    mugo::Step::Na => "な",
-                    mugo::Step::Katta => "かった",
-                    mugo::Step::Stem => "stem",
-                    mugo::Step::Nu => "ぬ",
-                    mugo::Step::Ki => "き (archaic い)",
-                    mugo::Step::Nda => "んだ",
-                    mugo::Step::Kereba => "ければ",
-                    mugo::Step::Nakya => "なきゃ",
-                    mugo::Step::Sa => "さ",
-                });
+                steps_str.push_str(step.label());
                 if i != root.steps.len() - 1 {
                     steps_str.push('➡');
                 }
@@ -196,27 +160,6 @@ fn dict_en_ui(
                 );
             });
         }
-    }
-}
-
-fn mugo_root_kind_label(kind: mugo::RootKind) -> &'static str {
-    match kind {
-        mugo::RootKind::Ichidan => "ichidan",
-        mugo::RootKind::GodanBu => "ぶ",
-        mugo::RootKind::GodanMu => "む",
-        mugo::RootKind::GodanNu => "ぬ",
-        mugo::RootKind::GodanRu => "godan る",
-        mugo::RootKind::GodanSu => "す",
-        mugo::RootKind::GodanTsu => "つ",
-        mugo::RootKind::GodanU => "う",
-        mugo::RootKind::GodanGu => "ぐ",
-        mugo::RootKind::GodanKu => "く",
-        mugo::RootKind::Iku => "行く",
-        mugo::RootKind::Kuru => "来る",
-        mugo::RootKind::Suru => "する",
-        mugo::RootKind::SpecialSuru => "する (special)",
-        mugo::RootKind::IAdjective => "い adjective",
-        mugo::RootKind::NaAdjective => "な adjective",
     }
 }
 

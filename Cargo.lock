@@ -2198,7 +2198,7 @@ dependencies = [
 [[package]]
 name = "mugo"
 version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/mugo.git#8a4228a952d66f1007363284706551dab9a489d3"
+source = "git+https://github.com/crumblingstatue/mugo.git#8e8fa0f6a469fe59811605d9fa38f560922ca513"
 dependencies = [
  "log",
  "log-dbg",
