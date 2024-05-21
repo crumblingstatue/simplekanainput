@@ -2205,6 +2205,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mugo-jmdict"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/mugo-jmdict.git#5a9de527c06a610ac2c5620d21c89508ee5a0c85"
+dependencies = [
+ "jmdict",
+ "mugo",
+]
+
+[[package]]
 name = "naga"
 version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3068,6 +3077,7 @@ dependencies = [
  "existing_instance",
  "jmdict",
  "mugo",
+ "mugo-jmdict",
  "rfd",
  "serde",
  "sfml-xt",

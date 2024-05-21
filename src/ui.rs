@@ -11,9 +11,12 @@ pub use self::{
     input::input_ui,
     kanji_ui::{kanji_ui, KanjiUiState},
 };
-use crate::{
-    appstate::{AppState, RootKindExt, UiState},
-    egui::{self, text::LayoutJob, TextFormat},
+use {
+    crate::{
+        appstate::{AppState, UiState},
+        egui::{self, text::LayoutJob, TextFormat},
+    },
+    mugo_jmdict::RootKindExt as _,
 };
 
 fn char_is_hiragana(ch: char) -> bool {

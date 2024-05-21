@@ -1,17 +1,14 @@
+use crate::{
+    conv::{romaji_to_kana, IntpMap},
+    kana::{HIRAGANA, KATAKANA},
+    kanji::KanjiDb,
+    segment::InputSpan,
+    ui::{input::InputUiAction, DictUiState, KanjiUiState},
+};
 #[cfg(feature = "backend-sfml")]
 use arboard::Clipboard;
 #[cfg(feature = "ipc")]
 use existing_instance::Listener;
-use {
-    crate::{
-        conv::{romaji_to_kana, IntpMap},
-        kana::{HIRAGANA, KATAKANA},
-        kanji::KanjiDb,
-        segment::InputSpan,
-        ui::{input::InputUiAction, DictUiState, KanjiUiState},
-    },
-    mugo::RootKind,
-};
 
 pub struct AppState {
     pub intp: IntpMap,
@@ -101,7 +98,7 @@ impl AppState {
         let hiragana = hiragana.trim();
         let katakana = romaji_to_kana(&self.romaji_buf[start..end], &KATAKANA);
         let katakana = katakana.trim();
-        let root = Root::Bare(hiragana);
+        let root = mugo_jmdict::Root::Bare(hiragana);
         let mugo_roots = mugo::deconjugate(hiragana);
         self.cached_suggestions.jmdict = jmdict::entries()
             .filter_map(|en| {
@@ -112,7 +109,7 @@ impl AppState {
                     });
                 } else {
                     for mugo_root in &mugo_roots {
-                        if Root::Conj(mugo_root).matches(&en) {
+                        if mugo_jmdict::Root::Conj(mugo_root).matches(&en) {
                             return Some(CachedJmdictSuggestion {
                                 entry: en,
                                 mugo_root: Some(mugo_root.clone()),
@@ -120,7 +117,7 @@ impl AppState {
                         }
                     }
                 }
-                if Root::Bare(katakana).reading_matches(&en) {
+                if mugo_jmdict::Root::Bare(katakana).reading_matches(&en) {
                     return Some(CachedJmdictSuggestion {
                         entry: en,
                         mugo_root: None,
@@ -139,74 +136,5 @@ impl AppState {
         self.clipboard.set_text(text).unwrap();
         #[cfg(feature = "backend-eframe")]
         ctx.output_mut(|out| out.copied_text = text.to_owned());
-    }
-}
-
-pub enum Root<'a> {
-    Bare(&'a str),
-    Conj(&'a mugo::Root),
-}
-
-impl<'a> Root<'a> {
-    fn text_matches(&self, text: &str) -> bool {
-        match *self {
-            Root::Bare(s) => text == s,
-            Root::Conj(root) => {
-                let mut matches = root.dict_string() == text;
-                if matches!(root.kind, mugo::RootKind::Suru) {
-                    matches |= root.text == text;
-                }
-                matches
-            }
-        }
-    }
-
-    pub fn matches(&self, e: &jmdict::Entry) -> bool {
-        match self {
-            Root::Bare(_) => self.reading_matches(e),
-            Root::Conj(root) => {
-                root_kind_matches(&root.kind, e.senses()) && self.reading_matches(e)
-            }
-        }
-    }
-
-    fn reading_matches(&self, e: &jmdict::Entry) -> bool {
-        e.reading_elements().any(|e| self.text_matches(e.text))
-    }
-}
-
-fn root_kind_matches(kind: &mugo::RootKind, mut senses: jmdict::Senses) -> bool {
-    senses.any(|sense| {
-        sense
-            .parts_of_speech()
-            .any(|part| part == kind.to_jmdict_part_of_speech())
-    })
-}
-
-pub trait RootKindExt {
-    fn to_jmdict_part_of_speech(&self) -> jmdict::PartOfSpeech;
-}
-
-impl RootKindExt for RootKind {
-    fn to_jmdict_part_of_speech(&self) -> jmdict::PartOfSpeech {
-        use jmdict::PartOfSpeech as Part;
-        match self {
-            RootKind::Ichidan => Part::IchidanVerb,
-            RootKind::GodanBu => Part::GodanBuVerb,
-            RootKind::GodanMu => Part::GodanMuVerb,
-            RootKind::GodanNu => Part::GodanNuVerb,
-            RootKind::GodanRu => Part::GodanRuVerb,
-            RootKind::GodanSu => Part::GodanSuVerb,
-            RootKind::GodanTsu => Part::GodanTsuVerb,
-            RootKind::GodanU => Part::GodanUVerb,
-            RootKind::GodanGu => Part::GodanGuVerb,
-            RootKind::GodanKu => Part::GodanKuVerb,
-            RootKind::IAdjective => Part::Adjective,
-            RootKind::Iku => Part::GodanIkuVerb,
-            RootKind::Kuru => Part::KuruVerb,
-            RootKind::NaAdjective => Part::AdjectivalNoun,
-            RootKind::Suru => Part::SuruVerb,
-            RootKind::SpecialSuru => Part::SpecialSuruVerb,
-        }
     }
 }

@@ -26,6 +26,7 @@ egui_commonmark = { git = "https://github.com/lampsitter/egui_commonmark.git", d
     "pulldown_cmark",
 ] }
 existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git", optional = true }
+mugo-jmdict = { git = "https://github.com/crumblingstatue/mugo-jmdict.git" }
 
 # SFML backend
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
