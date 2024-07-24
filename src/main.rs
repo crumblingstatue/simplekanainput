@@ -1,8 +1,8 @@
 #![feature(array_try_from_fn, let_chains)]
 
+use appstate::AppState;
 #[cfg(feature = "ipc")]
 use existing_instance::{Endpoint, Msg};
-use {appstate::AppState, std::backtrace::Backtrace};
 
 mod appstate;
 mod conv;
@@ -63,14 +63,6 @@ fn main() {
             }
         }
     };
-    std::panic::set_hook(Box::new(|info| {
-        rfd::MessageDialog::new()
-            .set_title("Panic")
-            .set_description(&info.to_string())
-            .show();
-        let bt = Backtrace::capture();
-        eprintln!("{bt}");
-    }));
 
     let mut app = AppState::new(
         #[cfg(feature = "ipc")]

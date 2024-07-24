@@ -18,7 +18,6 @@ jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features 
     "scope-uncommon",
     "scope-archaic",
 ] }
-rfd = "0.11.4"
 serde = { version = "1.0.197", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git", features = ["labels"] }
 egui_extras = { version = "0.28.1", default-features = false }
