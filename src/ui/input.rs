@@ -156,7 +156,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let mut set_textedit_scroll_offset = None;
     let mut scroll_out = egui::ScrollArea::vertical()
         .max_height(120.0)
-        .id_source("romaji_scroll")
+        .id_salt("romaji_scroll")
         .show(ui, |ui| {
             let mut out = egui::TextEdit::multiline(&mut app.romaji_buf)
                 .hint_text("Romaji")
@@ -205,7 +205,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .vertical(|mut strip| {
             strip.cell(|ui| {
                 let scroll_out = egui::ScrollArea::vertical()
-                    .id_source("kana_scroll")
+                    .id_salt("kana_scroll")
                     .auto_shrink(false)
                     .show(ui, |ui| {
                         let len = app.segments.len();

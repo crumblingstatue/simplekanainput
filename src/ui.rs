@@ -30,7 +30,7 @@ fn dict_en_ui_scroll(
     kanji_idx: Option<&mut usize>,
 ) {
     egui::ScrollArea::vertical()
-        .id_source("en_scroll_vert")
+        .id_salt("en_scroll_vert")
         .show(ui, |ui| dict_en_ui(ui, en, root, kanji_idx));
 }
 

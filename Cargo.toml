@@ -20,7 +20,7 @@ jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features 
 ] }
 serde = { version = "1.0.197", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git", features = ["labels"] }
-egui_extras = { version = "0.28.1", default-features = false }
+egui_extras = { version = "0.29", default-features = false }
 egui_commonmark = { git = "https://github.com/lampsitter/egui_commonmark.git", default-features = false, features = [
     "pulldown_cmark",
 ] }
@@ -33,7 +33,7 @@ sfml-xt = { git = "https://github.com/crumblingstatue/sfml-xt.git", optional = t
 arboard = { version = "3.3.2", optional = true }
 
 # eframe backend
-eframe = { version = "0.28.1", optional = true }
+eframe = { version = "0.29", optional = true }
 
 # Eframe (web)
 [target.'cfg(target_arch = "wasm32")'.dependencies]

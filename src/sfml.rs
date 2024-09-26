@@ -51,7 +51,7 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
             }
         }
         sf_egui
-            .do_frame(&mut rw, |ctx| {
+            .do_pass(&mut rw, |ctx| {
                 if !crate::ui::update(ctx, app) {
                     quit = true;
                 }
