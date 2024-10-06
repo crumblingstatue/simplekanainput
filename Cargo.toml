@@ -24,6 +24,7 @@ egui_extras = { version = "0.29", default-features = false }
 egui_commonmark = { git = "https://github.com/lampsitter/egui_commonmark.git", default-features = false, features = [
     "pulldown_cmark",
 ] }
+egui_colors = { git = "https://github.com/frankvgompel/egui_colors.git" }
 existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git", optional = true }
 mugo-jmdict = { git = "https://github.com/crumblingstatue/mugo-jmdict.git" }
 
@@ -34,6 +35,7 @@ arboard = { version = "3.3.2", optional = true }
 
 # eframe backend
 eframe = { version = "0.29", optional = true }
+rand = "0.8.5"
 
 # Eframe (web)
 [target.'cfg(target_arch = "wasm32")'.dependencies]

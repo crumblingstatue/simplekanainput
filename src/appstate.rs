@@ -1,14 +1,17 @@
-use crate::{
-    conv::{romaji_to_kana, IntpMap},
-    kana::{HIRAGANA, KATAKANA},
-    kanji::KanjiDb,
-    segment::InputSpan,
-    ui::{input::InputUiAction, DictUiState, KanjiUiState},
-};
 #[cfg(feature = "backend-sfml")]
 use arboard::Clipboard;
 #[cfg(feature = "ipc")]
 use existing_instance::Listener;
+use {
+    crate::{
+        conv::{romaji_to_kana, IntpMap},
+        kana::{HIRAGANA, KATAKANA},
+        kanji::KanjiDb,
+        segment::InputSpan,
+        ui::{input::InputUiAction, DictUiState, KanjiUiState},
+    },
+    egui_colors::Colorix,
+};
 
 pub struct AppState {
     pub intp: IntpMap,
@@ -36,6 +39,7 @@ pub struct AppState {
     pub out_scroll_last_offset: f32,
     #[cfg(feature = "ipc")]
     pub ipc_listener: Listener,
+    pub colorix: Option<Colorix>,
 }
 
 #[derive(Default)]
@@ -60,6 +64,7 @@ pub enum UiState {
     Kanji,
     Help,
     About,
+    Theme,
 }
 
 impl AppState {
@@ -85,6 +90,7 @@ impl AppState {
             out_scroll_last_offset: 0.0,
             #[cfg(feature = "ipc")]
             ipc_listener,
+            colorix: None,
         })
     }
     /// Populate the suggestion cache with entries for the selected segment

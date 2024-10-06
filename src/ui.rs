@@ -3,6 +3,7 @@ mod dict;
 mod help;
 pub mod input;
 mod kanji_ui;
+mod theme;
 
 pub use self::{
     about::about_ui,
@@ -17,6 +18,7 @@ use {
         egui::{self, text::LayoutJob, TextFormat},
     },
     mugo_jmdict::RootKindExt as _,
+    theme::theme_ui,
 };
 
 fn char_is_hiragana(ch: char) -> bool {
@@ -175,6 +177,7 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
         UiState::Kanji => kanji_ui(ui, app),
         UiState::About => about_ui(ui, app),
         UiState::Help => help_ui(ui, app),
+        UiState::Theme => theme_ui(ui, app),
     });
     #[cfg(feature = "ipc")]
     if let Some(mut stream) = app.ipc_listener.accept() {
