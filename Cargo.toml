@@ -36,6 +36,7 @@ arboard = { version = "3.3.2", optional = true }
 # eframe backend
 eframe = { version = "0.29", optional = true }
 rand = "0.8.5"
+strsim = "0.11.1"
 
 # Eframe (web)
 [target.'cfg(target_arch = "wasm32")'.dependencies]

@@ -97,7 +97,13 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                 .any(|gloss| gloss.text.contains(&app.dict_ui_state.search_buf))
                         })
                     })
-                    .collect()
+                    .collect();
+                app.dict_ui_state.entry_buf.sort_by_key(|en| {
+                    strsim::levenshtein(
+                        &app.dict_ui_state.search_buf,
+                        en.senses().next().unwrap().glosses().next().unwrap().text,
+                    )
+                });
             }
             LookupMethod::Kanji => {
                 app.dict_ui_state.entry_buf = jmdict::entries()
