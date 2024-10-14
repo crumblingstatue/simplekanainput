@@ -27,7 +27,8 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
         "Simple Kana Input",
         Style::DEFAULT,
         &egui_sfml::sfml::window::ContextSettings::default(),
-    );
+    )
+    .unwrap();
     rw.center();
     rw.set_vertical_sync_enabled(true);
     let mut sf_egui = SfEgui::new(&rw);
