@@ -42,16 +42,13 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
 
             match ev {
                 Event::Closed => app.hide_requested = true,
-                Event::Resized { width, height } => rw.set_view(&View::from_rect(Rect::new(
-                    0.,
-                    0.,
-                    width as f32,
-                    height as f32,
-                ))),
+                Event::Resized { width, height } => rw.set_view(
+                    &View::from_rect(Rect::new(0., 0., width as f32, height as f32)).unwrap(),
+                ),
                 _ => {}
             }
         }
-        sf_egui
+        let di = sf_egui
             .run(&mut rw, |_rw, ctx| {
                 if !crate::ui::update(ctx, app) {
                     quit = true;
@@ -59,7 +56,7 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
             })
             .unwrap();
 
-        sf_egui.draw(&mut rw, None);
+        sf_egui.draw(di, &mut rw, None);
         rw.display();
     }
 }
