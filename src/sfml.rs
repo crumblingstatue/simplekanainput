@@ -1,12 +1,12 @@
 use {
-    crate::{appstate::AppState, WinDims, WIN_DIMS},
+    crate::{WIN_DIMS, WinDims, appstate::AppState},
     egui_sfml::{
+        SfEgui,
         egui::{self, FontDefinitions},
         sfml::{
             graphics::{Rect, RenderTarget as _, RenderWindow, View},
             window::{Event, Style, VideoMode},
         },
-        SfEgui,
     },
     sfml_xt::graphics::RenderWindowExt as _,
 };

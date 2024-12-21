@@ -4,11 +4,11 @@ use arboard::Clipboard;
 use existing_instance::Listener;
 use {
     crate::{
-        conv::{romaji_to_kana, IntpMap},
+        conv::{IntpMap, romaji_to_kana},
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
         segment::InputSpan,
-        ui::{input::InputUiAction, DictUiState, KanjiUiState},
+        ui::{DictUiState, KanjiUiState, input::InputUiAction},
     },
     egui_colors::Colorix,
 };

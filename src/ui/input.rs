@@ -2,11 +2,10 @@ use {
     super::{dict_en_ui, dict_en_ui_scroll},
     crate::{
         appstate::{AppState, CachedSuggestions, UiState},
-        conv::{self, romaji_to_kana, with_input_span_converted_form, Intp, IntpMap},
+        conv::{self, Intp, IntpMap, romaji_to_kana, with_input_span_converted_form},
         egui::{
-            self,
+            self, Color32, Modifiers,
             text::{CCursor, CCursorRange},
-            Color32, Modifiers,
         },
         kana::{HIRAGANA, KATAKANA},
         kanji::KanjiDb,
@@ -92,15 +91,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 if let Some(selected_sug) = app.selected_suggestion
                     && let Some(sug) = app.cached_suggestions.jmdict.get(selected_sug)
                 {
-                    app.intp.insert(
-                        app.selected_segment,
-                        Intp::Dictionary {
-                            cached_sug_idx: selected_sug,
-                            en: sug.entry,
-                            kanji_idx: 0,
-                            root: sug.mugo_root.clone(),
-                        },
-                    );
+                    app.intp.insert(app.selected_segment, Intp::Dictionary {
+                        cached_sug_idx: selected_sug,
+                        en: sug.entry,
+                        kanji_idx: 0,
+                        root: sug.mugo_root.clone(),
+                    });
                 } else {
                     app.intp.remove(&app.selected_segment);
                 }
@@ -544,15 +540,12 @@ fn gen_dict_ui_for_hiragana(
             re.scroll_to_me(Some(egui::Align::Center));
         }
         if re.clicked() {
-            intp.insert(
-                intp_idx,
-                Intp::Dictionary {
-                    cached_sug_idx: si,
-                    en: suggestion.entry,
-                    kanji_idx: 0,
-                    root: suggestion.mugo_root.clone(),
-                },
-            );
+            intp.insert(intp_idx, Intp::Dictionary {
+                cached_sug_idx: si,
+                en: suggestion.entry,
+                kanji_idx: 0,
+                root: suggestion.mugo_root.clone(),
+            });
             ui.close_menu();
             return;
         }

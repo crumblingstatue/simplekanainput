@@ -7,15 +7,15 @@ mod theme;
 
 pub use self::{
     about::about_ui,
-    dict::{dict_ui, DictUiState},
+    dict::{DictUiState, dict_ui},
     help::help_ui,
     input::input_ui,
-    kanji_ui::{kanji_ui, KanjiUiState},
+    kanji_ui::{KanjiUiState, kanji_ui},
 };
 use {
     crate::{
         appstate::{AppState, UiState},
-        egui::{self, text::LayoutJob, TextFormat},
+        egui::{self, TextFormat, text::LayoutJob},
     },
     mugo_jmdict::RootKindExt as _,
     theme::theme_ui,
@@ -72,25 +72,17 @@ fn dict_en_ui(
                 for char in elem.text.chars() {
                     let char_str = char.to_string();
                     if char_is_hiragana(char) {
-                        layout_job.append(
-                            &char_str,
-                            0.0,
-                            TextFormat {
-                                font_id: egui::FontId::new(14.0, egui::FontFamily::Proportional),
-                                color: egui::Color32::DARK_GRAY,
-                                ..Default::default()
-                            },
-                        );
+                        layout_job.append(&char_str, 0.0, TextFormat {
+                            font_id: egui::FontId::new(14.0, egui::FontFamily::Proportional),
+                            color: egui::Color32::DARK_GRAY,
+                            ..Default::default()
+                        });
                     } else {
-                        layout_job.append(
-                            &char_str,
-                            0.0,
-                            TextFormat {
-                                font_id: egui::FontId::new(18.0, egui::FontFamily::Proportional),
-                                color: egui::Color32::WHITE,
-                                ..Default::default()
-                            },
-                        );
+                        layout_job.append(&char_str, 0.0, TextFormat {
+                            font_id: egui::FontId::new(18.0, egui::FontFamily::Proportional),
+                            color: egui::Color32::WHITE,
+                            ..Default::default()
+                        });
                     }
                 }
                 match &mut kanji_idx {

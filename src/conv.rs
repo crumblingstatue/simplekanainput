@@ -1,6 +1,6 @@
 use {
     crate::{
-        kana::{RomajiKanaTable, HIRAGANA, KATAKANA},
+        kana::{HIRAGANA, KATAKANA, RomajiKanaTable},
         kanji::KanjiDb,
         radicals::RadicalPair,
         segment::InputSpan,

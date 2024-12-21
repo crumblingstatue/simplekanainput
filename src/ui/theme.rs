@@ -1,6 +1,6 @@
 use {
     crate::appstate::{AppState, UiState},
-    egui_colors::{tokens::ThemeColor, Colorix},
+    egui_colors::{Colorix, tokens::ThemeColor},
     egui_sfml::egui,
     rand::Rng,
 };
@@ -21,7 +21,7 @@ pub fn theme_ui(ui: &mut egui::Ui, app: &mut AppState) {
         let mut rng = rand::thread_rng();
         *colorix = Colorix::init(
             ui.ctx(),
-            std::array::from_fn(|_| ThemeColor::Custom(std::array::from_fn(|_| rng.gen()))),
+            std::array::from_fn(|_| ThemeColor::Custom(std::array::from_fn(|_| rng.r#gen()))),
         );
     }
 }
