@@ -48,6 +48,3 @@ opt-level = 2
 
 [build-dependencies]
 vergen-gitcl = { version = "1.0.0", default-features = false, features = ["build", "cargo", "rustc"] }
-
-[patch."https://github.com/crumblingstatue/mugo.git"]
-mugo = { path = "/home/dew/projects/github/mugo" }
