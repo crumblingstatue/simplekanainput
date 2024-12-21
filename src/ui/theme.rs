@@ -13,7 +13,7 @@ pub fn theme_ui(ui: &mut egui::Ui, app: &mut AppState) {
         .colorix
         .get_or_insert_with(|| Colorix::init(ui.ctx(), [ThemeColor::Custom([0, 0, 0]); 12]));
     ui.group(|ui| {
-        colorix.ui_combo_12(ui);
+        colorix.ui_combo_12(ui, true);
     });
     colorix.themes_dropdown(ui, None, false);
     colorix.light_dark_toggle_button(ui);

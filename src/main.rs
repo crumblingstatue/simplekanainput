@@ -1,8 +1,8 @@
 #![feature(array_try_from_fn, let_chains)]
 
-use appstate::AppState;
 #[cfg(feature = "ipc")]
 use existing_instance::{Endpoint, Msg};
+use {appstate::AppState, std::sync::Arc};
 
 mod appstate;
 mod conv;
@@ -73,7 +73,9 @@ fn main() {
     let mut font_defs = egui::FontDefinitions::default();
     font_defs.font_data.insert(
         "ipag".to_owned(),
-        egui::FontData::from_static(include_bytes!("../NotoSansJP-VariableFont_wght.ttf")),
+        Arc::new(egui::FontData::from_static(include_bytes!(
+            "../NotoSansJP-VariableFont_wght.ttf"
+        ))),
     );
     font_defs
         .families
