@@ -177,7 +177,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 set_textedit_scroll_offset = Some(app.out_scroll_last_offset);
                 app.input_ui_action = None;
             }
-            out.response.request_focus()
+            out.response.request_focus();
         });
     if let Some(offset) = set_textedit_scroll_offset {
         scroll_out.state.offset.y = offset;
@@ -469,7 +469,7 @@ fn suggestion_ui_strip(
                         }
                     });
                 }
-            })
+            });
         });
 }
 

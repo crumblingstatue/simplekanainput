@@ -38,7 +38,7 @@ pub fn romaji_to_kana(romaji: &str, table: &RomajiKanaTable) -> String {
     let mut out = String::new();
     let mut parser = RomajiParser::new(romaji);
     while let Some(str) = parser.next_largest_match(table) {
-        out.push_str(str)
+        out.push_str(str);
     }
     out
 }
@@ -172,7 +172,7 @@ pub fn to_japanese(
     for (i, span) in segments.iter().enumerate() {
         with_input_span_converted_form(span, i, text, intp, kanji_db, |conv| {
             s.push_str(conv);
-        })
+        });
     }
     s
 }

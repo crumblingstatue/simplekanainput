@@ -86,7 +86,7 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 let kana = romaji_to_kana(&app.dict_ui_state.search_buf, &HIRAGANA);
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| en.reading_elements().any(|elem| elem.text.contains(&kana)))
-                    .collect()
+                    .collect();
             }
             LookupMethod::English => {
                 app.dict_ui_state.entry_buf = jmdict::entries()
@@ -111,7 +111,7 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                         en.kanji_elements()
                             .any(|elem| elem.text.contains(&app.dict_ui_state.search_buf))
                     })
-                    .collect()
+                    .collect();
             }
         }
     }
