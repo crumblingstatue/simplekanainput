@@ -78,7 +78,7 @@ impl<'a> RomajiParser<'a> {
                 }
             }
         }
-        let ret = self.src.get(self.cursor..self.cursor + 1);
+        let ret = self.src.get(self.cursor..=self.cursor);
         self.cursor += 1;
         ret
     }
