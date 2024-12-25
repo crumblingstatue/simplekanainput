@@ -150,6 +150,9 @@ pub fn with_input_span_converted_form(
             if let Some(root) = root {
                 if let Some(pos) = kanji_string.rfind(root.dict_suffix()) {
                     kanji_string.truncate(pos);
+                } else if root.kind == mugo::RootKind::Kuru {
+                    // TODO: Special 来る workaround...
+                    kanji_string.truncate(kanji_string.len() - "る".len());
                 }
                 kanji_string.push_str(&root.conjugation_suffix());
             }
