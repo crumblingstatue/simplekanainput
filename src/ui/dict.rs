@@ -77,13 +77,17 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
 }
 
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
-    let re =
-        ui.add(egui::TextEdit::singleline(&mut app.dict_ui_state.search_buf).hint_text("Filter"));
+    let search_buf = match app.dict_ui_state.lookup_method {
+        LookupMethod::Kana => &mut app.dict_ui_state.kana_search_buf,
+        LookupMethod::English => &mut app.dict_ui_state.english_search_buf,
+        LookupMethod::Kanji => &mut app.dict_ui_state.kanji_search_buf,
+    };
+    let re = ui.add(egui::TextEdit::singleline(search_buf).hint_text("Filter"));
     if re.changed() || app.dict_ui_state.focus_textinput {
         app.dict_ui_state.selected = 0;
         match app.dict_ui_state.lookup_method {
             LookupMethod::Kana => {
-                let kana = romaji_to_kana(&app.dict_ui_state.search_buf, &HIRAGANA);
+                let kana = romaji_to_kana(&app.dict_ui_state.kana_search_buf, &HIRAGANA);
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| en.reading_elements().any(|elem| elem.text.contains(&kana)))
                     .collect();
@@ -92,15 +96,15 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| {
                         en.senses().any(|sense| {
-                            sense
-                                .glosses()
-                                .any(|gloss| gloss.text.contains(&app.dict_ui_state.search_buf))
+                            sense.glosses().any(|gloss| {
+                                gloss.text.contains(&app.dict_ui_state.english_search_buf)
+                            })
                         })
                     })
                     .collect();
                 app.dict_ui_state.entry_buf.sort_by_key(|en| {
                     strsim::levenshtein(
-                        &app.dict_ui_state.search_buf,
+                        &app.dict_ui_state.english_search_buf,
                         en.senses().next().unwrap().glosses().next().unwrap().text,
                     )
                 });
@@ -109,7 +113,7 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| {
                         en.kanji_elements()
-                            .any(|elem| elem.text.contains(&app.dict_ui_state.search_buf))
+                            .any(|elem| elem.text.contains(&app.dict_ui_state.kanji_search_buf))
                     })
                     .collect();
             }
@@ -151,7 +155,9 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
 }
 
 pub struct DictUiState {
-    search_buf: String,
+    kana_search_buf: String,
+    kanji_search_buf: String,
+    english_search_buf: String,
     entry_buf: Vec<jmdict::Entry>,
     selected: usize,
     pub focus_textinput: bool,
@@ -167,7 +173,9 @@ enum LookupMethod {
 impl Default for DictUiState {
     fn default() -> Self {
         Self {
-            search_buf: Default::default(),
+            kana_search_buf: String::new(),
+            kanji_search_buf: String::new(),
+            english_search_buf: String::new(),
             entry_buf: jmdict::entries().collect(),
             selected: 0,
             focus_textinput: false,
