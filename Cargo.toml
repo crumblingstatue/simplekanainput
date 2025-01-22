@@ -24,7 +24,7 @@ egui_extras = { version = "0.30", default-features = false }
 egui_commonmark = { git = "https://github.com/lampsitter/egui_commonmark.git", default-features = false, features = [
     "pulldown_cmark",
 ] }
-egui_colors = { git = "https://github.com/frankvgompel/egui_colors.git" }
+egui_colors = "0.6.0"
 existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git", optional = true }
 mugo-jmdict = { git = "https://github.com/crumblingstatue/mugo-jmdict.git" }
 
