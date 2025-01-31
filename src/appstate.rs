@@ -13,6 +13,11 @@ use {
     egui_colors::Colorix,
 };
 
+pub struct HistoryEntry {
+    pub romaji_buf: String,
+    pub intp: IntpMap,
+}
+
 pub struct AppState {
     pub intp: IntpMap,
     pub romaji_buf: String,
@@ -40,6 +45,7 @@ pub struct AppState {
     #[cfg(feature = "ipc")]
     pub ipc_listener: Listener,
     pub colorix: Option<Colorix>,
+    pub history: Vec<HistoryEntry>,
 }
 
 #[derive(Default)]
@@ -91,6 +97,7 @@ impl AppState {
             #[cfg(feature = "ipc")]
             ipc_listener,
             colorix: None,
+            history: Vec::new(),
         })
     }
     /// Populate the suggestion cache with entries for the selected segment

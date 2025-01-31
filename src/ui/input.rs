@@ -1,7 +1,7 @@
 use {
     super::{dict_en_ui, dict_en_ui_scroll},
     crate::{
-        appstate::{AppState, CachedSuggestions, UiState},
+        appstate::{AppState, CachedSuggestions, HistoryEntry, UiState},
         conv::{self, Intp, IntpMap, romaji_to_kana, with_input_span_converted_form},
         egui::{
             self, Color32, Modifiers,
@@ -115,13 +115,23 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui
             .add_enabled(
                 !app.intp.is_empty(),
-                egui::Button::new("[F3] 🗑 Clear attributes"),
+                egui::Button::new("[F3] 🗑 Clear attrs"),
             )
             .clicked()
             || f3
         {
             app.intp.clear();
         }
+        ui.menu_button("History", |ui| {
+            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+            for entry in &app.history {
+                if ui.button(&entry.romaji_buf).clicked() {
+                    ui.close_menu();
+                    app.romaji_buf = entry.romaji_buf.clone();
+                    app.intp = entry.intp.clone();
+                }
+            }
+        });
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {
                 app.quit_requested = true;
@@ -275,6 +285,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                         });
                         if copy_jap_clicked {
                             app.set_clipboard_text(ui.ctx(), &japanese);
+                            app.history.push(HistoryEntry {
+                                romaji_buf: app.romaji_buf.clone(),
+                                intp: app.intp.clone(),
+                            });
                         }
                     });
                 app.out_scroll_last_offset = scroll_out.state.offset.y;
@@ -299,6 +313,10 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         });
     if ctrl_enter {
         app.set_clipboard_text(ui.ctx(), &japanese);
+        app.history.push(HistoryEntry {
+            romaji_buf: app.romaji_buf.clone(),
+            intp: app.intp.clone(),
+        });
         app.romaji_buf.clear();
         app.intp.clear();
         app.hide_requested = true;
