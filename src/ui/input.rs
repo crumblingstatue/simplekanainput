@@ -116,16 +116,14 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         }
         // Indicate attribute map status by disabling button if it's empty
         if ui
-            .add_enabled(
-                !app.intp.is_empty(),
-                egui::Button::new("[F3] 🗑 Clear attrs"),
-            )
+            .add_enabled(!app.intp.is_empty(), egui::Button::new("[F3] 🗑 Clear"))
+            .on_hover_text("Clear all interpretations of the romaji input")
             .clicked()
             || f3
         {
             app.intp.clear();
         }
-        ui.menu_button("History", |ui| {
+        ui.menu_button("🕓 History", |ui| {
             ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
             for entry in &app.history {
                 if ui.button(&entry.romaji_buf).clicked() {
