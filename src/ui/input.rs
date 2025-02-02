@@ -134,6 +134,13 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     app.intp = entry.intp.clone();
                 }
             }
+            let enabled = !app.history.is_empty();
+            ui.add_enabled_ui(enabled, |ui| {
+                ui.separator();
+                if ui.button("🗑 Clear").clicked() {
+                    app.history.clear();
+                }
+            });
         });
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {
