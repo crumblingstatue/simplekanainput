@@ -123,19 +123,20 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         {
             app.intp.clear();
         }
-        ui.menu_button("🕓 History", |ui| {
-            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
-            for entry in &app.history {
-                if ui.button(&entry.romaji_buf).clicked() {
-                    ui.close_menu();
-                    app.romaji_buf = entry.romaji_buf.clone();
-                    app.intp = entry.intp.clone();
+        let enabled = !app.history.is_empty();
+        ui.add_enabled_ui(enabled, |ui| {
+            ui.menu_button("🕓 History", |ui| {
+                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+                for entry in &app.history {
+                    if ui.button(&entry.romaji_buf).clicked() {
+                        ui.close_menu();
+                        app.romaji_buf = entry.romaji_buf.clone();
+                        app.intp = entry.intp.clone();
+                    }
                 }
-            }
-            let enabled = !app.history.is_empty();
-            ui.add_enabled_ui(enabled, |ui| {
                 ui.separator();
                 if ui.button("🗑 Clear").clicked() {
+                    ui.close_menu();
                     app.history.clear();
                 }
             });
