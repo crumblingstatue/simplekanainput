@@ -27,10 +27,14 @@ pub fn about_ui(ui: &mut egui::Ui, app: &mut AppState) {
     macro_rules! pair {
         ($label:literal, $envname:literal) => {
             job.append($label, 0.0, egui::text::TextFormat::default());
-            job.append(&optenv!($envname), 0.0, egui::text::TextFormat {
-                color: egui::Color32::WHITE,
-                ..Default::default()
-            });
+            job.append(
+                &optenv!($envname),
+                0.0,
+                egui::text::TextFormat {
+                    color: egui::Color32::WHITE,
+                    ..Default::default()
+                },
+            );
         };
     }
     pair!("Features: ", "VERGEN_CARGO_FEATURES");
