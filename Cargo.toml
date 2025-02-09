@@ -35,7 +35,7 @@ arboard = { version = "3.3.2", optional = true }
 
 # eframe backend
 eframe = { version = "0.31", optional = true }
-rand = "0.8.5"
+rand = "0.9"
 strsim = "0.11.1"
 
 # Eframe (web)

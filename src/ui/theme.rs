@@ -20,10 +20,10 @@ pub fn theme_ui(ui: &mut egui::Ui, app: &mut AppState) {
         ui.label("Light/dark");
         colorix.light_dark_toggle_button(ui, 20.0);
         if ui.button("Randomize").clicked() {
-            let mut rng = rand::thread_rng();
+            let mut rng = rand::rng();
             *colorix = Colorix::global(
                 ui.ctx(),
-                std::array::from_fn(|_| ThemeColor::Custom(std::array::from_fn(|_| rng.r#gen()))),
+                std::array::from_fn(|_| ThemeColor::Custom(std::array::from_fn(|_| rng.random()))),
             );
         }
     });
