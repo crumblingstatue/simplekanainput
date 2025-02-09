@@ -20,21 +20,21 @@ jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features 
 ] }
 serde = { version = "1.0.197", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git", features = ["labels"] }
-egui_extras = { version = "0.30", default-features = false }
-egui_commonmark = { git = "https://github.com/lampsitter/egui_commonmark.git", default-features = false, features = [
+egui_extras = { version = "0.31", default-features = false }
+egui_commonmark = {version = "0.20.0", default-features = false, features = [
     "pulldown_cmark",
 ] }
-egui_colors = "0.6.0"
+egui_colors = "0.7.0"
 existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git", optional = true }
 mugo-jmdict = { git = "https://github.com/crumblingstatue/mugo-jmdict.git" }
 
 # SFML backend
-egui-sfml = { version = "0.8.0", optional = true }
+egui-sfml = { version = "0.9.0", optional = true }
 sfml-xt = { version = "0.2.0", optional = true }
 arboard = { version = "3.3.2", optional = true }
 
 # eframe backend
-eframe = { version = "0.30", optional = true }
+eframe = { version = "0.31", optional = true }
 rand = "0.8.5"
 strsim = "0.11.1"
 
