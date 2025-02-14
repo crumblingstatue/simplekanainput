@@ -1,7 +1,9 @@
 use {
-    crate::appstate::{AppState, UiState},
+    crate::{
+        appstate::{AppState, UiState},
+        egui,
+    },
     egui_colors::{Colorix, tokens::ThemeColor},
-    egui_sfml::egui,
     rand::Rng,
 };
 

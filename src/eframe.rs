@@ -21,7 +21,7 @@ pub fn do_eframe_event_loop(font_defs: FontDefinitions, style: eframe::egui::Sty
         Box::new(|cc| {
             cc.egui_ctx.set_style(style);
             cc.egui_ctx.set_fonts(font_defs);
-            Box::new(app)
+            Ok(Box::new(app))
         }),
     )
     .unwrap();
