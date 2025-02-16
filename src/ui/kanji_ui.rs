@@ -6,6 +6,13 @@ use crate::{
 #[derive(Default)]
 pub struct KanjiUiState {
     filter_string: String,
+    tab: Tab = Tab::Kanji,
+}
+
+#[derive(PartialEq)]
+enum Tab {
+    Kanji,
+    Radicals,
 }
 
 pub fn kanji_ui(ui: &mut egui::Ui, app: &mut AppState) {
@@ -13,11 +20,20 @@ pub fn kanji_ui(ui: &mut egui::Ui, app: &mut AppState) {
         if ui.link("Back (Esc)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
             app.ui_state = UiState::Input;
         }
+        ui.selectable_value(&mut app.kanji_ui_state.tab, Tab::Kanji, "Kanji");
+        ui.selectable_value(&mut app.kanji_ui_state.tab, Tab::Radicals, "Radicals");
         ui.add(
             egui::TextEdit::singleline(&mut app.kanji_ui_state.filter_string).hint_text("Filter"),
         );
     });
     ui.separator();
+    match app.kanji_ui_state.tab {
+        Tab::Kanji => kanji_tab(ui, app),
+        Tab::Radicals => radicals_tab(ui),
+    }
+}
+
+pub fn kanji_tab(ui: &mut egui::Ui, app: &mut AppState) {
     let mut filtered = app.kanji_db.kanji.clone();
     if !app.kanji_ui_state.filter_string.is_empty() {
         filtered.retain(|kanji| kanji.meaning.contains(&app.kanji_ui_state.filter_string));
@@ -36,4 +52,13 @@ pub fn kanji_ui(ui: &mut egui::Ui, app: &mut AppState) {
             });
         }
     });
+}
+
+pub fn radicals_tab(ui: &mut egui::Ui) {
+    for pair in crate::radicals::PAIRS {
+        ui.horizontal(|ui| {
+            ui.label(pair.ch.to_string());
+            ui.label(pair.name);
+        });
+    }
 }

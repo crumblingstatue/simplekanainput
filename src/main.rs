@@ -1,4 +1,4 @@
-#![feature(array_try_from_fn, let_chains)]
+#![feature(array_try_from_fn, let_chains, default_field_values)]
 
 #[cfg(feature = "ipc")]
 use existing_instance::{Endpoint, Msg};

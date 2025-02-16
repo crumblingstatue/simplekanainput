@@ -6,7 +6,7 @@ pub struct RadicalPair {
 
 macro_rules! radicals {
     ($($ch:literal $name:literal)*) => {
-        const PAIRS: &[RadicalPair] = &[$(RadicalPair {
+        pub const PAIRS: &[RadicalPair] = &[$(RadicalPair {
             name: $name,
             ch: $ch,
         }),*];
