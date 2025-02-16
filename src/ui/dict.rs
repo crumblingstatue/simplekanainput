@@ -147,9 +147,24 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                 }
                                 None => en.reading_elements().next().unwrap().text,
                             },
-                            LookupMethod::English => {
-                                en.senses().next().unwrap().glosses().next().unwrap().text
-                            }
+                            LookupMethod::English => match en.kanji_elements().next() {
+                                Some(kanji) => {
+                                    s = format!(
+                                        "{} ({})",
+                                        en.senses().next().unwrap().glosses().next().unwrap().text,
+                                        kanji.text,
+                                    );
+                                    &s
+                                }
+                                None => {
+                                    s = format!(
+                                        "{} ({})",
+                                        en.senses().next().unwrap().glosses().next().unwrap().text,
+                                        en.reading_elements().next().unwrap().text
+                                    );
+                                    &s
+                                }
+                            },
                             LookupMethod::Kanji => match en.kanji_elements().next() {
                                 Some(elem) => elem.text,
                                 None => en.reading_elements().next().unwrap().text,
