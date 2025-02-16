@@ -131,11 +131,22 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
             let start = range.start;
             for (i, en) in app.dict_ui_state.entry_buf[range].iter().enumerate() {
                 let idx = start + i;
+                let s;
                 if ui
                     .selectable_label(
                         app.dict_ui_state.selected == idx,
                         match app.dict_ui_state.lookup_method {
-                            LookupMethod::Kana => en.reading_elements().next().unwrap().text,
+                            LookupMethod::Kana => match en.kanji_elements().next() {
+                                Some(kanji) => {
+                                    s = format!(
+                                        "{} ({})",
+                                        kanji.text,
+                                        en.reading_elements().next().unwrap().text
+                                    );
+                                    &s
+                                }
+                                None => en.reading_elements().next().unwrap().text,
+                            },
                             LookupMethod::English => {
                                 en.senses().next().unwrap().glosses().next().unwrap().text
                             }
