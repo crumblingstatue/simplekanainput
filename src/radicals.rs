@@ -1,32 +1,29 @@
 #[derive(Clone, Copy, Debug)]
-pub struct RadicalPair {
-    pub name: &'static str,
-    pub ch: char,
+pub struct Radical {
+    pub chars: &'static [char],
+    pub names: &'static [&'static str],
+    pub common_names: &'static [&'static str],
 }
 
 macro_rules! radicals {
-    ($($ch:literal $name:literal)*) => {
-        pub const PAIRS: &[RadicalPair] = &[$(RadicalPair {
-            name: $name,
-            ch: $ch,
-        }),*];
-    };
+    ($($($ch:literal)+,$($name:literal)+,$($cname:literal)+;)*) => {
+        pub const RADICALS: &'static [Radical] = &[
+            $(
+                Radical {
+                    chars: &[$($ch,)+],
+                    names: &[$($name,)+],
+                    common_names: &[$($cname,)+],
+                },
+            )*
+        ];
+    }
 }
 
-radicals! {
-    '⺅' "にんべん"
-    '𠆢' "ひとやね"
-    '⼉' "ひとあし"
-    '⺡' "さんずい"
-    '⺨' "けものへん"
-    '⼻' "ぎょうにんべん"
-    '⺾' "くさかんむり"
-    '隹' "ふるとり"
-}
+include!("../radicals.incl");
 
-pub fn by_name(name_frag: &str) -> impl Iterator<Item = RadicalPair> + '_ {
-    PAIRS
+pub fn by_name(name_frag: &str) -> impl Iterator<Item = Radical> + '_ {
+    RADICALS
         .iter()
         .cloned()
-        .filter(move |pair| pair.name.contains(name_frag))
+        .filter(move |rad| rad.common_names.iter().any(|name| name.contains(name_frag)))
 }

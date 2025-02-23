@@ -47,7 +47,7 @@ pub fn kanji_ui(ui: &mut egui::Ui, app: &mut AppState) {
     ui.separator();
     match app.kanji_ui_state.tab {
         Tab::Kanji => kanji_tab(ui, app),
-        Tab::Radicals => radicals_tab(ui),
+        Tab::Radicals => radicals_tab(ui, &app.kanji_ui_state),
         Tab::Advanced => advanced_tab(ui, app),
     }
 }
@@ -78,19 +78,40 @@ pub fn kanji_tab(ui: &mut egui::Ui, app: &mut AppState) {
     });
 }
 
-pub fn radicals_tab(ui: &mut egui::Ui) {
-    for pair in crate::radicals::PAIRS {
-        ui.horizontal(|ui| {
-            let s = pair.ch.to_string();
-            if ui
-                .add(egui::Label::new(&s).sense(egui::Sense::click()))
-                .clicked()
-            {
-                ui.ctx().copy_text(s);
+pub fn radicals_tab(ui: &mut egui::Ui, kan_ui: &KanjiUiState) {
+    egui::ScrollArea::vertical()
+        .auto_shrink(false)
+        .show(ui, |ui| {
+            for (i, rad) in crate::radicals::RADICALS.iter().enumerate() {
+                let filt = &kan_ui.filter_string;
+                if !filt.is_empty() {
+                    let hir = crate::conv::romaji_to_kana(filt, &crate::kana::HIRAGANA);
+                    let kat = crate::conv::romaji_to_kana(filt, &crate::kana::KATAKANA);
+                    if !rad
+                        .common_names
+                        .iter()
+                        .any(|name| name.contains(&hir) || name.contains(&kat))
+                    {
+                        continue;
+                    }
+                }
+                ui.horizontal(|ui| {
+                    ui.label((i + 1).to_string());
+                    for ch in rad.chars {
+                        let s = ch.to_string();
+                        if ui
+                            .add(egui::Label::new(&s).sense(egui::Sense::click()))
+                            .clicked()
+                        {
+                            ui.ctx().copy_text(s);
+                        }
+                    }
+                    for &name in rad.common_names {
+                        ui.label(name);
+                    }
+                });
             }
-            ui.label(pair.name);
         });
-    }
 }
 
 pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
@@ -152,6 +173,7 @@ pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
                             )
                             .sense(egui::Sense::click()),
                         )
+                        .on_hover_ui(|ui| radical_hover_ui(ui, result.kanji))
                         .clicked()
                     {
                         ui.ctx().copy_text(result.kanji.to_string());
@@ -159,4 +181,30 @@ pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
                 }
             });
         });
+}
+
+fn radical_hover_ui(ui: &mut egui::Ui, rad: char) {
+    for (rad_idx, db_rad) in crate::radicals::RADICALS.iter().enumerate() {
+        if db_rad.chars.iter().any(|ch| *ch == rad) {
+            ui.horizontal(|ui| {
+                ui.heading(format!("Radical {}", rad_idx + 1));
+                for ch in db_rad.chars {
+                    ui.label(ch.to_string());
+                }
+            });
+            ui.separator();
+            ui.label("name(s)");
+            ui.horizontal(|ui| {
+                for &name in db_rad.names {
+                    ui.label(name);
+                }
+            });
+            ui.label("common name(s)");
+            ui.horizontal(|ui| {
+                for &name in db_rad.common_names {
+                    ui.label(name);
+                }
+            });
+        }
+    }
 }

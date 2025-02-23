@@ -2,7 +2,7 @@ use {
     crate::{
         kana::{HIRAGANA, KATAKANA, RomajiKanaTable},
         kanji::KanjiDb,
-        radicals::RadicalPair,
+        radicals::Radical,
         segment::InputSpan,
     },
     std::collections::HashMap,
@@ -25,7 +25,7 @@ pub enum Intp {
     Kanji {
         db_idx: usize,
     },
-    Radical(RadicalPair),
+    Radical(Radical),
 }
 
 pub type IntpMap = HashMap<usize, Intp>;
@@ -159,7 +159,7 @@ pub fn with_input_span_converted_form(
             f(&kanji_string);
         }
         Intp::Radical(pair) => {
-            f(&pair.ch.to_string());
+            f(&pair.chars[0].to_string());
         }
         Intp::Kanji { db_idx } => f(kanji_db.kanji[*db_idx].chars[0]),
     }
