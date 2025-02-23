@@ -96,35 +96,37 @@ pub fn radicals_tab(ui: &mut egui::Ui) {
 pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
     let args = &mut app.kanji_ui_state.adv_args;
     let mut any_changed = false;
-    any_changed ^= ui.checkbox(&mut args.reverse, "reverse").changed();
-    any_changed ^= ui.checkbox(&mut args.simple, "simple").changed();
-    any_changed ^= ui.checkbox(&mut args.lite, "lite").changed();
     ui.horizontal(|ui| {
-        ui.label("input");
+        any_changed ^= ui.checkbox(&mut args.reverse, "reverse").changed();
+        any_changed ^= ui.checkbox(&mut args.simple, "simple").changed();
+        any_changed ^= ui.checkbox(&mut args.lite, "lite").changed();
+    });
+    ui.horizontal(|ui| {
+        ui.label("component(s)");
         any_changed ^= ui
             .text_edit_singleline(&mut app.kanji_ui_state.adv_input_buf)
             .changed();
+        egui::ComboBox::new("filter_combo", "Filter")
+            .selected_text(format!("{:?}", args.filter_level))
+            .show_ui(ui, |ui| {
+                any_changed ^= ui
+                    .selectable_value(&mut args.filter_level, FilterLevel::All, "All")
+                    .clicked();
+                any_changed ^= ui
+                    .selectable_value(&mut args.filter_level, FilterLevel::JoyoPlus, "JoyoPlus")
+                    .clicked();
+                any_changed ^= ui
+                    .selectable_value(
+                        &mut args.filter_level,
+                        FilterLevel::KanjiDicPlus,
+                        "KanjiDicPlus",
+                    )
+                    .clicked();
+                any_changed ^= ui
+                    .selectable_value(&mut args.filter_level, FilterLevel::Media, "Media")
+                    .clicked();
+            });
     });
-    egui::ComboBox::new("filter_combo", "Filter")
-        .selected_text(format!("{:?}", args.filter_level))
-        .show_ui(ui, |ui| {
-            any_changed ^= ui
-                .selectable_value(&mut args.filter_level, FilterLevel::All, "All")
-                .clicked();
-            any_changed ^= ui
-                .selectable_value(&mut args.filter_level, FilterLevel::JoyoPlus, "JoyoPlus")
-                .clicked();
-            any_changed ^= ui
-                .selectable_value(
-                    &mut args.filter_level,
-                    FilterLevel::KanjiDicPlus,
-                    "KanjiDicPlus",
-                )
-                .clicked();
-            any_changed ^= ui
-                .selectable_value(&mut args.filter_level, FilterLevel::Media, "Media")
-                .clicked();
-        });
     if any_changed {
         args.input = (!app.kanji_ui_state.adv_input_buf.is_empty())
             .then(|| app.kanji_ui_state.adv_input_buf.clone());
