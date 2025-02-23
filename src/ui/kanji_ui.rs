@@ -11,9 +11,8 @@ pub struct KanjiUiState {
     filter_string: String,
     tab: Tab = Tab::Kanji,
     adv_args: ids_rust::SearchArgs = default_adv_args(),
-    adv_result: String,
+    adv_results: Vec<ids_rust::SearchResult>,
     adv_input_buf: String,
-    adv_lookup_buf: String,
 }
 
 const fn default_adv_args() -> ids_rust::SearchArgs {
@@ -23,7 +22,6 @@ const fn default_adv_args() -> ids_rust::SearchArgs {
         lite: true,
         filter_level: FilterLevel::JoyoPlus,
         input: None,
-        lookup: None,
     }
 }
 
@@ -107,12 +105,6 @@ pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
             .text_edit_singleline(&mut app.kanji_ui_state.adv_input_buf)
             .changed();
     });
-    ui.horizontal(|ui| {
-        ui.label("lookup");
-        any_changed ^= ui
-            .text_edit_singleline(&mut app.kanji_ui_state.adv_lookup_buf)
-            .changed();
-    });
     egui::ComboBox::new("filter_combo", "Filter")
         .selected_text(format!("{:?}", args.filter_level))
         .show_ui(ui, |ui| {
@@ -136,14 +128,33 @@ pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
     if any_changed {
         args.input = (!app.kanji_ui_state.adv_input_buf.is_empty())
             .then(|| app.kanji_ui_state.adv_input_buf.clone());
-        args.lookup = (!app.kanji_ui_state.adv_lookup_buf.is_empty())
-            .then(|| app.kanji_ui_state.adv_lookup_buf.clone());
-        app.kanji_ui_state.adv_result = app.ids_kanji_data.search(args.clone());
+        app.kanji_ui_state.adv_results = app.ids_kanji_data.search(args.clone());
     }
     ui.separator();
+    let mut prev_strokes = 0;
     egui::ScrollArea::vertical()
         .auto_shrink(false)
         .show(ui, |ui| {
-            ui.label(egui::RichText::new(&app.kanji_ui_state.adv_result).size(32.0));
+            ui.horizontal_wrapped(|ui| {
+                for result in &app.kanji_ui_state.adv_results {
+                    if result.strokes != prev_strokes {
+                        ui.end_row();
+                        ui.label(format!("{} strokes", result.strokes));
+                        ui.end_row();
+                    }
+                    prev_strokes = result.strokes;
+                    if ui
+                        .add(
+                            egui::Label::new(
+                                egui::RichText::new(result.kanji.to_string()).size(48.0),
+                            )
+                            .sense(egui::Sense::click()),
+                        )
+                        .clicked()
+                    {
+                        ui.ctx().copy_text(result.kanji.to_string());
+                    }
+                }
+            });
         });
 }

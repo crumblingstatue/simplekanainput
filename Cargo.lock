@@ -1786,7 +1786,7 @@ dependencies = [
 [[package]]
 name = "ids_rust"
 version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/ids_rust_lib.git#9b38e102117fc9050b570766a5997dd60c7e0a3a"
+source = "git+https://github.com/crumblingstatue/ids_rust_lib.git#4003be462bf851daffb879e17a167ff9aa8bd9da"
 
 [[package]]
 name = "image"
