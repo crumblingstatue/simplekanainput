@@ -129,8 +129,25 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
         LookupMethod::English => &mut app.dict_ui_state.english_search_buf,
         LookupMethod::Kanji => &mut app.dict_ui_state.kanji_search_buf,
     };
-    let re = ui.add(egui::TextEdit::singleline(search_buf).hint_text("Filter"));
-    if re.changed() || app.dict_ui_state.focus_textinput {
+    let mut kana_converted = false;
+    let re = ui
+        .horizontal(|ui| {
+            if ui
+                .button("🈂")
+                .on_hover_text("Turn input into hiragana (ctrl+space)")
+                .clicked()
+                || ui.input(|inp| inp.key_pressed(egui::Key::Space) && inp.modifiers.ctrl)
+            {
+                let out = crate::conv::romaji_to_kana(search_buf, &HIRAGANA);
+                if !out.is_empty() {
+                    *search_buf = out;
+                }
+                kana_converted = true;
+            }
+            ui.add(egui::TextEdit::singleline(search_buf).hint_text("Filter"))
+        })
+        .inner;
+    if re.changed() || kana_converted || app.dict_ui_state.focus_textinput {
         app.dict_ui_state.selected = 0;
         match app.dict_ui_state.lookup_method {
             LookupMethod::Kana => {
