@@ -76,27 +76,51 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
     app.dict_ui_state.focus_textinput = want_focus;
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct KanjiQuery<'s> {
     contains: &'s str,
     starts_with: Option<char>,
+    n_chars: Option<u8>,
 }
 
 impl<'s> KanjiQuery<'s> {
     fn from_str(src: &'s str) -> Self {
         let mut contains = src;
         let mut begins_with = None;
+        let mut n_chars = None;
         if let Some(text) = src.strip_prefix('^') {
             if let Some((idx, ch)) = text.char_indices().next() {
                 begins_with = Some(ch);
                 contains = &text[idx + ch.len_utf8()..];
             }
         }
+        if let Some(open_idx) = src.find('(')
+            && let Some(close_idx) = src[open_idx..].find(')')
+            && let Some(contents) = src.get(open_idx + 1..open_idx + close_idx)
+        {
+            contains = &src[..open_idx];
+            if let Ok(num) = contents.parse() {
+                n_chars = Some(num);
+            }
+        }
         Self {
             contains,
             starts_with: begins_with,
+            n_chars,
         }
     }
+}
+
+#[test]
+fn test_kanji_query_from_str() {
+    assert_eq!(
+        KanjiQuery::from_str("べる(3)"),
+        KanjiQuery {
+            contains: "べる",
+            starts_with: None,
+            n_chars: Some(3)
+        }
+    )
 }
 
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
@@ -139,6 +163,9 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                         en.kanji_elements().any(|elem| {
                             elem.text.contains(query.contains)
                                 && query.starts_with.is_none_or(|ch| elem.text.starts_with(ch))
+                                && query
+                                    .n_chars
+                                    .is_none_or(|n| elem.text.chars().count() == usize::from(n))
                         })
                     })
                     .collect();
