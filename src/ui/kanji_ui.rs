@@ -64,7 +64,12 @@ pub fn kanji_tab(ui: &mut egui::Ui, app: &mut AppState) {
         for kanji in &filtered[range] {
             ui.horizontal(|ui| {
                 for c in kanji.chars {
-                    ui.label(c);
+                    if ui
+                        .add(egui::Label::new(c).sense(egui::Sense::click()))
+                        .clicked()
+                    {
+                        ui.ctx().copy_text(c.to_string());
+                    }
                 }
                 ui.label(kanji.meaning);
                 for &reading in &kanji.readings {
@@ -78,7 +83,13 @@ pub fn kanji_tab(ui: &mut egui::Ui, app: &mut AppState) {
 pub fn radicals_tab(ui: &mut egui::Ui) {
     for pair in crate::radicals::PAIRS {
         ui.horizontal(|ui| {
-            ui.label(pair.ch.to_string());
+            let s = pair.ch.to_string();
+            if ui
+                .add(egui::Label::new(&s).sense(egui::Sense::click()))
+                .clicked()
+            {
+                ui.ctx().copy_text(s);
+            }
             ui.label(pair.name);
         });
     }
