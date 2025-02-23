@@ -34,13 +34,14 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     ensure_ui_sanity(app);
     let mut repopulate_suggestion_cache = false;
     let mut copy_jap_clicked = false;
-    let (ctrl_enter, f1, f2, f3, esc, tab, shift, alt_left, alt_right, c_obr, c_cbr) = ui
+    let (ctrl_enter, f1, f2, f3, f4, esc, tab, shift, alt_left, alt_right, c_obr, c_cbr) = ui
         .input_mut(|inp| {
             (
                 inp.consume_key(Modifiers::CTRL, egui::Key::Enter),
                 inp.key_pressed(egui::Key::F1),
                 inp.key_pressed(egui::Key::F2),
                 inp.key_pressed(egui::Key::F3),
+                inp.key_pressed(egui::Key::F4),
                 inp.key_pressed(egui::Key::Escape),
                 inp.consume_key(Modifiers::NONE, egui::Key::Tab),
                 inp.modifiers.shift,
@@ -123,6 +124,9 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         {
             app.intp.clear();
         }
+        if ui.button("[F4] 🈷 Kanji").clicked() || f4 {
+            app.ui_state = UiState::Kanji;
+        }
         let enabled = !app.history.is_empty();
         ui.add_enabled_ui(enabled, |ui| {
             ui.menu_button("🕓 History", |ui| {
@@ -142,14 +146,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
             });
         });
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {
-                app.quit_requested = true;
-            }
             ui.menu_button("☰ Menu", |ui| {
-                if ui.button("Kanji dict").clicked() {
-                    app.ui_state = UiState::Kanji;
-                    ui.close_menu();
-                }
                 if ui.button("Normalize case").clicked() {
                     app.romaji_buf.make_ascii_lowercase();
                     ui.close_menu();
@@ -160,14 +157,18 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                     ui.close_menu();
                 }
                 ui.separator();
+                if ui.button("？ Help").clicked() {
+                    app.ui_state = UiState::Help;
+                }
                 if ui.button("About").clicked() {
                     app.ui_state = UiState::About;
                     ui.close_menu();
                 }
+                ui.separator();
+                if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {
+                    app.quit_requested = true;
+                }
             });
-            if ui.button("？ Help").clicked() {
-                app.ui_state = UiState::Help;
-            }
         });
     });
     ui.separator();
