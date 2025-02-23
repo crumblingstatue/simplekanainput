@@ -46,6 +46,7 @@ pub struct AppState {
     pub ipc_listener: Listener,
     pub colorix: Option<Colorix>,
     pub history: Vec<HistoryEntry>,
+    pub ids_kanji_data: ids_rust::ServerData,
 }
 
 #[derive(Default)]
@@ -98,6 +99,7 @@ impl AppState {
             ipc_listener,
             colorix: None,
             history: Vec::new(),
+            ids_kanji_data: ids_rust::init()?,
         })
     }
     /// Populate the suggestion cache with entries for the selected segment
