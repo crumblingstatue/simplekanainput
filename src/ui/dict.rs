@@ -76,6 +76,29 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
     app.dict_ui_state.focus_textinput = want_focus;
 }
 
+#[derive(Debug)]
+struct KanjiQuery<'s> {
+    contains: &'s str,
+    starts_with: Option<char>,
+}
+
+impl<'s> KanjiQuery<'s> {
+    fn from_str(src: &'s str) -> Self {
+        let mut contains = src;
+        let mut begins_with = None;
+        if let Some(text) = src.strip_prefix('^') {
+            if let Some((idx, ch)) = text.char_indices().next() {
+                begins_with = Some(ch);
+                contains = &text[idx + ch.len_utf8()..];
+            }
+        }
+        Self {
+            contains,
+            starts_with: begins_with,
+        }
+    }
+}
+
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
     let search_buf = match app.dict_ui_state.lookup_method {
         LookupMethod::Kana => &mut app.dict_ui_state.kana_search_buf,
@@ -110,10 +133,13 @@ fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 });
             }
             LookupMethod::Kanji => {
+                let query = KanjiQuery::from_str(&app.dict_ui_state.kanji_search_buf);
                 app.dict_ui_state.entry_buf = jmdict::entries()
                     .filter(|en| {
-                        en.kanji_elements()
-                            .any(|elem| elem.text.contains(&app.dict_ui_state.kanji_search_buf))
+                        en.kanji_elements().any(|elem| {
+                            elem.text.contains(query.contains)
+                                && query.starts_with.is_none_or(|ch| elem.text.starts_with(ch))
+                        })
                     })
                     .collect();
             }
