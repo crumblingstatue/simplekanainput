@@ -153,6 +153,7 @@ fn dict_en_ui(
                         P::Pronoun => "pronoun",
                         P::Suffix => "suffix",
                         P::Interjection => "interjection",
+                        P::AdverbTakingToParticle => "と adverb",
                         _ => jmdict::Enum::constant_name(&part),
                     };
                     parts_string.push_str(str);
