@@ -33,7 +33,7 @@ pub struct WinDims {
     h: u16,
 }
 
-const WIN_DIMS: WinDims = WinDims { w: 640, h: 512 };
+const WIN_DIMS: WinDims = WinDims { w: 680, h: 512 };
 
 #[cfg(feature = "ipc")]
 const IPC_FOCUS: Msg = Msg::Num(0);
