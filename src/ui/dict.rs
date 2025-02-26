@@ -94,11 +94,11 @@ impl<'s> KanjiQuery<'s> {
                 contains = &text[idx + ch.len_utf8()..];
             }
         }
-        if let Some(open_idx) = src.find('(')
-            && let Some(close_idx) = src[open_idx..].find(')')
-            && let Some(contents) = src.get(open_idx + 1..open_idx + close_idx)
+        if let Some(open_idx) = contains.find('(')
+            && let Some(close_idx) = contains[open_idx..].find(')')
+            && let Some(contents) = contains.get(open_idx + 1..open_idx + close_idx)
         {
-            contains = &src[..open_idx];
+            contains = &contains[..open_idx];
             if let Ok(num) = contents.parse() {
                 n_chars = Some(num);
             }
@@ -120,7 +120,15 @@ fn test_kanji_query_from_str() {
             starts_with: None,
             n_chars: Some(3)
         }
-    )
+    );
+    assert_eq!(
+        KanjiQuery::from_str("^変化(2)"),
+        KanjiQuery {
+            contains: "化",
+            starts_with: Some('変'),
+            n_chars: Some(2)
+        }
+    );
 }
 
 fn dict_list_ui(ui: &mut egui::Ui, app: &mut AppState) {
