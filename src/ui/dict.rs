@@ -64,6 +64,7 @@ pub fn dict_ui(ui: &mut egui::Ui, app: &mut AppState) {
             app.dict_ui_state.lookup_method = LookupMethod::English;
             want_focus = true;
         }
+        crate::ui::show_menu_button(app, ui);
     });
     ui.columns(2, |cols| {
         dict_list_ui(&mut cols[0], app);

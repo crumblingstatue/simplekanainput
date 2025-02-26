@@ -43,6 +43,7 @@ pub fn kanji_ui(ui: &mut egui::Ui, app: &mut AppState) {
         ui.add(
             egui::TextEdit::singleline(&mut app.kanji_ui_state.filter_string).hint_text("Filter"),
         );
+        crate::ui::show_menu_button(app, ui);
     });
     ui.separator();
     match app.kanji_ui_state.tab {

@@ -205,3 +205,31 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
     }
     true
 }
+
+fn show_menu_button(app: &mut AppState, ui: &mut egui::Ui) {
+    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        ui.menu_button("☰ Menu", |ui| {
+            if ui.button("Normalize case").clicked() {
+                app.romaji_buf.make_ascii_lowercase();
+                ui.close_menu();
+            }
+            ui.separator();
+            if ui.button("Theme configuration...").clicked() {
+                app.ui_state = UiState::Theme;
+                ui.close_menu();
+            }
+            ui.separator();
+            if ui.button("？ Help").clicked() {
+                app.ui_state = UiState::Help;
+            }
+            if ui.button("About").clicked() {
+                app.ui_state = UiState::About;
+                ui.close_menu();
+            }
+            ui.separator();
+            if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {
+                app.quit_requested = true;
+            }
+        });
+    });
+}
