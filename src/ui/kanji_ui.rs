@@ -58,25 +58,30 @@ pub fn kanji_tab(ui: &mut egui::Ui, app: &mut AppState) {
     if !app.kanji_ui_state.filter_string.is_empty() {
         filtered.retain(|kanji| kanji.meaning.contains(&app.kanji_ui_state.filter_string));
     }
-    egui::ScrollArea::vertical().show_rows(ui, 20.0, filtered.len(), |ui, range| {
-        ui.set_min_width(600.0);
-        for kanji in &filtered[range] {
-            ui.horizontal(|ui| {
-                for c in kanji.chars {
-                    if ui
-                        .add(egui::Label::new(c).sense(egui::Sense::click()))
-                        .clicked()
-                    {
-                        ui.ctx().copy_text(c.to_string());
+    egui::ScrollArea::vertical().auto_shrink(false).show_rows(
+        ui,
+        20.0,
+        filtered.len(),
+        |ui, range| {
+            ui.set_min_width(600.0);
+            for kanji in &filtered[range] {
+                ui.horizontal(|ui| {
+                    for c in kanji.chars {
+                        if ui
+                            .add(egui::Label::new(c).sense(egui::Sense::click()))
+                            .clicked()
+                        {
+                            ui.ctx().copy_text(c.to_string());
+                        }
                     }
-                }
-                ui.label(kanji.meaning);
-                for &reading in &kanji.readings {
-                    ui.label(reading);
-                }
-            });
-        }
-    });
+                    ui.label(kanji.meaning);
+                    for &reading in &kanji.readings {
+                        ui.label(reading);
+                    }
+                });
+            }
+        },
+    );
 }
 
 pub fn radicals_tab(ui: &mut egui::Ui, kan_ui: &KanjiUiState) {
