@@ -2,6 +2,7 @@ use {
     crate::{
         appstate::{AppState, UiState},
         egui,
+        kanji::Kanji,
     },
     ids_rust::FilterLevel,
 };
@@ -179,7 +180,7 @@ pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
                             )
                             .sense(egui::Sense::click()),
                         )
-                        .on_hover_ui(|ui| radical_hover_ui(ui, result.kanji))
+                        .on_hover_ui(|ui| radical_hover_ui(ui, result.kanji, &app.kanji_db.kanji))
                         .clicked()
                     {
                         ui.ctx().copy_text(result.kanji.to_string());
@@ -189,7 +190,7 @@ pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
         });
 }
 
-fn radical_hover_ui(ui: &mut egui::Ui, rad: char) {
+fn radical_hover_ui(ui: &mut egui::Ui, rad: char, kanji_db: &[Kanji]) {
     for (rad_idx, db_rad) in crate::radicals::RADICALS.iter().enumerate() {
         if db_rad.chars.iter().any(|ch| *ch == rad) {
             ui.horizontal(|ui| {
@@ -211,6 +212,24 @@ fn radical_hover_ui(ui: &mut egui::Ui, rad: char) {
                     ui.label(name);
                 }
             });
+            ui.separator();
+        }
+    }
+    for kanji in kanji_db {
+        if kanji.chars.iter().any(|k| k.starts_with(rad)) {
+            ui.horizontal(|ui| {
+                for char in kanji.chars {
+                    ui.label(char);
+                }
+            });
+            ui.label(kanji.meaning);
+            ui.horizontal_wrapped(|ui| {
+                for &reading in &kanji.readings {
+                    ui.label(reading);
+                    ui.label("、");
+                }
+            });
+            ui.separator();
         }
     }
 }
