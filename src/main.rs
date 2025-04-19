@@ -15,13 +15,13 @@ mod ui;
 
 #[cfg(feature = "backend-eframe")]
 mod eframe;
-#[cfg(feature = "backend-sfml")]
+#[cfg(feature = "backend-sf2g")]
 mod sfml;
 
 #[cfg(feature = "backend-eframe")]
 use ::eframe::egui;
-#[cfg(feature = "backend-sfml")]
-use egui_sfml::egui;
+#[cfg(feature = "backend-sf2g")]
+use egui_sf2g::egui;
 
 #[cfg(not(target_arch = "wasm32"))]
 const IS_WEB: bool = false;
@@ -94,7 +94,7 @@ fn main() {
         };
         font_id.size = size;
     }
-    #[cfg(feature = "backend-sfml")]
+    #[cfg(feature = "backend-sf2g")]
     crate::sfml::do_sfml_event_loop(font_defs, style, &mut app);
     #[cfg(feature = "backend-eframe")]
     crate::eframe::do_eframe_event_loop(font_defs, style, app);

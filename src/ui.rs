@@ -186,7 +186,7 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
             Some(crate::IPC_FOCUS) => {
                 // On the SFML backend, focus also makes the window visible
                 // (and also remembers last position) (Possible FIXME)
-                #[cfg(not(feature = "backend-sfml"))]
+                #[cfg(not(feature = "backend-sf2g"))]
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
             }

@@ -1,4 +1,4 @@
-#[cfg(feature = "backend-sfml")]
+#[cfg(feature = "backend-sf2g")]
 use arboard::Clipboard;
 #[cfg(feature = "ipc")]
 use existing_instance::Listener;
@@ -21,7 +21,7 @@ pub struct HistoryEntry {
 pub struct AppState {
     pub intp: IntpMap,
     pub romaji_buf: String,
-    #[cfg(feature = "backend-sfml")]
+    #[cfg(feature = "backend-sf2g")]
     pub clipboard: Clipboard,
     pub hide_requested: bool,
     pub quit_requested: bool,
@@ -79,7 +79,7 @@ impl AppState {
         Ok(Self {
             intp: IntpMap::default(),
             romaji_buf: String::new(),
-            #[cfg(feature = "backend-sfml")]
+            #[cfg(feature = "backend-sf2g")]
             clipboard: Clipboard::new()?,
             hide_requested: false,
             quit_requested: false,
@@ -147,7 +147,7 @@ impl AppState {
     /// but it doesn't support wasm32, so we need diverging behavior here
     #[allow(unused_variables)]
     pub(crate) fn set_clipboard_text(&mut self, ctx: &crate::egui::Context, text: &str) {
-        #[cfg(feature = "backend-sfml")]
+        #[cfg(feature = "backend-sf2g")]
         self.clipboard.set_text(text).unwrap();
         #[cfg(feature = "backend-eframe")]
         ctx.output_mut(|out| out.copied_text = text.to_owned());

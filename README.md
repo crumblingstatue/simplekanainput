@@ -12,11 +12,8 @@ It is tested on Linux, and there is a web version at <https://crumblingstatue.gi
 Currently no one is testing it on Windows or Mac OS, so I can't promise anything about them.
 
 ## Building
-There are two backends, `backend-sfml` and `backend-eframe`.
+There are two backends, `backend-sf2g` and `backend-eframe`.
 Currently, `backend-eframe` is the default.
-
-`backend-sfml` requires
-[SFML](https://github.com/jeremyletang/rust-sfml?tab=readme-ov-file#requirements).
 
 ## Usage
 

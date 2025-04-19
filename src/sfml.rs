@@ -1,14 +1,14 @@
 use {
     crate::{WIN_DIMS, WinDims, appstate::AppState},
-    egui_sfml::{
+    egui_sf2g::{
         SfEgui,
         egui::{self, FontDefinitions},
-        sfml::{
+        sf2g::{
             graphics::{Rect, RenderTarget as _, RenderWindow, View},
             window::{Event, Style, VideoMode},
         },
     },
-    sfml_xt::graphics::RenderWindowExt as _,
+    sf2g_xt::graphics::RenderWindowExt as _,
 };
 
 impl WinDims {
@@ -26,7 +26,7 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
         WIN_DIMS.to_sf_video_mode(),
         "Simple Kana Input",
         Style::DEFAULT,
-        &egui_sfml::sfml::window::ContextSettings::default(),
+        &egui_sf2g::sf2g::window::ContextSettings::default(),
     )
     .unwrap();
     rw.center();
