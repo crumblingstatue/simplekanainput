@@ -30,8 +30,8 @@ mugo-jmdict = { git = "https://github.com/crumblingstatue/mugo-jmdict.git" }
 ids_rust.git = "https://github.com/crumblingstatue/ids_rust_lib.git"
 
 # sf2g backend
-egui-sf2g = { version = "0.2", optional = true }
-sf2g-xt = { version = "0.2", optional = true }
+egui-sf2g = { version = "0.3", optional = true }
+sf2g-xt = { version = "0.3", optional = true }
 arboard = { version = "3.3.2", optional = true }
 
 # eframe backend
