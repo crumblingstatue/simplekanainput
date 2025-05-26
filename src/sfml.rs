@@ -9,6 +9,7 @@ use {
         },
     },
     sf2g_xt::graphics::RenderWindowExt as _,
+    std::time::Duration,
 };
 
 impl WinDims {
@@ -37,6 +38,11 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
     let mut quit = false;
 
     while !quit {
+        if app.hidden {
+            crate::ui::handle_ipc_messages(app, sf_egui.context());
+            std::thread::sleep(Duration::from_millis(250));
+            continue;
+        }
         while let Some(ev) = rw.poll_event() {
             sf_egui.add_event(&ev);
 

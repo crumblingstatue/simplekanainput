@@ -24,6 +24,8 @@ pub struct AppState {
     #[cfg(feature = "backend-sf2g")]
     pub clipboard: Clipboard,
     pub hide_requested: bool,
+    /// Required, because SFML doesn't keep track whether the window is hidden or not
+    pub hidden: bool,
     pub quit_requested: bool,
     pub ui_state: UiState,
     pub dict_ui_state: DictUiState,
@@ -82,6 +84,7 @@ impl AppState {
             #[cfg(feature = "backend-sf2g")]
             clipboard: Clipboard::new()?,
             hide_requested: false,
+            hidden: false,
             quit_requested: false,
             ui_state: UiState::Input,
             dict_ui_state: DictUiState::default(),

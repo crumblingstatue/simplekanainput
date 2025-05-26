@@ -181,6 +181,20 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
         UiState::Theme => theme_ui(ui, app),
     });
     #[cfg(feature = "ipc")]
+    handle_ipc_messages(app, ctx);
+    if app.hide_requested {
+        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+        app.hidden = true;
+        app.hide_requested = false;
+    }
+    if app.quit_requested {
+        return false;
+    }
+    true
+}
+
+#[cfg(feature = "ipc")]
+pub fn handle_ipc_messages(app: &mut AppState, ctx: &egui::Context) {
     if let Some(mut stream) = app.ipc_listener.accept() {
         match stream.recv() {
             Some(crate::IPC_FOCUS) => {
@@ -189,6 +203,7 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
                 #[cfg(not(feature = "backend-sf2g"))]
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+                app.hidden = false;
             }
             Some(crate::IPC_QUIT) => {
                 app.quit_requested = true;
@@ -196,14 +211,6 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
             _ => {}
         }
     }
-    if app.hide_requested {
-        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
-        app.hide_requested = false;
-    }
-    if app.quit_requested {
-        return false;
-    }
-    true
 }
 
 fn show_menu_button(app: &mut AppState, ui: &mut egui::Ui) {
