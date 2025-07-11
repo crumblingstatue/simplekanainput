@@ -89,11 +89,11 @@ impl<'s> KanjiQuery<'s> {
         let mut contains = src;
         let mut begins_with = None;
         let mut n_chars = None;
-        if let Some(text) = src.strip_prefix('^') {
-            if let Some((idx, ch)) = text.char_indices().next() {
-                begins_with = Some(ch);
-                contains = &text[idx + ch.len_utf8()..];
-            }
+        if let Some(text) = src.strip_prefix('^')
+            && let Some((idx, ch)) = text.char_indices().next()
+        {
+            begins_with = Some(ch);
+            contains = &text[idx + ch.len_utf8()..];
         }
         if let Some(open_idx) = contains.find('(')
             && let Some(close_idx) = contains[open_idx..].find(')')

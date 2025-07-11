@@ -527,11 +527,11 @@ fn gen_dict_ui_for_hiragana(
         };
         let mut scroll = false;
         let mut selected = false;
-        if let Some(Intp::Dictionary { cached_sug_idx, .. }) = intp.get(&intp_idx) {
-            if *cached_sug_idx == si {
-                selected = true;
-                scroll = true;
-            }
+        if let Some(Intp::Dictionary { cached_sug_idx, .. }) = intp.get(&intp_idx)
+            && *cached_sug_idx == si
+        {
+            selected = true;
+            scroll = true;
         }
         let re = ui
             .selectable_label(selected, kanji_str)

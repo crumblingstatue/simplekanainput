@@ -192,7 +192,7 @@ pub fn advanced_tab(ui: &mut egui::Ui, app: &mut AppState) {
 
 fn radical_hover_ui(ui: &mut egui::Ui, rad: char, kanji_db: &[Kanji]) {
     for (rad_idx, db_rad) in crate::radicals::RADICALS.iter().enumerate() {
-        if db_rad.chars.iter().any(|ch| *ch == rad) {
+        if db_rad.chars.contains(&rad) {
             ui.horizontal(|ui| {
                 ui.heading(format!("Radical {}", rad_idx + 1));
                 for ch in db_rad.chars {
