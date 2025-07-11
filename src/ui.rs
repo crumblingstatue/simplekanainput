@@ -218,12 +218,10 @@ fn show_menu_button(app: &mut AppState, ui: &mut egui::Ui) {
         ui.menu_button("☰ Menu", |ui| {
             if ui.button("Normalize case").clicked() {
                 app.romaji_buf.make_ascii_lowercase();
-                ui.close_menu();
             }
             ui.separator();
             if ui.button("Theme configuration...").clicked() {
                 app.ui_state = UiState::Theme;
-                ui.close_menu();
             }
             ui.separator();
             if ui.button("？ Help").clicked() {
@@ -231,7 +229,6 @@ fn show_menu_button(app: &mut AppState, ui: &mut egui::Ui) {
             }
             if ui.button("About").clicked() {
                 app.ui_state = UiState::About;
-                ui.close_menu();
             }
             ui.separator();
             if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {

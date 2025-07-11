@@ -133,14 +133,12 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 for entry in &app.history {
                     if ui.button(&entry.romaji_buf).clicked() {
-                        ui.close_menu();
                         app.romaji_buf = entry.romaji_buf.clone();
                         app.intp = entry.intp.clone();
                     }
                 }
                 ui.separator();
                 if ui.button("🗑 Clear").clicked() {
-                    ui.close_menu();
                     app.history.clear();
                 }
             });
@@ -163,7 +161,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 repopulate_suggestion_cache = true;
             }
             if let Some(range) = &mut out.cursor_range {
-                text_cursor = range.primary.ccursor.index;
+                text_cursor = range.primary.index;
             }
             if let Some(InputUiAction::SetCursor(pos)) = app.input_ui_action.as_ref() {
                 out.state
@@ -242,7 +240,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                                     InputUiAction::SetCursor(span.cursor_end_pos()),
                                                 );
                                                 app.selected_segment = i;
-                                                ui.close_menu();
                                             }
                                             if ui
                                                 .add_enabled(
@@ -252,7 +249,6 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                                 .clicked()
                                             {
                                                 remove_intp = Some(i);
-                                                ui.close_menu();
                                             }
                                         });
                                         let (InputSpan::Other { start, end }
@@ -441,7 +437,6 @@ fn suggestion_ui_strip(
                                 .clicked()
                             {
                                 intp.insert(intp_idx, Intp::Radical(rad));
-                                ui.close_menu();
                             }
                         }
                     }
@@ -504,7 +499,6 @@ fn intp_button(
         .clicked()
     {
         intp_map.insert(i, intp);
-        ui.close_menu();
     }
 }
 
@@ -555,7 +549,7 @@ fn gen_dict_ui_for_hiragana(
                     root: suggestion.mugo_root.clone(),
                 },
             );
-            ui.close_menu();
+
             return;
         }
     }
