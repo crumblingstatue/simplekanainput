@@ -107,7 +107,6 @@ fn dict_en_ui(
                 }
             }
         });
-        ui.separator();
         for sense in en.senses() {
             ui.horizontal_wrapped(|ui| {
                 let mut gloss_string = String::new();
@@ -166,6 +165,7 @@ fn dict_en_ui(
                 );
             });
         }
+        ui.separator();
     }
 }
 
