@@ -170,6 +170,7 @@ kana_table! {
     "ri" "り" "リ"
     "ro" "ろ" "ロ"
     "ru" "る" "ル"
+    "rru" "っる" "ッル" // Non-standard, but add it I guess
     "rya" "りゃ" "リャ"
     "ryo" "りょ" "リョ"
     "ryu" "りゅ" "リュ"
