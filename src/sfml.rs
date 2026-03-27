@@ -34,7 +34,7 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
     rw.set_vertical_sync_enabled(true);
     let mut sf_egui = SfEgui::new(&rw);
     sf_egui.context().set_fonts(font_defs);
-    sf_egui.context().set_style(style);
+    sf_egui.context().set_global_style(style);
     let mut quit = false;
 
     while !quit {

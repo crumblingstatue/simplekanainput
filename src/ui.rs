@@ -171,8 +171,8 @@ fn dict_en_ui(
 
 /// Returns false if there was a quit request
 #[must_use]
-pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
-    egui::CentralPanel::default().show(ctx, |ui| match app.ui_state {
+pub fn update(ui: &mut egui::Ui, app: &mut AppState) -> bool {
+    egui::CentralPanel::default().show_inside(ui, |ui| match app.ui_state {
         UiState::Input => input_ui(ui, app),
         UiState::Dict => dict_ui(ui, app),
         UiState::Kanji => kanji_ui(ui, app),
@@ -181,9 +181,9 @@ pub fn update(ctx: &egui::Context, app: &mut AppState) -> bool {
         UiState::Theme => theme_ui(ui, app),
     });
     #[cfg(feature = "ipc")]
-    handle_ipc_messages(app, ctx);
+    handle_ipc_messages(app, ui);
     if app.hide_requested {
-        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+        ui.send_viewport_cmd(egui::ViewportCommand::Visible(false));
         app.hidden = true;
         app.hide_requested = false;
     }
