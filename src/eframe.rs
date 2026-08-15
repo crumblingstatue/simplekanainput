@@ -4,7 +4,7 @@ use {
 };
 
 impl eframe::App for AppState {
-    fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ctx: &mut eframe::egui::Ui, _frame: &mut eframe::Frame) {
         if !crate::ui::update(ctx, self) {
             // On the eframe backend, the app automatically quits if the window is closed
             ctx.send_viewport_cmd(ViewportCommand::Close);
@@ -15,11 +15,19 @@ impl eframe::App for AppState {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn do_eframe_event_loop(font_defs: FontDefinitions, style: eframe::egui::Style, app: AppState) {
+    let opts = eframe::NativeOptions {
+        window_builder: Some(Box::new(|wb| {
+            use crate::WIN_DIMS;
+
+            wb.with_inner_size((WIN_DIMS.w as f32, WIN_DIMS.h as f32))
+        })),
+        ..Default::default()
+    };
     eframe::run_native(
         "Simple Kana Input (eframe)",
-        eframe::NativeOptions::default(),
+        opts,
         Box::new(|cc| {
-            cc.egui_ctx.set_style(style);
+            cc.egui_ctx.set_global_style(style);
             cc.egui_ctx.set_fonts(font_defs);
             Ok(Box::new(app))
         }),

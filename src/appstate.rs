@@ -153,6 +153,6 @@ impl AppState {
         #[cfg(feature = "backend-sf2g")]
         self.clipboard.set_text(text).unwrap();
         #[cfg(feature = "backend-eframe")]
-        ctx.output_mut(|out| out.copied_text = text.to_owned());
+        ctx.copy_text(text.into());
     }
 }
