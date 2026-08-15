@@ -1,7 +1,9 @@
 use {
     super::{dict_en_ui, dict_en_ui_scroll},
     crate::{
-        appstate::{AppState, CachedSuggestions, HistoryEntry, UiState},
+        appstate::{
+            AppState, CachedSuggestions, HistoryEntry, SelJpCache, SelJpCacheEntry, UiState,
+        },
         conv::{self, Intp, IntpMap, romaji_to_kana, with_input_span_converted_form},
         egui::{
             self, Color32, Modifiers,
@@ -12,7 +14,7 @@ use {
         segment::InputSpan,
     },
     egui_extras::{Size, StripBuilder},
-    egui_sf2g::egui::text::CharIndex,
+    egui_sf2g::egui::{scroll_area::ScrollSource, text::CharIndex},
 };
 
 /// Code that does some sanity checks on the application state, and corrects
@@ -29,6 +31,62 @@ fn ensure_ui_sanity(app: &mut AppState) {
 
 pub enum InputUiAction {
     SetCursor(usize),
+}
+
+enum JpCacheMatch {
+    None,
+    Bare,
+    Rooted(mugo::Root),
+}
+
+fn populate_jp_cache(text: &str, cache: &mut Vec<SelJpCacheEntry>) {
+    let roots = mugo::deconjugate(text);
+    let mut matched = 0;
+    for en in jmdict::entries() {
+        let mut match_ = JpCacheMatch::None;
+        // Plain text matches
+        for elem in en.kanji_elements() {
+            if elem.text == text {
+                match_ = JpCacheMatch::Bare;
+                break;
+            }
+        }
+        for elem in en.reading_elements() {
+            if elem.text.trim() == text {
+                match_ = JpCacheMatch::Bare;
+                break;
+            }
+        }
+        // Deconjugation matches
+        for root in &roots {
+            if mugo_jmdict::Root::Conj(root).matches(&en) {
+                match_ = JpCacheMatch::Rooted(root.clone());
+            }
+        }
+        match match_ {
+            JpCacheMatch::None => {}
+            JpCacheMatch::Bare => {
+                cache.push(SelJpCacheEntry {
+                    entry: en,
+                    mugo_root: None,
+                });
+                matched += 1;
+                if matched > 10 {
+                    break;
+                }
+            }
+            JpCacheMatch::Rooted(root) => {
+                cache.push(SelJpCacheEntry {
+                    entry: en,
+                    mugo_root: Some(root),
+                });
+                matched += 1;
+                if matched > 10 {
+                    break;
+                }
+            }
+        }
+    }
 }
 
 pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
@@ -171,6 +229,42 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                 out.state.store(ui.ctx(), out.response.id);
                 set_textedit_scroll_offset = Some(app.out_scroll_last_offset);
                 app.input_ui_action = None;
+            }
+            if let Some(sel_text) = out
+                .cursor_range
+                .map(|range| range.slice_str(&app.romaji_buf))
+                && !sel_text.trim().is_empty()
+            {
+                out.response.response = out.response.response.on_hover_ui(|ui| {
+                    egui::ScrollArea::vertical()
+                        .auto_shrink([false, true])
+                        .scroll_source(ScrollSource::ALL)
+                        .show(ui, |ui| match &mut app.te_sel_jp_cache {
+                            None => {
+                                let mut entries = Vec::new();
+                                populate_jp_cache(sel_text, &mut entries);
+                                app.te_sel_jp_cache = Some(SelJpCache {
+                                    text: sel_text.into(),
+                                    entries,
+                                })
+                            }
+                            Some(cache) => {
+                                if sel_text != cache.text {
+                                    cache.entries.clear();
+                                    populate_jp_cache(sel_text, &mut cache.entries);
+                                    cache.text = sel_text.into();
+                                }
+                                let mut any = false;
+                                for en in &cache.entries {
+                                    dict_en_ui(ui, &en.entry, en.mugo_root.as_ref(), None);
+                                    any = true;
+                                }
+                                if !any {
+                                    ui.label("<No dict results.>");
+                                }
+                            }
+                        });
+                });
             }
             out.response.request_focus();
         });

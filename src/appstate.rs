@@ -45,6 +45,19 @@ pub struct AppState {
     pub colorix: Option<Colorix>,
     pub history: Vec<HistoryEntry>,
     pub ids_kanji_data: ids_rust::ServerData,
+    /// Cache for selected (japanese) text in the text edit.
+    /// Used as an easy way to look up words in japanese text pasted into the text edit.
+    pub te_sel_jp_cache: Option<SelJpCache>,
+}
+
+pub struct SelJpCache {
+    pub text: String,
+    pub entries: Vec<SelJpCacheEntry>,
+}
+
+pub struct SelJpCacheEntry {
+    pub entry: jmdict::Entry,
+    pub mugo_root: Option<mugo::Root>,
 }
 
 #[derive(Default)]
@@ -97,6 +110,7 @@ impl AppState {
             colorix: None,
             history: Vec::new(),
             ids_kanji_data: ids_rust::init()?,
+            te_sel_jp_cache: None,
         })
     }
     /// Populate the suggestion cache with entries for the selected segment
