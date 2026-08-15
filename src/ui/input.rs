@@ -12,6 +12,7 @@ use {
         segment::InputSpan,
     },
     egui_extras::{Size, StripBuilder},
+    egui_sf2g::egui::text::CharIndex,
 };
 
 /// Code that does some sanity checks on the application state, and corrects
@@ -147,7 +148,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     });
     ui.separator();
     // Character (not byte) position of the text cursor in the romaji editor
-    let mut text_cursor = 0;
+    let mut text_cursor = CharIndex(0);
     let mut set_textedit_scroll_offset = None;
     let mut scroll_out = egui::ScrollArea::vertical()
         .max_height(120.0)
@@ -225,7 +226,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                                     &app.kanji_db,
                                     |conv_text| {
                                         let mut text = egui::RichText::new(conv_text);
-                                        if span.contains_cursor(text_cursor) {
+                                        if span.contains_cursor(text_cursor.0) {
                                             text = text.color(Color32::LIGHT_BLUE);
                                         }
                                         if app.selected_segment == i {
@@ -309,7 +310,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
         let mut any_set = false;
         let mut found_cursor_span = false;
         for (i, span) in app.segments.iter().enumerate().rev() {
-            if span.contains_cursor(text_cursor) {
+            if span.contains_cursor(text_cursor.0) {
                 found_cursor_span = true;
             }
             if found_cursor_span && span.is_romaji_word() {

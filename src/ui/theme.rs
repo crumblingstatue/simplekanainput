@@ -4,7 +4,7 @@ use {
         egui,
     },
     egui_colors::{Colorix, tokens::ThemeColor},
-    rand::Rng,
+    rand::RngExt,
 };
 
 pub fn theme_ui(ui: &mut egui::Ui, app: &mut AppState) {

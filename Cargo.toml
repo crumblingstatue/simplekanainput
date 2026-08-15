@@ -14,19 +14,19 @@ jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features 
 ] }
 serde = { version = "1.0.197", features = ["derive"] }
 mugo = { git = "https://github.com/crumblingstatue/mugo.git", features = ["labels"] }
-egui_extras = { version = "0.34", default-features = false }
-egui_commonmark = {version = "0.23.0", default-features = false, features = [
+egui_extras = { version = "0.36", default-features = false }
+egui_commonmark = {version = "0.25.0", default-features = false, features = [
     "pulldown_cmark",
 ] }
-egui_colors = "0.11.0"
+egui_colors = "0.13.0"
 existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git" }
 mugo-jmdict = { git = "https://github.com/crumblingstatue/mugo-jmdict.git" }
 ids_rust.git = "https://github.com/crumblingstatue/ids_rust_lib.git"
-rand = "0.9"
+rand = "0.10"
 strsim = "0.11.1"
 
 # sf2g backend
-egui-sf2g = { version = "0.7" }
+egui-sf2g = { version = "0.9" }
 sf2g-xt = { version = "0.4" }
 arboard = { version = "3.6.0" }
 

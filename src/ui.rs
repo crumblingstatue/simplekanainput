@@ -172,7 +172,7 @@ fn dict_en_ui(
 /// Returns false if there was a quit request
 #[must_use]
 pub fn update(ui: &mut egui::Ui, app: &mut AppState) -> bool {
-    egui::CentralPanel::default().show_inside(ui, |ui| match app.ui_state {
+    egui::CentralPanel::default().show(ui, |ui| match app.ui_state {
         UiState::Input => input_ui(ui, app),
         UiState::Dict => dict_ui(ui, app),
         UiState::Kanji => kanji_ui(ui, app),
