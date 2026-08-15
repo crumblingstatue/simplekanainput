@@ -1,7 +1,3 @@
-#[cfg(feature = "backend-sf2g")]
-use arboard::Clipboard;
-#[cfg(feature = "ipc")]
-use existing_instance::Listener;
 use {
     crate::{
         conv::{IntpMap, romaji_to_kana},
@@ -10,7 +6,9 @@ use {
         segment::InputSpan,
         ui::{DictUiState, KanjiUiState, input::InputUiAction},
     },
+    arboard::Clipboard,
     egui_colors::Colorix,
+    existing_instance::Listener,
 };
 
 pub struct HistoryEntry {
@@ -21,7 +19,6 @@ pub struct HistoryEntry {
 pub struct AppState {
     pub intp: IntpMap,
     pub romaji_buf: String,
-    #[cfg(feature = "backend-sf2g")]
     pub clipboard: Clipboard,
     pub hide_requested: bool,
     /// Required, because SFML doesn't keep track whether the window is hidden or not
@@ -44,7 +41,6 @@ pub struct AppState {
     /// For some reason the egui memory fails me in getting the scroll offset, so we store it here
     /// Used for synchronizing output scroll and input (romaji) scroll
     pub out_scroll_last_offset: f32,
-    #[cfg(feature = "ipc")]
     pub ipc_listener: Listener,
     pub colorix: Option<Colorix>,
     pub history: Vec<HistoryEntry>,
@@ -77,11 +73,10 @@ pub enum UiState {
 }
 
 impl AppState {
-    pub fn new(#[cfg(feature = "ipc")] ipc_listener: Listener) -> anyhow::Result<Self> {
+    pub fn new(ipc_listener: Listener) -> anyhow::Result<Self> {
         Ok(Self {
             intp: IntpMap::default(),
             romaji_buf: String::new(),
-            #[cfg(feature = "backend-sf2g")]
             clipboard: Clipboard::new()?,
             hide_requested: false,
             hidden: false,
@@ -98,7 +93,6 @@ impl AppState {
             segments: Vec::new(),
             input_ui_action: None,
             out_scroll_last_offset: 0.0,
-            #[cfg(feature = "ipc")]
             ipc_listener,
             colorix: None,
             history: Vec::new(),
@@ -150,9 +144,6 @@ impl AppState {
     /// but it doesn't support wasm32, so we need diverging behavior here
     #[allow(unused_variables)]
     pub(crate) fn set_clipboard_text(&mut self, ctx: &crate::egui::Context, text: &str) {
-        #[cfg(feature = "backend-sf2g")]
         self.clipboard.set_text(text).unwrap();
-        #[cfg(feature = "backend-eframe")]
-        ctx.copy_text(text.into());
     }
 }

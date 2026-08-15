@@ -180,7 +180,6 @@ pub fn update(ui: &mut egui::Ui, app: &mut AppState) -> bool {
         UiState::Help => help_ui(ui, app),
         UiState::Theme => theme_ui(ui, app),
     });
-    #[cfg(feature = "ipc")]
     handle_ipc_messages(app, ui);
     if app.hide_requested {
         ui.send_viewport_cmd(egui::ViewportCommand::Visible(false));
@@ -193,15 +192,10 @@ pub fn update(ui: &mut egui::Ui, app: &mut AppState) -> bool {
     true
 }
 
-#[cfg(feature = "ipc")]
 pub fn handle_ipc_messages(app: &mut AppState, ctx: &egui::Context) {
     if let Some(mut stream) = app.ipc_listener.accept() {
         match stream.recv() {
             Some(crate::IPC_FOCUS) => {
-                // On the SFML backend, focus also makes the window visible
-                // (and also remembers last position) (Possible FIXME)
-                #[cfg(not(feature = "backend-sf2g"))]
-                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
                 app.hidden = false;
             }
@@ -231,7 +225,7 @@ fn show_menu_button(app: &mut AppState, ui: &mut egui::Ui) {
                 app.ui_state = UiState::About;
             }
             ui.separator();
-            if !crate::IS_WEB && ui.button("🚪 Quit").clicked() {
+            if ui.button("🚪 Quit").clicked() {
                 app.quit_requested = true;
             }
         });

@@ -1,8 +1,10 @@
 #![feature(array_try_from_fn, default_field_values)]
 
-#[cfg(feature = "ipc")]
-use existing_instance::{Endpoint, Msg};
-use {appstate::AppState, std::sync::Arc};
+use {
+    appstate::AppState,
+    existing_instance::{Endpoint, Msg},
+    std::sync::Arc,
+};
 
 mod appstate;
 mod conv;
@@ -13,20 +15,8 @@ mod radicals;
 mod segment;
 mod ui;
 
-#[cfg(feature = "backend-eframe")]
-mod eframe;
-#[cfg(feature = "backend-sf2g")]
 mod sfml;
-
-#[cfg(feature = "backend-eframe")]
-use ::eframe::egui;
-#[cfg(feature = "backend-sf2g")]
 use egui_sf2g::egui;
-
-#[cfg(not(target_arch = "wasm32"))]
-const IS_WEB: bool = false;
-#[cfg(target_arch = "wasm32")]
-const IS_WEB: bool = true;
 
 pub struct WinDims {
     w: u16,
@@ -35,15 +25,11 @@ pub struct WinDims {
 
 const WIN_DIMS: WinDims = WinDims { w: 680, h: 512 };
 
-#[cfg(feature = "ipc")]
 const IPC_FOCUS: Msg = Msg::Num(0);
-#[cfg(feature = "ipc")]
 const IPC_QUIT: Msg = Msg::Num(1);
-#[cfg(feature = "ipc")]
 const IPC_CHANNEL_ID: &str = "simple-kana-input";
 
 fn main() {
-    #[cfg(feature = "ipc")]
     let listener = match existing_instance::establish_endpoint(IPC_CHANNEL_ID, true).unwrap() {
         Endpoint::New(listener) => listener,
         Endpoint::Existing(mut stream) => {
@@ -64,11 +50,7 @@ fn main() {
         }
     };
 
-    let mut app = AppState::new(
-        #[cfg(feature = "ipc")]
-        listener,
-    )
-    .unwrap();
+    let mut app = AppState::new(listener).unwrap();
 
     let mut font_defs = egui::FontDefinitions::default();
     font_defs.font_data.insert(
@@ -94,8 +76,5 @@ fn main() {
         };
         font_id.size = size;
     }
-    #[cfg(feature = "backend-sf2g")]
     crate::sfml::do_sfml_event_loop(font_defs, style, &mut app);
-    #[cfg(feature = "backend-eframe")]
-    crate::eframe::do_eframe_event_loop(font_defs, style, app);
 }

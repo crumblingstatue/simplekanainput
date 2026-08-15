@@ -11,10 +11,6 @@ Provides kanji suggestions as well as dictionary info.
 It is tested on Linux, and there is a web version at <https://crumblingstatue.github.io/simplekanainput/>.
 Currently no one is testing it on Windows or Mac OS, so I can't promise anything about them.
 
-## Building
-There are two backends, `backend-sf2g` and `backend-eframe`.
-Currently, `backend-eframe` is the default.
-
 ## Usage
 
 Set a shortcut key on your system to open simplekanainput, to have quick access to it.

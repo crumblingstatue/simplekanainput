@@ -6,12 +6,6 @@ license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-backend-sf2g = ["dep:egui-sf2g", "dep:sf2g-xt", "dep:arboard"]
-backend-eframe = ["dep:eframe"]
-ipc = ["dep:existing_instance"]
-default = ["backend-eframe", "ipc"]
-
 [dependencies]
 anyhow = "1.0.81"
 jmdict = { git = "https://github.com/crumblingstatue/rust-jmdict.git", features = [
@@ -25,23 +19,16 @@ egui_commonmark = {version = "0.23.0", default-features = false, features = [
     "pulldown_cmark",
 ] }
 egui_colors = "0.11.0"
-existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git", optional = true }
+existing_instance = { git = "https://github.com/crumblingstatue/rust-existing-instance.git" }
 mugo-jmdict = { git = "https://github.com/crumblingstatue/mugo-jmdict.git" }
 ids_rust.git = "https://github.com/crumblingstatue/ids_rust_lib.git"
-
-# sf2g backend
-egui-sf2g = { version = "0.7", optional = true }
-sf2g-xt = { version = "0.4", optional = true }
-arboard = { version = "3.6.0", optional = true }
-
-# eframe backend
-eframe = { version = "0.34", optional = true }
 rand = "0.9"
 strsim = "0.11.1"
 
-# Eframe (web)
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen-futures = "0.4"
+# sf2g backend
+egui-sf2g = { version = "0.7" }
+sf2g-xt = { version = "0.4" }
+arboard = { version = "3.6.0" }
 
 # Compile deps with optimizations in dev mode
 [profile.dev.package."*"]
