@@ -1361,16 +1361,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
 
 [[package]]
-name = "serde"
-version = "1.0.229"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4148590afebada386688f18773da617792bf2ef03ffc1e4cbd2b1d45b023e0ba"
-dependencies = [
- "serde_core",
- "serde_derive",
-]
-
-[[package]]
 name = "serde_core"
 version = "1.0.229"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1457,7 +1447,6 @@ dependencies = [
  "mugo",
  "mugo-jmdict",
  "rand",
- "serde",
  "sf2g-xt",
  "strsim",
  "vergen-gitcl",

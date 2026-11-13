@@ -3,7 +3,6 @@
 use {
     appstate::AppState,
     existing_instance::{Endpoint, Msg},
-    std::sync::Arc,
 };
 
 mod appstate;
