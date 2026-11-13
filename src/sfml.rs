@@ -1,15 +1,15 @@
 use {
     crate::{WIN_DIMS, WinDims, appstate::AppState},
     egui_sf2g::{
-        SfEgui,
-        egui::{self, FontDefinitions},
+        SfEgui, egui,
         sf2g::{
             graphics::{Rect, RenderTarget as _, RenderWindow, View},
             window::{Event, Style, VideoMode},
         },
     },
+    egui_system_font_frog::SystemFontProvider,
     sf2g_xt::graphics::RenderWindowExt as _,
-    std::time::Duration,
+    std::{sync::Arc, time::Duration},
 };
 
 impl WinDims {
@@ -22,7 +22,7 @@ impl WinDims {
     }
 }
 
-pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &mut AppState) {
+pub fn do_sfml_event_loop(style: egui::Style, app: &mut AppState) {
     let mut rw = RenderWindow::new(
         WIN_DIMS.to_sf_video_mode(),
         "Simple Kana Input",
@@ -32,8 +32,10 @@ pub fn do_sfml_event_loop(font_defs: FontDefinitions, style: egui::Style, app: &
     .unwrap();
     rw.center();
     rw.set_vertical_sync_enabled(true);
-    let mut sf_egui = SfEgui::new(&rw);
-    sf_egui.context().set_fonts(font_defs);
+    let mut sf_egui = SfEgui::default();
+    sf_egui
+        .context()
+        .add_font_provider(Arc::new(SystemFontProvider::new()));
     sf_egui.context().set_global_style(style);
     let mut quit = false;
 

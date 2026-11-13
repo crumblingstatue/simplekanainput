@@ -208,70 +208,70 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
     // Character (not byte) position of the text cursor in the romaji editor
     let mut text_cursor = CharIndex(0);
     let mut set_textedit_scroll_offset = None;
-    let mut scroll_out = egui::ScrollArea::vertical()
+    let mut scroll_area = egui::ScrollArea::vertical()
         .max_height(120.0)
-        .id_salt("romaji_scroll")
-        .show(ui, |ui| {
-            let mut out = egui::TextEdit::multiline(&mut app.romaji_buf)
-                .hint_text("Romaji")
-                .desired_width(f32::INFINITY)
-                .show(ui);
-            if out.response.changed() {
-                repopulate_suggestion_cache = true;
-            }
-            if let Some(range) = &mut out.cursor_range {
-                text_cursor = range.primary.index;
-            }
-            if let Some(InputUiAction::SetCursor(pos)) = app.input_ui_action.as_ref() {
-                out.state
-                    .cursor
-                    .set_char_range(Some(CCursorRange::one(CCursor::new(*pos))));
-                out.state.store(ui.ctx(), out.response.id);
-                set_textedit_scroll_offset = Some(app.out_scroll_last_offset);
-                app.input_ui_action = None;
-            }
-            if let Some(sel_text) = out
-                .cursor_range
-                .map(|range| range.slice_str(&app.romaji_buf))
-                && !sel_text.trim().is_empty()
-            {
-                out.response.response = out.response.response.on_hover_ui(|ui| {
-                    egui::ScrollArea::vertical()
-                        .auto_shrink([false, true])
-                        .scroll_source(ScrollSource::ALL)
-                        .show(ui, |ui| match &mut app.te_sel_jp_cache {
-                            None => {
-                                let mut entries = Vec::new();
-                                populate_jp_cache(sel_text, &mut entries);
-                                app.te_sel_jp_cache = Some(SelJpCache {
-                                    text: sel_text.into(),
-                                    entries,
-                                })
-                            }
-                            Some(cache) => {
-                                if sel_text != cache.text {
-                                    cache.entries.clear();
-                                    populate_jp_cache(sel_text, &mut cache.entries);
-                                    cache.text = sel_text.into();
-                                }
-                                let mut any = false;
-                                for en in &cache.entries {
-                                    dict_en_ui(ui, &en.entry, en.mugo_root.as_ref(), None);
-                                    any = true;
-                                }
-                                if !any {
-                                    ui.label("<No dict results.>");
-                                }
-                            }
-                        });
-                });
-            }
-            out.response.request_focus();
-        });
+        .id_salt("romaji_scroll");
     if let Some(offset) = set_textedit_scroll_offset {
-        scroll_out.state.offset.y = offset;
-        scroll_out.state.store(ui.ctx(), scroll_out.id);
+        scroll_area = scroll_area.vertical_scroll_offset(offset);
     }
+
+    scroll_area.show(ui, |ui| {
+        let mut out = egui::TextEdit::multiline(&mut app.romaji_buf)
+            .hint_text("Romaji")
+            .desired_width(f32::INFINITY)
+            .show(ui);
+        if out.response.changed() {
+            repopulate_suggestion_cache = true;
+        }
+        if let Some(range) = &mut out.cursor_range {
+            text_cursor = range.primary.index;
+        }
+        if let Some(InputUiAction::SetCursor(pos)) = app.input_ui_action.as_ref() {
+            out.state
+                .cursor
+                .set_char_range(Some(CCursorRange::one(CCursor::new(*pos))));
+            out.state.store(ui.ctx(), out.response.id);
+            set_textedit_scroll_offset = Some(app.out_scroll_last_offset);
+            app.input_ui_action = None;
+        }
+        if let Some(sel_text) = out
+            .cursor_range
+            .map(|range| range.slice_str(&app.romaji_buf))
+            && !sel_text.trim().is_empty()
+        {
+            out.response.response = out.response.response.on_hover_ui(|ui| {
+                egui::ScrollArea::vertical()
+                    .auto_shrink([false, true])
+                    .scroll_source(ScrollSource::ALL)
+                    .show(ui, |ui| match &mut app.te_sel_jp_cache {
+                        None => {
+                            let mut entries = Vec::new();
+                            populate_jp_cache(sel_text, &mut entries);
+                            app.te_sel_jp_cache = Some(SelJpCache {
+                                text: sel_text.into(),
+                                entries,
+                            })
+                        }
+                        Some(cache) => {
+                            if sel_text != cache.text {
+                                cache.entries.clear();
+                                populate_jp_cache(sel_text, &mut cache.entries);
+                                cache.text = sel_text.into();
+                            }
+                            let mut any = false;
+                            for en in &cache.entries {
+                                dict_en_ui(ui, &en.entry, en.mugo_root.as_ref(), None);
+                                any = true;
+                            }
+                            if !any {
+                                ui.label("<No dict results.>");
+                            }
+                        }
+                    });
+            });
+        }
+        out.response.request_focus();
+    });
     ui.separator();
     // region: input state change handling
     let mut segmentation_count_changed = false;
@@ -368,7 +368,7 @@ pub fn input_ui(ui: &mut egui::Ui, app: &mut AppState) {
                             });
                         }
                     });
-                app.out_scroll_last_offset = scroll_out.state.offset.y;
+                app.out_scroll_last_offset = scroll_out.state.unclamped_offset().y;
             });
             strip.strip(|builder| {
                 let Some(&InputSpan::RomajiWord { start, end }) =

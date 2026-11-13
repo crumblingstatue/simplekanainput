@@ -52,18 +52,6 @@ fn main() {
 
     let mut app = AppState::new(listener).unwrap();
 
-    let mut font_defs = egui::FontDefinitions::default();
-    font_defs.font_data.insert(
-        "ipag".to_owned(),
-        Arc::new(egui::FontData::from_static(include_bytes!(
-            "../NotoSansJP-VariableFont_wght.ttf"
-        ))),
-    );
-    font_defs
-        .families
-        .get_mut(&egui::FontFamily::Proportional)
-        .unwrap()
-        .push("ipag".to_owned());
     let mut style = egui::Style::default();
     for (text_style, font_id) in style.text_styles.iter_mut() {
         let size = match *text_style {
@@ -76,5 +64,5 @@ fn main() {
         };
         font_id.size = size;
     }
-    crate::sfml::do_sfml_event_loop(font_defs, style, &mut app);
+    crate::sfml::do_sfml_event_loop(style, &mut app);
 }
