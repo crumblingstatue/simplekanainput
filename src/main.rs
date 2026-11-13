@@ -22,7 +22,7 @@ pub struct WinDims {
     h: u16,
 }
 
-const WIN_DIMS: WinDims = WinDims { w: 680, h: 512 };
+const WIN_DIMS: WinDims = WinDims { w: 724, h: 512 };
 
 const IPC_FOCUS: Msg = Msg::Num(0);
 const IPC_QUIT: Msg = Msg::Num(1);
