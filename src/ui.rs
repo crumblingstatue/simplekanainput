@@ -186,10 +186,7 @@ pub fn update(ui: &mut egui::Ui, app: &mut AppState) -> bool {
         app.hidden = true;
         app.hide_requested = false;
     }
-    if app.quit_requested {
-        return false;
-    }
-    true
+    !app.quit_requested
 }
 
 pub fn handle_ipc_messages(app: &mut AppState, ctx: &egui::Context) {
