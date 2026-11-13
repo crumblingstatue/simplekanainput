@@ -34,5 +34,10 @@ arboard = { version = "3.6.0" }
 [profile.dev.package."*"]
 opt-level = 2
 
+[profile.release]
+codegen-units = 1
+panic = "abort"
+lto = "thin"
+
 [build-dependencies]
 vergen-gitcl = { version = "10.0", default-features = false, features = ["build", "cargo", "rustc"] }
